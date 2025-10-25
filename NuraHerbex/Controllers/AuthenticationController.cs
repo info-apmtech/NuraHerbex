@@ -12,7 +12,11 @@ namespace NuraHerbex.Controllers
         {
             return View();
         }
-        public IActionResult ForgetPassWord()
+        public IActionResult ForgetPassword()
+        {
+            return View();
+        }
+        public IActionResult CreatePassword()
         {
             return View();
         }
