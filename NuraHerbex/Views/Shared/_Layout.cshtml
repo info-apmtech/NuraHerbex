@@ -37,7 +37,10 @@
                 <!-- Mobile Menu Buttons -->
                 <div class="mobile-menu-actions">
                     <button class="btn-primary btn-mobile">Subscription</button>
-                    <a asp-controller="authentication" asp-action="signin" class="btn-login btn-mobile">Login</a>
+                    <button class="btn-primary btn-mobile"
+                            onclick="window.location.href='@Url.Action("signin", "authentication")'">
+                        Login
+                    </button>
                 </div>
             </nav>
 
@@ -46,7 +49,10 @@
                 <a asp-controller="Home" asp-action="Quiz" class="btn-secondary">Take Quiz</a>
                 <button class="btn-secondary">Book Consultation</button>
                 <button class="btn-primary">Subscription</button>
-                <a asp-controller="authentication" asp-action="signin" class="btn-secondary">Login</a>
+                <button class="btn-primary"
+                        onclick="window.location.href='@Url.Action("signin", "authentication")'">
+                    Login
+                </button>
             </div>
 
             <!-- Mobile: User Profile + Hamburger on RIGHT -->
