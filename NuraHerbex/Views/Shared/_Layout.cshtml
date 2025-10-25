@@ -9,6 +9,8 @@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/home.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/about.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/blog.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/NuraHerbex.styles.css" asp-append-version="true" />
 </head>
 <body>
@@ -27,11 +29,11 @@
 
             <nav class="main-nav" id="mainNav">
                 <ul class="nav-links">
-                    <li><a href="#" class="nav-item active">Home</a></li>
+                    <li><a asp-controller="Home" asp-action="Index" class="nav-item active">Home</a></li>
                     <li><a href="#" class="nav-item">Shop</a></li>
                     <li><a href="#" class="nav-item">Ingredients</a></li>
-                    <li><a href="#" class="nav-item">About</a></li>
-                    <li><a href="#" class="nav-item">Blog</a></li>
+                    <li><a asp-controller="Home" asp-action="About" class="nav-item">About</a></li>
+                    <li><a asp-controller="Home" asp-action="Blog" class="nav-item">Blog</a></li>
                 </ul>
 
                 <!-- Mobile Menu Buttons (Hidden on Desktop) -->
