@@ -1,0 +1,362 @@
+﻿/* ===== Base (mobile-first) ===== */
+:root {
+    --brand: #f44900;
+    --card: #18212d;
+    --field: #27313f;
+    --stroke: #364153;
+    --muted: rgba(255,255,255,.5);
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0
+}
+
+html, body {
+    min-height: 100%
+}
+
+body {
+    font-family: 'Helvetica', Arial, sans-serif;
+    background: #101828;
+    color: #fff;
+}
+
+.d-none {
+    display: none !important
+}
+
+/* layout */
+.main-container {
+    padding: 24px 16px
+}
+
+.left-section {
+    max-width: 640px;
+    margin: 0 auto 32px
+}
+
+.auth-card {
+    background: var(--card);
+    border: 1px solid var(--stroke);
+    border-radius: 24px;
+    padding: 24px;
+    max-width: 628px;
+    width: 100%;
+    margin: 0 auto;
+}
+
+/* headings */
+.main-heading {
+    font-weight: 400;
+    line-height: 1.2;
+    margin-bottom: 12px;
+    font-size: clamp(24px, 4.5vw, 56px);
+}
+
+    .main-heading .highlight {
+        color: var(--brand)
+    }
+
+.sub-heading {
+    font-weight: 400;
+    line-height: 1.4;
+    margin-bottom: 32px;
+    font-size: clamp(16px, 3.5vw, 32px);
+}
+
+/* features */
+.feature-item {
+    margin-bottom: 16px
+}
+
+.feature-title {
+    font-size: clamp(18px, 3vw, 24.5px);
+    line-height: 1.4;
+    margin-bottom: 6px;
+}
+
+.feature-description {
+    font-size: clamp(14px, 2.6vw, 18.5px);
+    line-height: 1.56;
+    color: var(--muted);
+    padding-left: 44px;
+}
+
+.feature-icon {
+    width: 32px;
+    height: 32px;
+    background: #f44900; /* safe fallback */
+    border-radius: 50%;
+    padding: 6px;
+    box-shadow: 0 1px 2px rgba(0,0,0,.06);
+    object-fit: contain;
+}
+
+.logo-container {
+    width: 100%;
+    height: 48px;
+    background: url('../image/logo.png') no-repeat;
+    background-size: auto 100%;
+    margin-bottom: 32px;
+}
+
+/* card headings */
+.card-title {
+    text-align: center;
+    margin-bottom: 8px;
+    line-height: 1.2;
+    font-size: clamp(24px, 4.2vw, 42px);
+}
+
+.card-description {
+    text-align: center;
+    margin-bottom: 20px;
+    color: var(--muted);
+    font-size: clamp(14px, 3.5vw, 24px);
+}
+
+/* tabs */
+.tabs-container {
+    display: flex;
+    gap: 8px;
+    background: #27313f;
+    padding: 4px;
+    border-radius: 16px;
+    margin-bottom: 32px;
+}
+
+.tab-button {
+    flex: 1;
+    border: 0;
+    border-radius: 16px;
+    padding: 10px 14px;
+    font-size: clamp(14px, 3.5vw, 24px);
+    color: #fff;
+    background: #27313f;
+    cursor: pointer;
+    transition: .2s;
+}
+
+    .tab-button.active {
+        background: var(--brand);
+        box-shadow: 0 4px 4px rgba(0,0,0,.06)
+    }
+
+/* form */
+.form-label {
+    display: block;
+    margin-bottom: 10px;
+    font-size: clamp(14px, 3.3vw, 24px);
+}
+
+.input-wrapper {
+    position: relative;
+    margin-bottom: 24px
+}
+
+.input-icon {
+    position: absolute;
+    left: 18px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 24px;
+    height: 24px;
+}
+
+.form-input {
+    width: 100%;
+    padding: 14px 20px 14px 60px;
+    background: var(--field);
+    border: 2px solid var(--stroke);
+    border-radius: 10px;
+    color: var(--muted);
+    font-size: clamp(14px, 3.2vw, 20px);
+}
+
+    .form-input::placeholder {
+        color: var(--muted)
+    }
+
+    .form-input:focus {
+        outline: 0;
+        border-color: var(--brand)
+    }
+
+.eye-icon {
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 22px;
+    height: 22px;
+    cursor: pointer;
+}
+
+/* helpers */
+.remember-forgot {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: clamp(14px, 3vw, 20px)
+}
+
+.custom-checkbox {
+    width: 18px;
+    height: 18px;
+    border-radius: 5px;
+    cursor: pointer
+}
+
+.forgot-link {
+    color: var(--brand);
+    text-decoration: none;
+    font-size: clamp(14px, 3vw, 20px)
+}
+
+    .forgot-link:hover {
+        text-decoration: underline
+    }
+
+/* buttons */
+.signin-button {
+    width: 100%;
+    padding: 12px 20px;
+    margin-bottom: 24px;
+    border: 0;
+    border-radius: 11px;
+    background: var(--brand);
+    color: #fff;
+    font-size: clamp(16px, 3.6vw, 24px);
+    font-weight: 700;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    justify-content: center;
+    transition: .2s;
+}
+
+    .signin-button:hover {
+        background: #d63e00
+    }
+
+.arrow-icon {
+    width: 26px;
+    height: 26px
+}
+
+/* divider + socials */
+.divider-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px
+}
+
+.divider-line {
+    flex: 1;
+    height: 1px;
+    background: rgba(255,255,255,.25)
+}
+
+.divider-text {
+    white-space: nowrap;
+    color: var(--muted);
+    font-size: clamp(12px, 3vw, 18px)
+}
+
+.social-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    justify-content: space-around;
+}
+
+.social-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 14px 18px;
+    background: #27313f;
+    border: 2px solid var(--stroke);
+    border-radius: 10px;
+    color: #fff;
+    font-weight: 700;
+    font-size: clamp(14px, 3vw, 18px);
+}
+
+    .social-button:hover {
+        background: #364153
+    }
+
+.social-icon {
+    width: 28px;
+    height: 28px
+}
+
+/* ===== Breakpoints (enhance on wider screens) ===== */
+@media (min-width: 576px) {
+    .auth-card {
+        padding: 28px
+    }
+
+    .remember-forgot {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center
+    }
+}
+
+@media (min-width: 768px) {
+    .auth-card {
+        padding: 40px 30px;
+        border-radius: 28px
+    }
+
+    .social-buttons {
+        flex-direction: row
+    }
+
+    .logo-container {
+        margin-bottom: 48px
+    }
+
+    .main-container {
+        padding: 40px 24px
+    }
+}
+
+@media (min-width: 992px) {
+    .main-container {
+        padding: 60px 40px
+    }
+
+    .left-section {
+        margin-bottom: 0
+    }
+
+    .auth-card {
+        padding: 50px 40px
+    }
+}
+
+@media (min-width: 1200px) {
+    .main-container {
+        padding: 80px 100px
+    }
+
+    .auth-card {
+        padding: 72px 76px;
+        border-radius: 37px
+    }
+}
