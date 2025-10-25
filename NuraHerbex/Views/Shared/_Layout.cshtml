@@ -39,7 +39,7 @@
                 <!-- Mobile Menu Buttons (Hidden on Desktop) -->
                 <div class="mobile-menu-actions">
                     <button class="btn-primary btn-mobile">Subscription</button>
-                    <button class="btn-login btn-mobile">Login</button>
+                    <a asp-controller="authentication" asp-action="signin" class="btn-login btn-mobile">Login</a>
                 </div>
             </nav>
 
@@ -47,7 +47,7 @@
                 <button class="btn-secondary">Take Quiz</button>
                 <button class="btn-secondary">Book Consultation</button>
                 <button class="btn-primary">Subscription</button>
-                <button class="btn-login">Login</button>
+                <a asp-controller="authentication" asp-action="signin" class="btn-login">Login</a>
             </div>
         </div>
     </header>

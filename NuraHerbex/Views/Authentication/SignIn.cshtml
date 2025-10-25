@@ -10,15 +10,18 @@
     <link rel="icon" type="image/png" href="~/image/logo.png" />
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    @* <link href="~/css/loginstyle.css" rel="stylesheet" /> *@
     <link rel="stylesheet" href="~/css/loginstyle.css" asp-append-version="true" />
-
 </head>
 <body>
     <div class="container-fluid main-container">
         <div class="row justify-content-center align-items-center g-5">
-            <!-- Left Section -->
-            <div class="col-12 col-lg-6">
+            <!-- Left Section - Hidden on mobile, visible on lg and up -->
+            <div class="row justify-content-center d-lg-none">
+                <div class="col-12 mobile-logo-container">
+                    <img src="~/image/logo.png" alt="NuraHerbex Logo" class="mobile-logo">
+                </div>
+            </div>
+            <div class="col-lg-6 d-none d-lg-block left-section-desktop">
                 <div class="left-section">
                     <!-- Logo -->
                     <div class="logo-container"></div>
@@ -62,10 +65,10 @@
                 </div>
             </div>
 
-            <!-- Right Section (Auth Card) -->
+            <!-- Right Section (Auth Card) - Always visible -->
             <div class="col-12 col-lg-6 d-flex justify-content-center">
                 <div class="auth-card">
-                    <!-- Header -->
+                    <!-- Your entire auth card content here -->
                     <h2 class="card-title">Welcome Back</h2>
                     <p class="card-description">Sign in to your STAMIX Account</p>
 
@@ -191,8 +194,7 @@
                             <span>FaceBook</span>
                         </button>
                     </div>
-                    <a  asp-action="index" asp-controller="Home" style="float:right!important; color:white;">Back</a>
-
+                    <a asp-action="index" asp-controller="Home" style="float:right!important; color:white;">Back</a>
                 </div>
             </div>
         </div>
@@ -203,61 +205,70 @@
 
     <script>
         function switchTab(button, tab) {
-          // toggle active tab UI
-          document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
-          button.classList.add('active');
+            document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
+            button.classList.add('active');
 
-          // show/hide forms
-          const signIn = document.getElementById('signinForm');
-          const signUp = document.getElementById('signupForm');
+            const signIn = document.getElementById('signinForm');
+            const signUp = document.getElementById('signupForm');
 
-          if (tab === 'signup') {
-            signIn.classList.add('d-none');
-            signUp.classList.remove('d-none');
-            setHeader('Welcome', 'Sign up to your STAMIX Account'); // optional title swap
-          } else {
-            signUp.classList.add('d-none');
-            signIn.classList.remove('d-none');
-            setHeader('Welcome Back', 'Sign in to your STAMIX Account');
-          }
+            if (tab === 'signup') {
+                signIn.classList.add('d-none');
+                signUp.classList.remove('d-none');
+                setHeader('Welcome', 'Sign up to your STAMIX Account');
+            } else {
+                signUp.classList.add('d-none');
+                signIn.classList.remove('d-none');
+                setHeader('Welcome Back', 'Sign in to your STAMIX Account');
+            }
         }
 
         function togglePassword(inputId) {
-          const el = document.getElementById(inputId);
-          el.type = el.type === 'password' ? 'text' : 'password';
+            const el = document.getElementById(inputId);
+            el.type = el.type === 'password' ? 'text' : 'password';
         }
 
-        // Optional: change the heading text when switching
         function setHeader(title, subtitle) {
-          const h2 = document.querySelector('.auth-card .card-title');
-          const p  = document.querySelector('.auth-card .card-description');
-          if (h2) h2.textContent = title;
-          if (p)  p.textContent  = subtitle;
+            const h2 = document.querySelector('.auth-card .card-title');
+            const p = document.querySelector('.auth-card .card-description');
+            if (h2) h2.textContent = title;
+            if (p) p.textContent = subtitle;
         }
 
-        // Submit handlers (demo only)
+        // Form submit handlers
         document.getElementById('signinForm').addEventListener('submit', function (e) {
-          e.preventDefault();
-          const email = this.querySelector('input[type="email"]').value;
-          const password = this.querySelector('input[type="password"]').value;
-          console.log('Sign In:', { email, password });
-          alert('Sign in functionality would be implemented here');
+            e.preventDefault();
+            const email = this.querySelector('input[type="email"]').value;
+            const password = this.querySelector('input[type="password"]').value;
+            console.log('Sign In:', { email, password });
+            alert('Sign in functionality would be implemented here');
         });
 
         document.getElementById('signupForm').addEventListener('submit', function (e) {
-          e.preventDefault();
-          const payload = {
-            firstName: this.querySelector('input[placeholder="John"]').value,
-            lastName: this.querySelector('input[placeholder="Doe"]').value,
-            phone: this.querySelector('input[type="tel"]').value,
-            email: this.querySelector('input[type="email"]').value,
-            password: this.querySelector('#signupPassword').value,
-            confirm: this.querySelector('#signupConfirm').value
-          };
-          console.log('Sign Up:', payload);
-          alert('Sign up functionality would be implemented here');
+            e.preventDefault();
+            const payload = {
+                firstName: this.querySelector('input[placeholder="John"]').value,
+                lastName: this.querySelector('input[placeholder="Doe"]').value,
+                phone: this.querySelector('input[type="tel"]').value,
+                email: this.querySelector('input[type="email"]').value,
+                password: this.querySelector('#signupPassword').value,
+                confirm: this.querySelector('#signupConfirm').value
+            };
+            console.log('Sign Up:', payload);
+            alert('Sign up functionality would be implemented here');
         });
-    </script>
+                // Show left panel only on large screens
+        function checkScreenSize() {
+            const leftPanel = document.querySelector('.left-section-desktop');
+            if (window.innerWidth >= 992) {
+                leftPanel.style.display = 'block';
+            } else {
+                leftPanel.style.display = 'none';
+            }
+        }
 
+        // Check on load and resize
+        window.addEventListener('load', checkScreenSize);
+        window.addEventListener('resize', checkScreenSize);
+    </script>
 </body>
 </html>
