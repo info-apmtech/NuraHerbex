@@ -55,6 +55,15 @@ a:visited {
     display: block;
 }
 
+.brand-text-logo {
+    display: block;
+}
+
+/* Header Right Group - Hidden on Desktop */
+.header-right-group {
+    display: none;
+}
+
 .mobile-toggle {
     display: none;
     flex-direction: column;
@@ -186,7 +195,7 @@ a:visited {
         box-shadow: 0 2px 8px rgba(244, 73, 0, 0.3) !important;
     }
 
-/* Mobile Menu Action Buttons - Show Subscription & Login in Mobile Menu */
+/* Mobile Menu Action Buttons */
 .mobile-menu-actions {
     display: none;
     flex-direction: column;
@@ -207,7 +216,6 @@ a:visited {
     border: none !important;
 }
 
-/* Mobile menu button - Primary (Subscription) */
 .mobile-menu-actions .btn-primary.btn-mobile {
     background-color: #f44900 !important;
     color: #ffffff !important;
@@ -219,7 +227,6 @@ a:visited {
         box-shadow: 0 2px 4px rgba(244, 73, 0, 0.2) !important;
     }
 
-/* Mobile menu button - Login */
 .mobile-menu-actions .btn-login.btn-mobile {
     background-color: #f44900 !important;
     color: #ffffff !important;
@@ -236,7 +243,7 @@ a:visited {
     flex: 1;
 }
 
-/* Footer Styles - EXACT FIGMA MATCH */
+/* Footer Styles */
 .main-footer {
     background-color: #1e2130;
     color: #9195a3;
@@ -525,11 +532,6 @@ a:visited {
         padding: 0 30px;
     }
 
-    .mobile-toggle {
-        display: flex;
-        order: -1;
-    }
-
     .logo-wrapper {
         position: absolute;
         left: 50%;
@@ -579,18 +581,15 @@ a:visited {
             border-bottom: none !important;
         }
 
-    /* Show mobile menu buttons - Subscription & Login */
     .mobile-menu-actions {
         display: flex;
     }
 
-    /* Hide Subscription and Login from header on tablet/mobile */
     .header-actions .btn-primary,
     .header-actions .btn-login {
         display: none;
     }
 
-    /* Keep Take Quiz and Book Consultation visible in header */
     .header-actions .btn-secondary {
         display: inline-block;
     }
@@ -622,88 +621,287 @@ a:visited {
 
     .header-container {
         padding: 0 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
     }
 
-    /* Hide Take Quiz and Book Consultation from header too */
-    .header-actions .btn-secondary {
+    /* Logo on the LEFT */
+    .logo-wrapper {
+        position: static;
+        transform: none;
+        order: 1;
+    }
+
+    .brand-text-logo {
         display: none;
     }
 
-    /* Hide entire header actions section on mobile */
+    .brand-logo {
+        height: 40px;
+    }
+
+    /* Main Nav - Hidden */
+    .main-nav {
+        order: 3;
+    }
+
+    /* Right Side Group - User Profile + Hamburger on RIGHT */
+    .header-right-group {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        order: 2;
+    }
+
+    /* User Profile - Now Visible on Mobile */
+    .user-profile {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        background-color: rgba(255, 249, 246, 0.8);
+        padding: 10px 16px;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+        .user-profile:hover {
+            background-color: rgba(255, 249, 246, 1);
+        }
+
+    .user-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        border: 2px solid #f44900;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: white;
+        flex-shrink: 0;
+    }
+
+        .user-avatar svg {
+            width: 24px;
+            height: 24px;
+            color: #f44900;
+        }
+
+    .user-info {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 2px;
+    }
+
+    .user-welcome {
+        font-size: 14px;
+        color: #1e2130;
+        font-weight: 500;
+        line-height: 1.2;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+        .user-welcome .dropdown-icon {
+            width: 16px;
+            height: 16px;
+            color: #354152;
+        }
+
+    .user-name {
+        font-size: 16px;
+        color: #1e2130;
+        font-weight: 600;
+        line-height: 1.2;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 150px;
+    }
+
+    /* Hamburger Menu */
+    .mobile-toggle {
+        position: static;
+        display: flex;
+        background-color: rgba(245, 245, 245, 0.8);
+        padding: 12px;
+        border-radius: 12px;
+        width: 48px;
+        height: 48px;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+    }
+
+        .mobile-toggle span {
+            width: 24px;
+            height: 3px;
+            background-color: #1e2130;
+            border-radius: 2px;
+        }
+
     .header-actions {
         display: none;
     }
 
-    .footer-container {
-        padding: 0 1.5rem;
-        text-align: center;
+    /* Mobile Footer - Figma Style Layout */
+    .main-footer {
+        padding: 3rem 0 2rem;
     }
 
-    .brand-logo {
-        height: 36px;
+    .footer-container {
+        padding: 0 1.5rem;
     }
 
     .footer-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: 1fr 1fr;
         gap: 2.5rem;
+        margin-bottom: 2.5rem;
     }
 
-    /* Center align all footer content on mobile */
+    /* Footer Brand - Centered at Top */
     .footer-brand {
+        grid-column: 1 / -1;
         text-align: center;
-        margin: 0 auto;
+        max-width: 100%;
+        margin: 0 auto 1.5rem;
     }
 
     .footer-logo {
         margin-left: auto;
         margin-right: auto;
+        height: 32px;
+    }
+
+    .brand-description {
+        text-align: center;
+        font-size: 13px;
+        line-height: 1.6;
+        margin-bottom: 1.2rem;
     }
 
     .social-links {
         justify-content: center;
     }
 
-    .footer-column {
-        text-align: center;
+    /* Quick Links & Support - 2 Column Grid */
+    .footer-column:nth-child(2),
+    .footer-column:nth-child(3) {
+        text-align: left;
+    }
+
+    .footer-column:nth-child(2) {
+        grid-column: 1;
+    }
+
+    .footer-column:nth-child(3) {
+        grid-column: 2;
+    }
+
+    .footer-title {
+        font-size: 15px;
+        margin-bottom: 1.2rem;
+        font-weight: 600;
     }
 
     .footer-links {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
+        align-items: flex-start;
     }
 
+        .footer-links li {
+            margin-bottom: 0.75rem;
+        }
+
         .footer-links a {
+            font-size: 13px;
             transform: none !important;
         }
 
+    /* Get in Touch Section - Full Width */
+    .footer-column:nth-child(4) {
+        grid-column: 1 / -1;
+        text-align: left;
+    }
+
     .contact-info {
-        align-items: center;
+        align-items: flex-start;
+        margin-bottom: 1.5rem;
     }
 
+    .contact-link {
+        justify-content: flex-start;
+        font-size: 13px;
+    }
+
+        .contact-link svg {
+            width: 14px;
+            height: 14px;
+        }
+
+    /* Newsletter - Full Width with Single Line Form */
     .newsletter {
-        text-align: center;
+        text-align: left;
+        padding: 1.25rem;
     }
 
+    .newsletter-title {
+        font-size: 14px;
+        text-align: left;
+    }
+
+    .newsletter-description {
+        font-size: 12px;
+        margin-bottom: 1rem;
+        text-align: left;
+    }
+
+    /* KEEP NEWSLETTER FORM HORIZONTAL ON MOBILE */
+    .newsletter-form {
+        flex-direction: row;
+        gap: 0.5rem;
+    }
+
+    .email-input {
+        flex: 1;
+        font-size: 12px;
+        padding: 0.7rem 0.9rem;
+    }
+
+    .subscribe-btn {
+        padding: 0.7rem 1.2rem;
+        font-size: 13px;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+
+    /* Footer Bottom - REORDERED: Legal Links First, Copyright Below */
     .footer-bottom {
         flex-direction: column;
         text-align: center;
         gap: 1rem;
+        padding-top: 1.5rem;
     }
 
+    /* Legal Links FIRST (now appears at top due to column-reverse) */
     .legal-links {
-        flex-direction: column;
-        gap: 0.8rem;
-        align-items: center;
+        flex-direction: row;
+        gap: 1.5rem;
+        justify-content: center;
+        order: 1;
     }
 
-    .newsletter-form {
-        flex-direction: column;
-    }
+        .legal-links a {
+            font-size: 13px;
+        }
 
-    .email-input,
-    .subscribe-btn {
-        width: 100%;
+    /* Copyright SECOND (appears below legal links) */
+    .copyright {
+        font-size: 13px;
+        order: 2;
     }
 
     .nav-item {
@@ -718,35 +916,118 @@ a:visited {
     }
 
     .brand-logo {
-        height: 32px;
+        height: 36px;
     }
+
+    .header-right-group {
+        gap: 10px;
+    }
+
+    .user-profile {
+        padding: 8px 12px;
+        gap: 10px;
+    }
+
+    .user-avatar {
+        width: 36px;
+        height: 36px;
+    }
+
+        .user-avatar svg {
+            width: 20px;
+            height: 20px;
+        }
+
+    .user-welcome {
+        font-size: 13px;
+    }
+
+    .user-name {
+        font-size: 15px;
+        max-width: 120px;
+    }
+
+    .mobile-toggle {
+        width: 44px;
+        height: 44px;
+        padding: 10px;
+    }
+
+        .mobile-toggle span {
+            width: 22px;
+            height: 2.5px;
+        }
 
     .footer-container {
         padding: 0 1.25rem;
-        text-align: center;
     }
 
     .main-footer {
-        padding: 3rem 0 1.5rem;
+        padding: 2.5rem 0 1.5rem;
+    }
+
+    .footer-grid {
+        gap: 2rem;
+    }
+
+    .footer-logo {
+        height: 28px;
+    }
+
+    .brand-description {
+        font-size: 12px;
+    }
+
+    .footer-title {
+        font-size: 14px;
+    }
+
+    .footer-links a {
+        font-size: 12px;
+    }
+
+    .contact-link {
+        font-size: 12px;
     }
 
     .newsletter {
-        padding: 1.25rem;
-        text-align: center;
+        padding: 1rem;
+    }
+
+    .newsletter-title {
+        font-size: 13px;
+    }
+
+    .newsletter-description {
+        font-size: 11px;
+    }
+
+    /* Keep newsletter form horizontal even on small screens */
+    .newsletter-form {
+        flex-direction: row;
+        gap: 0.4rem;
+    }
+
+    .email-input {
+        font-size: 11px;
+        padding: 0.65rem 0.8rem;
+    }
+
+    .subscribe-btn {
+        padding: 0.65rem 1rem;
+        font-size: 12px;
+    }
+
+    /* Legal links stay horizontal */
+    .legal-links {
+        flex-direction: row;
+        gap: 1rem;
+        flex-wrap: wrap;
     }
 
     .nav-item {
         font-size: 15px;
         padding: 1rem 0;
-    }
-
-    .footer-brand,
-    .footer-column {
-        text-align: center;
-    }
-
-    .contact-info {
-        align-items: center;
     }
 
     .mobile-menu-actions {
@@ -765,23 +1046,70 @@ a:visited {
     }
 
     .brand-logo {
-        height: 28px;
+        height: 32px;
     }
 
-    .footer-grid {
-        gap: 2rem;
+    .header-right-group {
+        gap: 8px;
     }
 
-    .footer-container {
-        text-align: center;
+    .user-profile {
+        padding: 6px 10px;
+        gap: 8px;
+    }
+
+    .user-avatar {
+        width: 32px;
+        height: 32px;
+    }
+
+        .user-avatar svg {
+            width: 18px;
+            height: 18px;
+        }
+
+    .user-welcome {
+        font-size: 12px;
+    }
+
+    .user-name {
+        font-size: 14px;
+        max-width: 100px;
     }
 
     .mobile-toggle {
-        padding: 0.25rem;
+        width: 40px;
+        height: 40px;
+        padding: 8px;
+        gap: 4px;
     }
 
         .mobile-toggle span {
-            width: 24px;
+            width: 20px;
             height: 2px;
         }
+
+    .footer-container {
+        padding: 0 1rem;
+    }
+
+    .footer-grid {
+        gap: 1.8rem;
+    }
+
+    /* Keep horizontal layout even on very small screens */
+    .newsletter-form {
+        flex-direction: row;
+    }
+
+    .email-input {
+        min-width: 0;
+        font-size: 10px;
+        padding: 0.6rem 0.7rem;
+    }
+
+    .subscribe-btn {
+        padding: 0.6rem 0.9rem;
+        font-size: 11px;
+    }
 }
