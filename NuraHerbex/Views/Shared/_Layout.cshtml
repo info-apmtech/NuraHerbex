@@ -43,10 +43,10 @@
 
             <!-- Desktop Action Buttons -->
             <div class="header-actions">
-                <button class="btn-secondary">Take Quiz</button>
+                <a asp-controller="Home" asp-action="Quiz" class="btn-secondary">Take Quiz</a>
                 <button class="btn-secondary">Book Consultation</button>
                 <button class="btn-primary">Subscription</button>
-                <a asp-controller="authentication" asp-action="signin" class="btn-login">Login</a>
+                <a asp-controller="authentication" asp-action="signin" class="btn-secondary">Login</a>
             </div>
 
             <!-- Mobile: User Profile + Hamburger on RIGHT -->

@@ -104,7 +104,7 @@
                                 <input type="checkbox" class="custom-checkbox">
                                 <span>Remember me</span>
                             </label>
-                            <a href="#" class="forgot-link">Forgot password?</a>
+                            <a asp-action="forgetpassword" asp-controller="Authentication" class="forgot-link">Forgot password?</a>
                         </div>
 
                         <button type="submit" class="signin-button">
@@ -186,11 +186,11 @@
                     <!-- Social Buttons -->
                     <div class="social-buttons">
                         <button class="social-button" onclick="socialLogin('google')">
-                            <img src="../image/signin/logos_facebook.png" alt="Google" class="social-icon">
+                            <img src="../image/signin/devicon_google.png" alt="Google" class="social-icon">
                             <span>Google</span>
                         </button>
                         <button class="social-button" onclick="socialLogin('facebook')">
-                            <img src="../image/signin/devicon_google.png" alt="Facebook" class="social-icon">
+                            <img src="../image/signin/logos_facebook.png" alt="Facebook" class="social-icon">
                             <span>FaceBook</span>
                         </button>
                     </div>
