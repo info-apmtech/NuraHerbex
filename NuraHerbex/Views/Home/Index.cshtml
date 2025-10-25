@@ -20,9 +20,16 @@
                     <button class="hero-btn hero-btn-secondary">Shop Now</button>
                 </div>
             </div>
+
+            <!-- Single Product Image for Mobile View ONLY -->
+            <div class="hero-products">
+                <div class="product-container">
+                    <img src="~/image/HomePage/mobilehomebanner.png" alt="STAMIX Products" class="product-image" />
+                </div>
+            </div>
         </div>
 
-        <!-- Floating Action Buttons - Vertical Stack at Bottom Right -->
+        <!-- Floating Action Buttons - Desktop Only -->
         <div class="floating-actions">
             <button class="floating-btn" aria-label="Wishlist">
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -384,25 +391,31 @@
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                             <polyline points="20 6 9 17 4 12"></polyline>
                         </svg>
-                        Basic supplement stack
+                        Premium supplement stack
                     </li>
                     <li>
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                             <polyline points="20 6 9 17 4 12"></polyline>
                         </svg>
-                        Monthly delivery
+                        Weekly delivery
                     </li>
                     <li>
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                             <polyline points="20 6 9 17 4 12"></polyline>
                         </svg>
-                        Email support
+                        24/7 Priority support
                     </li>
                     <li>
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                             <polyline points="20 6 9 17 4 12"></polyline>
                         </svg>
-                        Progress tracking app
+                        1-on-1 Coaching sessions
+                    </li>
+                    <li>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                        Custom nutrition & workout plans
                     </li>
                 </ul>
                 <button class="btn-plan">Get Started</button>
@@ -414,6 +427,43 @@
         </div>
     </div>
 </section>
+
+<!-- JavaScript to auto-scroll to Performance Plan on mobile -->
+<script>
+    // Auto-scroll to Performance Plan (2nd card) on mobile
+    document.addEventListener('DOMContentLoaded', function() {
+        function scrollToPerformancePlan() {
+            // Check if we're on mobile (768px or less)
+            if (window.innerWidth <= 768) {
+                const pricingGrid = document.querySelector('.pricing-grid');
+                const cards = document.querySelectorAll('.pricing-card');
+
+                if (pricingGrid && cards.length >= 2) {
+                    // Scroll to the 2nd card (Performance Plan - index 1)
+                    setTimeout(function() {
+                        const secondCard = cards[1];
+                        const scrollPosition = secondCard.offsetLeft - pricingGrid.offsetLeft;
+                        pricingGrid.scrollTo({
+                            left: scrollPosition,
+                            behavior: 'smooth'
+                        });
+                    }, 100); // Small delay to ensure layout is ready
+                }
+            }
+        }
+
+        // Initial scroll on page load
+        scrollToPerformancePlan();
+
+        // Re-scroll on window resize if still mobile
+        let resizeTimer;
+        window.addEventListener('resize', function() {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(scrollToPerformancePlan, 250);
+        });
+    });
+</script>
+
 
 
 <!-- Real Men, Real Results Section -->

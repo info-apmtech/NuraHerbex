@@ -16,17 +16,13 @@
 <body>
     <header class="main-header">
         <div class="header-container">
+            <!-- Logo on LEFT -->
             <div class="logo-wrapper" style="display: flex; align-items: center;">
                 <img src="~/image/logo.png" alt="NURA HERBEX Logo" class="brand-logo" />
                 <img src="~/image/logotext.png" alt="NURA HERBEX Text Logo" class="brand-text-logo" style="margin-left: 10px;" />
             </div>
 
-            <button class="mobile-toggle" id="mobileMenuToggle">
-                <span></span>
-                <span></span>
-                <span></span>
-            </button>
-
+            <!-- Desktop Navigation -->
             <nav class="main-nav" id="mainNav">
                 <ul class="nav-links">
                     <li><a asp-controller="Home" asp-action="Index" class="nav-item active">Home</a></li>
@@ -36,18 +32,48 @@
                     <li><a asp-controller="Home" asp-action="Blog" class="nav-item">Blog</a></li>
                 </ul>
 
-                <!-- Mobile Menu Buttons (Hidden on Desktop) -->
+                <!-- Mobile Menu Buttons -->
                 <div class="mobile-menu-actions">
                     <button class="btn-primary btn-mobile">Subscription</button>
                     <button class="btn-login btn-mobile">Login</button>
                 </div>
             </nav>
 
+            <!-- Desktop Action Buttons -->
             <div class="header-actions">
                 <button class="btn-secondary">Take Quiz</button>
                 <button class="btn-secondary">Book Consultation</button>
                 <button class="btn-primary">Subscription</button>
                 <button class="btn-login">Login</button>
+            </div>
+
+            <!-- Mobile: User Profile + Hamburger on RIGHT -->
+            <div class="header-right-group">
+                <!-- User Profile Section (Visible on Mobile) -->
+                <div class="user-profile">
+                    <div class="user-avatar">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                    </div>
+                    <div class="user-info">
+                        <span class="user-welcome">
+                            Welcome,
+                            <svg class="dropdown-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                        <span class="user-name">Merin!...</span>
+                    </div>
+                </div>
+
+                <!-- Hamburger Menu Button -->
+                <button class="mobile-toggle" id="mobileMenuToggle">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
             </div>
         </div>
     </header>
