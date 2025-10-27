@@ -1,0 +1,272 @@
+﻿<style>
+    .track-order {
+        font-family: "Poppins", sans-serif;
+        padding: 40px;
+        color: #222;
+    }
+
+    .highlight {
+        color: #ff6600;
+        font-weight: 600;
+    }
+
+    .tracking-container {
+        display: flex;
+        gap: 30px;
+        margin-top: 30px;
+        flex-wrap: wrap;
+    }
+
+    .tracking-left {
+        flex: 2;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .tracking-right {
+        flex: 1;
+        background: #fff;
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        padding: 30px;
+    }
+
+    /* ---- DELIVERY STATUS CARD ---- */
+    .delivery-card {
+        background: #fff6f2;
+        border-radius: 10px;
+        padding: 30px;
+    }
+
+        .delivery-card h3 {
+            margin-bottom: 25px;
+        }
+
+    /* Progress Steps */
+    .progress-track {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+    }
+
+    .track-step {
+        text-align: center;
+        position: relative;
+        flex: 1;
+    }
+
+    .icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background: #ccc;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        margin: 0 auto 10px;
+        font-size: 20px;
+    }
+
+    .track-step.completed .icon,
+    .track-step.active .icon {
+        background: #ff6600;
+    }
+
+    .track-step p {
+        margin: 0;
+        font-size: 0.9rem;
+        color: #333;
+    }
+
+    .track-step span {
+        font-size: 0.8rem;
+        color: #777;
+    }
+
+    .track-line {
+        height: 4px;
+        width: 50px;
+        background: #ccc;
+    }
+
+        .track-line.completed {
+            background: #ff6600;
+        }
+
+    /* ---- DELIVERY PARTNER CARD ---- */
+    .partner-card {
+        background: #fffaf7;
+        border: 1px solid #f5e0d7;
+        border-radius: 10px;
+        padding: 30px;
+    }
+
+        .partner-card h3 {
+            margin-bottom: 15px;
+        }
+
+    .partner-info p {
+        margin: 8px 0;
+        font-size: 0.95rem;
+    }
+
+    /* ---- ORDER DETAILS CARD ---- */
+    .order-item {
+        display: flex;
+        gap: 15px;
+        align-items: center;
+    }
+
+        .order-item img {
+            width: 80px;
+            height: 80px;
+            border-radius: 8px;
+        }
+
+    .price {
+        color: #ff6600;
+        font-weight: 600;
+    }
+
+    .order-details p {
+        display: flex;
+        justify-content: space-between;
+        margin: 10px 0;
+        color: #555;
+    }
+
+    .total {
+        font-weight: 600;
+        color: #ff6600;
+    }
+
+    /* ---- BUTTONS ---- */
+    .buttons {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-top: 20px;
+    }
+
+        .buttons button {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 12px;
+            background: white;
+            cursor: pointer;
+            font-weight: 500;
+            transition: 0.3s;
+        }
+
+        .buttons .reorder {
+            background: #ff6600;
+            color: white;
+            border: none;
+        }
+
+        .buttons .return:hover,
+        .buttons .download:hover {
+            border-color: #ff6600;
+            color: #ff6600;
+        }
+
+    /* ---- RESPONSIVE ---- */
+    @@media (max-width: 768px) {
+        .tracking-container {
+            flex-direction: column;
+        }
+
+        .progress-track {
+            flex-direction: column;
+        }
+
+        .track-line {
+            display: none;
+        }
+    }
+</style>
+<section class="track-order">
+    <h1>Track Your Order</h1>
+    <p>Order ID: <span class="highlight">ORD34YUON311</span></p>
+
+    <div class="tracking-container">
+        <!-- LEFT SIDE -->
+        <div class="tracking-left">
+            <!-- Delivery Status Card -->
+            <div class="delivery-card">
+                <h3>Delivery Status</h3>
+                <div class="progress-track">
+                    <div class="track-step completed">
+                        <div class="icon">🛍️</div>
+                        <p>Order Placed</p>
+                        <span>08 Oct, 2025 - 10:30 AM</span>
+                    </div>
+                    <div class="track-line completed"></div>
+                    <div class="track-step completed">
+                        <div class="icon">📦</div>
+                        <p>Packed</p>
+                        <span>08 Oct, 2025 - 02:15 PM</span>
+                    </div>
+                    <div class="track-line completed"></div>
+                    <div class="track-step active">
+                        <div class="icon">🚚</div>
+                        <p>Shipped</p>
+                        <span>09 Oct, 2025 - 09:00 AM</span>
+                    </div>
+                    <div class="track-line"></div>
+                    <div class="track-step">
+                        <div class="icon">📍</div>
+                        <p>Out for Delivery</p>
+                        <span>Expected: 10 Oct, 2025</span>
+                    </div>
+                    <div class="track-line"></div>
+                    <div class="track-step">
+                        <div class="icon">✅</div>
+                        <p>Delivered</p>
+                        <span>Expected: 10 Oct, 2025</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Delivery Partner Card -->
+            <div class="partner-card">
+                <h3>Delivery Partner Details</h3>
+                <div class="partner-info">
+                    <p><strong>Courier Partner:</strong> FedEx Express</p>
+                    <p><strong>Tracking ID:</strong> <span class="highlight">TRK3ZSIPW00D</span></p>
+                    <p><strong>Delivery Time:</strong> 9:00 AM - 6:00 PM</p>
+                    <p><strong>Expected Delivery:</strong> <b>10 Oct, 2025</b></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT SIDE -->
+        <div class="tracking-right">
+            <div class="order-details">
+                <h3>Order Details</h3>
+                <div class="order-item">
+                    <img src="~/image/consultation/stamix activate.png" alt="Product">
+                    <div>
+                        <p><b>Level 1 Activate</b></p>
+                        <p>Quantity: 1</p>
+                        <p class="price">$49</p>
+                    </div>
+                </div>
+                <hr>
+                <p><span>SubTotal</span><span>$54.00</span></p>
+                <p><span>Delivery</span><span>$5.00</span></p>
+                <hr>
+                <p class="total"><span>Total</span><span>$59.00</span></p>
+            </div>
+
+            <div class="buttons">
+                <button class="download"><i>⬇️</i> Download Invoice</button>
+                <button class="return"><i>↩️</i> Return Order</button>
+                <button class="reorder"><i>🛒</i> Reorder</button>
+            </div>
+        </div>
+    </div>
+</section>
