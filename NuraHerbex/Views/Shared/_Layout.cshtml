@@ -13,8 +13,11 @@
     <link rel="stylesheet" href="~/css/blog.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/quiz.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/plan.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/shop.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/Consultation.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/NuraHerbex.styles.css" asp-append-version="true" />
+    @* <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" /> *@
+
 </head>
 <body>
     <header class="main-header">
@@ -29,7 +32,7 @@
             <nav class="main-nav" id="mainNav">
                 <ul class="nav-links">
                     <li><a asp-controller="Home" asp-action="Index" class="nav-item active">Home</a></li>
-                    <li><a href="#" class="nav-item">Shop</a></li>
+                    <li><a asp-controller="Home" asp-action="Shop" class="nav-item">Shop</a></li>
                     <li><a href="#" class="nav-item">Ingredients</a></li>
                     <li><a asp-controller="Home" asp-action="About" class="nav-item">About</a></li>
                     <li><a asp-controller="Home" asp-action="Blog" class="nav-item">Blog</a></li>

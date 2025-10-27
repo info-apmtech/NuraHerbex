@@ -29,6 +29,10 @@ namespace NuraHerbex.Controllers
         {
             return View();
         }
+        public IActionResult Shop()
+        {
+            return View();
+        }
         public IActionResult Quiz()
         {
             return View();
