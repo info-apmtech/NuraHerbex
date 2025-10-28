@@ -1,0 +1,578 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<div class="orders-layout">
+    @Html.Partial("_UserSidebar")
+    <div class="orders-main">
+        <h2 class="orders-headline">My Orders</h2>
+        <p class="orders-subhead">Track and Manage your orders</p>
+        <div class="orders-tabs">
+            <button class="orders-tab active">All</button>
+            <button class="orders-tab">In Progress</button>
+            <button class="orders-tab">Delivered</button>
+            <button class="orders-tab">Cancelled</button>
+        </div>
+        <div class="orders-list">
+            <!-- Delivered Order -->
+            <div class="orders-card">
+                <div class="orders-card-header">
+                    <span class="orders-card-id">Order ORD-2025-001</span>
+                    <span class="orders-card-status delivered">Delivered</span>
+                    <div class="orders-card-total">
+                        <span class="orders-card-label">Total Amount</span>
+                        <span class="orders-card-amount">$149.99</span>
+                    </div>
+                </div>
+                <div class="orders-card-date">Placed on March 15, 2025</div>
+                <div class="orders-mobile-info">
+                    <div class="mobile-row">
+                        <span class="orders-card-id">Order ORD-2025-001</span>
+                    </div>
+                    <div class="mobile-row">
+                        <span class="orders-card-date">Placed on March 15, 2025</span>
+                        <span class="orders-card-status delivered">Delivered</span>
+                    </div>
+                    <div class="mobile-row">
+                        <span class="orders-card-label">Total Amount</span>
+                        <span class="orders-card-amount">$149.99</span>
+                    </div>
+                </div>
+                <div class="orders-card-bodyrow">
+                    <img class="orders-card-img" src="~/image/userSidebar/Stamixproduct.png" alt="Product" />
+                    <div class="orders-card-desc">
+                        <div class="orders-card-title">STAMIX Performance Plus</div>
+                        <div class="orders-card-qty">Quantity: 2</div>
+                    </div>
+                    <div class="orders-card-single">$74.99</div>
+                </div>
+                <div class="orders-card-actions">
+                    <button class="orders-ghost-btn">
+                        <img class="orders-btn-icon" src="~/image/userSidebar/receipt.png" alt="Invoice" />View Invoice
+                    </button>
+                    <button class="orders-ghost-btn">
+                        <img class="orders-btn-icon" src="~/image/userSidebar/Group.png" alt="Track" />Track Order
+                    </button>
+                    <button class="orders-ghost-btn">
+                        <img class="orders-btn-icon" src="~/image/userSidebar/Vector.png" alt="Return" />Return Item
+                    </button>
+                    <button class="orders-buyagain">Buy Again</button>
+                </div>
+            </div>
+            <!-- In Progress Order -->
+            <div class="orders-card">
+                <div class="orders-card-header">
+                    <span class="orders-card-id">Order ORD-2025-002</span>
+                    <span class="orders-card-status in-progress">In Progress</span>
+                    <div class="orders-card-total">
+                        <span class="orders-card-label">Total Amount</span>
+                        <span class="orders-card-amount">$103.99</span>
+                    </div>
+                </div>
+                <div class="orders-card-date">Placed on March 18, 2025</div>
+                <div class="orders-mobile-info">
+                    <div class="mobile-row">
+                        <span class="orders-card-id">Order ORD-2025-002</span>
+                    </div>
+                    <div class="mobile-row">
+                        <span class="orders-card-date">Placed on March 18, 2025</span>
+                        <span class="orders-card-status in-progress">In Progress</span>
+                    </div>
+                    <div class="mobile-row">
+                        <span class="orders-card-label">Total Amount</span>
+                        <span class="orders-card-amount">$103.99</span>
+                    </div>
+                </div>
+                <div class="orders-card-bodyrow">
+                    <img class="orders-card-img" src="~/image/userSidebar/Stamixproduct.png" alt="Product" />
+                    <div class="orders-card-desc">
+                        <div class="orders-card-title">STAMIX Performance Plus</div>
+                        <div class="orders-card-qty">Quantity: 1</div>
+                    </div>
+                    <div class="orders-card-single">$103.99</div>
+                </div>
+                <div class="orders-card-actions">
+                    <button class="orders-ghost-btn">
+                        <img class="orders-btn-icon" src="~/image/userSidebar/receipt.png" alt="Invoice" />View Invoice
+                    </button>
+                    <button class="orders-ghost-btn">
+                        <img class="orders-btn-icon" src="~/image/userSidebar/Group.png" alt="Track" />Track Order
+                    </button>
+                    <button class="orders-buyagain single-action">Buy Again</button>
+                </div>
+            </div>
+            <!-- Cancelled Order -->
+            <div class="orders-card">
+                <div class="orders-card-header">
+                    <span class="orders-card-id">Order ORD-2025-003</span>
+                    <span class="orders-card-status cancelled">Cancelled</span>
+                    <div class="orders-card-total">
+                        <span class="orders-card-label">Total Amount</span>
+                        <span class="orders-card-amount">$89.49</span>
+                    </div>
+                </div>
+                <div class="orders-card-date">Placed on March 22, 2025</div>
+                <div class="orders-mobile-info">
+                    <div class="mobile-row">
+                        <span class="orders-card-id">Order ORD-2025-003</span>
+                    </div>
+                    <div class="mobile-row">
+                        <span class="orders-card-date">Placed on March 22, 2025</span>
+                        <span class="orders-card-status cancelled">Cancelled</span>
+                    </div>
+                    <div class="mobile-row">
+                        <span class="orders-card-label">Total Amount</span>
+                        <span class="orders-card-amount">$89.49</span>
+                    </div>
+                </div>
+                <div class="orders-card-bodyrow">
+                    <img class="orders-card-img" src="~/image/userSidebar/Stamixproduct.png" alt="Product" />
+                    <div class="orders-card-desc">
+                        <div class="orders-card-title">STAMIX Performance Plus</div>
+                        <div class="orders-card-qty">Quantity: 1</div>
+                    </div>
+                    <div class="orders-card-single">$89.49</div>
+                </div>
+                <div class="orders-card-actions">
+                    <button class="orders-ghost-btn">
+                        <img class="orders-btn-icon" src="~/image/userSidebar/receipt.png" alt="Invoice" />View Invoice
+                    </button>
+                    <button class="orders-ghost-btn">
+                        <img class="orders-btn-icon" src="~/image/userSidebar/Group.png" alt="Track" />Track Order
+                    </button>
+                    <button class="orders-buyagain single-action">Buy Again</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .orders-layout {
+        display: flex;
+        gap: 2.5rem;
+        align-items: flex-start;
+        background: #fff;
+        min-height: 100vh;
+    }
+
+    .orders-main {
+        flex: 1;
+        padding: 32px 0 24px 0;
+    }
+
+    .orders-headline {
+        font-size: 1.17rem;
+        font-weight: 600;
+        margin-bottom: 2px;
+        color: #222;
+    }
+
+    .orders-subhead {
+        font-size: 0.98rem;
+        color: #b2b2b2;
+        margin-bottom: 19px;
+    }
+
+    .orders-tabs {
+        display: flex;
+        gap: 11px;
+        margin: 7px 0 24px 0;
+    }
+
+    .orders-tab {
+        background: #f4f3f2;
+        color: #b89b71;
+        border: none;
+        border-radius: 7px;
+        font-size: 1.01rem;
+        font-weight: 600;
+        padding: 8px 15px;
+        cursor: pointer;
+        transition: background 0.17s;
+    }
+
+        .orders-tab.active {
+            background: #fb6608;
+            color: #fff;
+        }
+    /* Card Structure Desktop & Tablet */
+    .orders-list {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 22px;
+    }
+
+    .orders-card {
+        background: #fff8ef;
+        border-radius: 14px;
+        border: 3px solid #ffedde;
+        margin-bottom: 0;
+        padding: 22px 18px 22px 18px;
+        box-shadow: none;
+        margin-right: 28px;
+    }
+
+    .orders-card-header {
+        display: flex;
+        align-items: flex-start;
+        gap: 14px;
+        margin-bottom: 7px;
+        font-size: 1rem;
+        font-weight: 500;
+    }
+
+    .orders-card-id {
+        color: #232323;
+        font-weight: 600;
+        margin-top: 2px;
+    }
+
+    .orders-card-status {
+        padding: 2px 12px 1px 12px;
+        border-radius: 9px;
+        font-size: 0.83rem;
+        font-weight: 580;
+        margin-left: 9px;
+        margin-top: 2px;
+    }
+
+        .orders-card-status.delivered {
+            background: #e3f8e7;
+            color: #28843b;
+        }
+
+        .orders-card-status.in-progress {
+            background: #e8effd;
+            color: #077ad2;
+        }
+
+        .orders-card-status.cancelled {
+            background: #fdeded;
+            color: #f75047;
+        }
+
+    .orders-card-total {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        margin-left: auto;
+        min-width: 80px;
+    }
+
+    .orders-card-label {
+        color: #bbb;
+        font-size: 0.98rem;
+        margin-right: 0;
+        font-weight: 500;
+        line-height: 1.18;
+    }
+
+    .orders-card-amount {
+        color: #232323;
+        font-weight: 700;
+        font-size: 1.05rem;
+        margin-top: 2px;
+        margin-left: 0;
+    }
+
+    .orders-card-date {
+        color: #bbb;
+        margin-bottom: 11px;
+        font-size: 0.99rem;
+    }
+
+    .orders-card-bodyrow {
+        display: flex;
+        align-items: center;
+        background: #fff;
+        border-radius: 12px;
+        padding: 15px;
+        gap: 17px;
+        margin-bottom: 15px;
+    }
+
+    .orders-card-img {
+        width: 56px;
+        height: 56px;
+        border-radius: 7px;
+        object-fit: cover;
+        border: 1px solid #e3dbcb;
+    }
+
+    .orders-card-desc {
+        flex: 1;
+    }
+
+    .orders-card-title {
+        font-size: 1.05rem;
+        font-weight: 600;
+        color: #202029;
+        margin-bottom: 2px;
+    }
+
+    .orders-card-qty {
+        font-size: 0.95rem;
+        color: #b7b7b7;
+    }
+
+    .orders-card-single {
+        color: #232323;
+        font-weight: 600;
+        font-size: 1.03rem;
+        margin-left: 10px;
+        white-space: nowrap;
+    }
+
+    .orders-card-actions {
+        display: flex;
+        gap: 12px;
+        margin-top: 7px;
+        flex-wrap: nowrap;
+    }
+
+    .orders-ghost-btn {
+        border: 1.2px solid #fb6608;
+        background: #fff;
+        color: #fb6608;
+        border-radius: 7px;
+        padding: 8px 14px 8px 11px;
+        font-size: 0.97rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.16s, color 0.16s;
+        display: flex;
+        align-items: center;
+        gap: 7px;
+    }
+
+    .orders-btn-icon {
+        width: 18px;
+        height: 18px;
+        margin-right: 6px;
+        display: inline-block;
+        vertical-align: middle;
+    }
+
+    .orders-ghost-btn:hover {
+        background: #fff3e9;
+    }
+
+    .orders-buyagain {
+        background: #fb6608;
+        color: #fff;
+        border-radius: 7px;
+        border: none;
+        padding: 8px 16px;
+        font-size: 0.97rem;
+        font-weight: 600;
+        cursor: pointer;
+        margin-left: 7px;
+        transition: background 0.15s;
+    }
+
+        .orders-buyagain:hover {
+            background: #e25400;
+        }
+    @@media (min-width: 541px) {
+        .orders-mobile-info
+
+    {
+        display: none !important;
+    }
+
+    }
+    /* ---- MOBILE STYLE ONLY BELOW ---- */
+    @@media (max-width: 540px) {
+        .orders-main
+
+    {
+        padding: 0;
+        width: 100vw;
+        min-width: 0;
+    }
+
+    .orders-headline {
+        padding-top: 20px;
+        padding-left: 16px;
+        padding-right: 6px;
+        font-size: 1.23rem;
+    }
+
+    .orders-subhead {
+        padding-left: 16px;
+        padding-right: 6px;
+        font-size: 0.97rem;
+        margin-top: 4px;
+    }
+
+    .orders-tabs {
+        overflow-x: auto;
+        flex-wrap: nowrap;
+        gap: 11px;
+        margin: 8px 0 21px 0;
+        padding-left: 12px;
+        padding-right: 8px;
+        scrollbar-width: thin;
+        scrollbar-color: #faf2ed #fff;
+    }
+
+        .orders-tabs::-webkit-scrollbar {
+            height: 5px;
+            background: #fff;
+        }
+
+        .orders-tabs::-webkit-scrollbar-thumb {
+            background: #faf2ed;
+            border-radius: 7px;
+        }
+
+    .orders-tab {
+        min-width: 113px;
+        padding: 10px 9px;
+        font-size: 1.08rem;
+        font-weight: 600;
+    }
+
+    .orders-card {
+        margin: 0 10px 20px 10px;
+        border-radius: 18px;
+        border: 2px solid #ffcfa8;
+        background: #fff8ef;
+        box-shadow: none;
+        padding: 14px 8px 14px 8px;
+    }
+
+    .orders-card-header, .orders-card-total,
+    .orders-list > .orders-card > .orders-card-date {
+        display: none !important;
+    }
+
+    .orders-mobile-info {
+        display: block;
+        margin-bottom: 8px;
+    }
+
+    .mobile-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 4px;
+        font-size: 1rem;
+    }
+
+        .mobile-row .orders-card-id {
+            font-size: 1.07rem;
+            font-weight: 600;
+            color: #1a1a1a;
+        }
+
+        .mobile-row .orders-card-date {
+            color: #aaa;
+            font-size: 0.99rem;
+            font-weight: 400;
+        }
+
+        .mobile-row .orders-card-status {
+            margin-left: 9px;
+            font-size: 0.95rem;
+            padding: 3px 16px;
+            border-radius: 8px;
+            font-weight: 700;
+            background: #e3f8e7;
+            color: #28843b;
+            white-space: nowrap;
+        }
+
+        .mobile-row .orders-card-label {
+            font-size: 1.02rem;
+            font-weight: 600;
+            color: #ea963a;
+        }
+
+        .mobile-row .orders-card-amount {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #222;
+        }
+
+    .orders-card-bodyrow {
+        flex-direction: row;
+        align-items: center;
+        background:white;
+        border-radius: 14px;
+        padding: 11px 9px;
+        min-height: 64px;
+        margin-bottom: 13px;
+    }
+
+    .orders-card-img {
+        width: 48px;
+        height: 48px;
+        border-radius: 9px;
+        object-fit: cover;
+        border: 1.2px solid #ffe4c6;
+        margin-right: 7px;
+    }
+
+    .orders-card-desc {
+        flex: 1;
+    }
+
+    .orders-card-title {
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: #2d2c31;
+        margin-bottom: 2px;
+    }
+
+    .orders-card-qty {
+        font-size: 0.98rem;
+        color: #bebebe;
+        font-weight: 500;
+    }
+
+    .orders-card-single {
+        color: #232323;
+        font-weight: 700;
+        font-size: 1.11rem;
+        margin-left: 2px;
+    }
+
+    .orders-card-actions {
+        gap: 9px;
+        flex-wrap: wrap;
+    }
+
+    .orders-ghost-btn, .orders-buyagain {
+        width: 48%;
+        border-radius: 11px;
+        padding: 12px 0;
+        font-size: 1.01rem;
+        margin: 0 !important;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        border: 1.5px solid #ffa14b;
+        background: #fff;
+        color: #fb6608;
+        font-weight: 700;
+    }
+
+    .orders-buyagain {
+        background: #fb6608;
+        color: #fff;
+        border: none;
+    }
+        /* If only button in row (.single-action), fill width */
+        .orders-buyagain.single-action {
+            width: 100% !important;
+        }
+
+    .user-sidebar {
+        display: none !important;
+    }
+
+    }
+</style>

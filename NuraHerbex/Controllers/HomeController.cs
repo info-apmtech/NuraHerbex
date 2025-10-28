@@ -53,7 +53,14 @@ namespace NuraHerbex.Controllers
         {
                        return View();
         }
-        
+        public IActionResult MyProfile()
+        {
+            return View();
+        }
+        public IActionResult MyOrders()
+        {
+            return View();
+        }
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
