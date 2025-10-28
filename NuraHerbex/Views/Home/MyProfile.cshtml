@@ -2,7 +2,7 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 <div class="profile-layout">
-    @Html.Partial("_AdminSidebar")
+    @Html.Partial("_UserSidebar")
     <div class="profile-main-content">
         <h2 class="profile-title">My Profile</h2>
         <p class="profile-subtitle">Manage your personal information and addresses</p>
@@ -51,7 +51,7 @@
                         Phone: +1 (555) 123-4567
                     </div>
                     <div class="address-actions">
-                        <button class="icon-btn"><img src="~/image/adminSidebar/EditIcon.png" alt="Edit"></button>
+                        <button class="icon-btn"><img src="~/image/userSidebar/EditIcon.png" alt="Edit"></button>
                     </div>
                 </div>
                 <!-- Address 2 -->
@@ -64,8 +64,8 @@
                         Phone: +1 (555) 123-4567
                     </div>
                     <div class="address-actions">
-                        <button class="icon-btn"><img src="~/image/adminSidebar/EditIcon.png" alt="Edit"></button>
-                        <button class="icon-btn"><img src="~/image/adminSidebar/Deleteicon.png" alt="Delete"></button>
+                        <button class="icon-btn"><img src="~/image/userSidebar/EditIcon.png" alt="Edit"></button>
+                        <button class="icon-btn"><img src="~/image/userSidebar/Deleteicon.png" alt="Delete"></button>
                     </div>
                 </div>
             </div>
@@ -491,7 +491,7 @@
         gap: 1px;
     }
 
-        .admin-sidebar {
+        .user-sidebar {
             display: none !important;
         }
  }
