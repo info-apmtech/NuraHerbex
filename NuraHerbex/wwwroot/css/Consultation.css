@@ -29,7 +29,7 @@
     margin-bottom: 2rem;
 }
 
-.hero-btn {
+.blog-hero-btn {
     background-color: #f44900;
     color: #fff;
     padding: 12px 28px;
@@ -41,7 +41,7 @@
     font-size: 0.95rem;
 }
 
-    .hero-btn:hover {
+    .blog-hero-btn:hover {
         background-color: #ff7f26;
     }
 
@@ -67,7 +67,6 @@
         font-size: 0.85rem;
         color: #d1d5db;
     }
-
 /* Why Choose Section */
 .container {
     padding: 40px 16px;
@@ -115,7 +114,8 @@
     gap: 16px;
 }
 
-.feature-icon {
+/* Use this unique class for icons: */
+.consult-feature-icon {
     width: 60px;
     height: 60px;
     min-width: 60px;
@@ -126,7 +126,7 @@
     justify-content: center;
 }
 
-    .feature-icon img {
+    .consult-feature-icon img {
         width: 30px;
         height: 30px;
     }
@@ -152,7 +152,6 @@
     text-align: center;
     line-height: 1.5;
 }
-
 /* Quality Safety Section */
 .quality-safety-section {
     padding: 40px 20px 20px;

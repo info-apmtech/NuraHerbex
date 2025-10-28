@@ -5,37 +5,37 @@
     </div>
     <nav class="user-sidebar-menu">
         <ul>
-            <li class="active">
-                <img src="~/image/userSidebar/user.png" alt="Level 3: Unleash" />
+            <li class="@(ViewContext.RouteData.Values["action"]?.ToString() == "MyProfile" ? "active" : "") sidebar-link" onclick="location.href='@Url.Action("MyProfile", "Home")'">
+                <img src="~/image/userSidebar/user.png" alt="profile" />
                 <span>My Profile</span>
             </li>
-            <li>
-                <img src="~/image/userSidebar/mdi_shopping-outline.png" alt="Level 3: Unleash" />
+            <li class="@(ViewContext.RouteData.Values["action"]?.ToString() == "MyOrders" ? "active" : "") sidebar-link" onclick="location.href='@Url.Action("MyOrders", "Home")'">
+                <img src="~/image/userSidebar/mdi_shopping-outline.png" alt="orders" />
                 <span>My Orders</span>
             </li>
-            <li>
-                <img src="~/image/userSidebar/majesticons_box-line.png" alt="Level 3: Unleash" />
+            <li class="@(ViewContext.RouteData.Values["action"]?.ToString() == "MyReturns" ? "active" : "") sidebar-link" onclick="location.href='@Url.Action("MyReturns", "Home")'">
+                <img src="~/image/userSidebar/majesticons_box-line.png" alt="returns" />
                 <span>My Returns</span>
             </li>
-            <li>
-                <img src="~/image/userSidebar/card.png" alt="Level 3: Unleash" />
+            <li class="@(ViewContext.RouteData.Values["action"]?.ToString() == "Wishlist" ? "active" : "") sidebar-link" onclick="location.href='@Url.Action("Wishlist", "Home")'">
+                <img src="~/image/userSidebar/card.png" alt="wishlist" />
                 <span>My Wishlist</span>
             </li>
-            <li>
-                <img src="~/image/userSidebar/gift.png" alt="Level 3: Unleash" />
+            <li class="@(ViewContext.RouteData.Values["action"]?.ToString() == "Consultations" ? "active" : "") sidebar-link" onclick="location.href='@Url.Action("Consultations", "Home")'">
+                <img src="~/image/userSidebar/gift.png" alt="consultations" />
                 <span>My Consultations</span>
             </li>
         </ul>
         <hr class="sidebar-separator" />
         <ul>
-            <li class="help">
-                <img src="~/image/userSidebar/info-circle.png" alt="Level 3: Unleash" />
+            <li class="sidebar-link help @(ViewContext.RouteData.Values["action"]?.ToString() == "HelpCenter" ? "active" : "")" onclick="location.href='@Url.Action("HelpCenter", "Home")'">
+                <img src="~/image/userSidebar/info-circle.png" alt="help" />
                 <span>Help Center</span>
             </li>
         </ul>
     </nav>
     <button class="logout-btn">
-        <img src="~/image/userSidebar/logout.png" alt="Level 3: Unleash" />
+        <img src="~/image/userSidebar/logout.png" alt="Logout" />
         <span>Logout</span>
     </button>
 </div>

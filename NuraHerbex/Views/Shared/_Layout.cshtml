@@ -30,12 +30,23 @@
             <!-- Desktop Navigation -->
             <nav class="main-nav" id="mainNav">
                 <ul class="nav-links">
-                    <li><a asp-controller="Home" asp-action="Index" class="nav-item active">Home</a></li>
-                    <li><a asp-controller="Home" asp-action="Shop" class="nav-item">Shop</a></li>
-                    <li><a href="#" class="nav-item">Ingredients</a></li>
-                    <li><a asp-controller="Home" asp-action="About" class="nav-item">About</a></li>
-                    <li><a asp-controller="Home" asp-action="Blog" class="nav-item">Blog</a></li>
+                    <li>
+                        <a asp-controller="Home" asp-action="Index" class="nav-item @(ViewContext.RouteData.Values["action"]?.ToString() == "Index" && ViewContext.RouteData.Values["controller"]?.ToString() == "Home" ? "active" : "")">Home</a>
+                    </li>
+                    <li>
+                        <a asp-controller="Home" asp-action="Shop" class="nav-item @(ViewContext.RouteData.Values["action"]?.ToString() == "Shop" && ViewContext.RouteData.Values["controller"]?.ToString() == "Home" ? "active" : "")">Shop</a>
+                    </li>
+                    <li>
+                        <a href="#" class="nav-item">Ingredients</a>
+                    </li>
+                    <li>
+                        <a asp-controller="Home" asp-action="About" class="nav-item @(ViewContext.RouteData.Values["action"]?.ToString() == "About" && ViewContext.RouteData.Values["controller"]?.ToString() == "Home" ? "active" : "")">About</a>
+                    </li>
+                    <li>
+                        <a asp-controller="Home" asp-action="Blog" class="nav-item @(ViewContext.RouteData.Values["action"]?.ToString() == "Blog" && ViewContext.RouteData.Values["controller"]?.ToString() == "Home" ? "active" : "")">Blog</a>
+                    </li>
                 </ul>
+
 
                 <!-- Mobile Menu Buttons -->
                 <div class="mobile-menu-actions">

@@ -61,6 +61,14 @@ namespace NuraHerbex.Controllers
         {
             return View();
         }
+        public IActionResult MyReturns()
+        {
+            return View();
+        }
+        public IActionResult Wishlist()
+        {
+            return View();
+        }
         public IActionResult Invoice()
         {
             return View();
