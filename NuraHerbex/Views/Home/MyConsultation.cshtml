@@ -1,0 +1,379 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "My Consultation";
+}
+<!-- ✅ Add Font Awesome (for icons if needed) -->
+
+<style>
+    /* Base Layout */
+    .profile-layout {
+        display: flex;
+        gap: 2.5rem;
+        align-items: flex-start;
+        background: #fff;
+        min-height: 100vh;
+    }
+
+    .profile-main-content {
+        flex: 1;
+        padding: 32px 0 24px 0;
+    }
+
+    /* Titles */
+    .profile-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        margin-bottom: 4px;
+        color: #222;
+    }
+
+    .profile-subtitle {
+        font-size: 1rem;
+        color: #888;
+        margin-bottom: 20px;
+    }
+
+    /* Header */
+    .consultation-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 15px;
+        margin-bottom: 25px;
+    }
+
+    .orange-btn {
+        background: #f44900;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        font-size: 1rem;
+        font-weight: 600;
+        padding: 10px 22px;
+        cursor: pointer;
+        transition: background 0.2s ease-in-out;
+    }
+
+        .orange-btn:hover {
+            background: #f44900;
+        }
+
+    /* Filters */
+    .consultation-filters {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 30px;
+        flex-wrap: wrap;
+    }
+
+    .filter-btn {
+        border: 1.5px solid #ffe3d2;
+        background: #fff;
+        color: #f44900;
+        border-radius: 8px;
+        padding: 7px 16px;
+        font-size: 0.95rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+        .filter-btn.active,
+        .filter-btn:hover {
+            background: #f44900;
+            color: #fff;
+        }
+
+    .session-title {
+        font-size: 1.05rem;
+        font-weight: 600;
+        color: #222;
+        margin: 15px 0 12px 0;
+    }
+
+    /* Consultation Card */
+    .consultation-cardss {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: #fffaf8;
+        border: 1.5px solid #f44900;
+        border-radius: 14px;
+        padding: 24px 28px;
+        margin-bottom: 25px;
+        gap: 20px;
+        flex-wrap: wrap;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    }
+
+    /* Doctor Info */
+    .doctor-info {
+        display: flex;
+        align-items: center;
+        flex: 1 1 280px;
+        gap: 16px;
+    }
+
+        .doctor-info img {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+    .doctor-details h4 {
+        margin: 0;
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #222;
+    }
+
+    .speciality {
+        font-size: 1rem;
+        color: #f44900;
+        font-weight: 500;
+        margin: 3px 0;
+    }
+
+    .status {
+        display: inline-block;
+        background: #e7f3ff;
+        border: 1px solid #007bff;
+        color: #007bff;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        padding: 3px 12px;
+        margin-top: 4px;
+    }
+
+    /* Consultation Details */
+    .consultation-details {
+        flex: 2 1 400px;
+        color: #666;
+        font-size: 0.95rem;
+        line-height: 1.7;
+    }
+
+        .consultation-details p {
+            margin: 6px 0;
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .consultation-details img {
+            width: 18px;
+            height: 18px;
+            margin-right: 6px;
+        }
+
+    /* Session Actions */
+    .session-actions {
+        flex: 1 1 200px;
+        text-align: right;
+    }
+
+    .session-time {
+        color: #7a7a7a;
+        font-size: 0.95rem;
+        margin-bottom: 12px;
+    }
+
+    .buttons {
+        display: flex;
+        gap: 12px;
+        justify-content: flex-start;
+        flex-wrap: wrap;
+    }
+
+    .join-btn {
+        background-color: #f44900;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        padding: 10px 20px;
+        font-size: 0.95rem;
+        cursor: pointer;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+        .join-btn:hover {
+            background-color: #f44900;
+        }
+
+    .cancel-btn {
+        background: transparent;
+        border: 1.5px solid #f44900;
+        color: #f44900;
+        border-radius: 8px;
+        padding: 10px 22px;
+        font-size: 0.95rem;
+        cursor: pointer;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+        .cancel-btn:hover {
+            background: #fff3ed;
+        }
+
+    .book-again-btn {
+        background: #ff5c00;
+        border: none;
+        color: #fff;
+        border-radius: 8px;
+        padding: 10px 22px;
+        font-size: 0.95rem;
+        cursor: pointer;
+        font-weight: 600;
+    }
+
+    /* 📱 Responsive Fixes */
+    @@media (max-width: 992px) {
+        .profile-layout
+
+    {
+        flex-direction: column;
+        padding: 0 10px;
+    }
+
+    }
+
+    @@media (max-width: 768px) {
+        .consultation-cardss
+
+    {
+        flex-direction: row;
+        align-items: flex-start;
+        padding: 18px;
+    }
+
+    .doctor-info {
+        width: 100%;
+    }
+
+        .doctor-info img {
+            width: 65px;
+            height: 65px;
+        }
+
+    .consultation-details {
+        width: 100%;
+        margin-top: 10px;
+    }
+
+    .buttons {
+        justify-content: flex-start;
+        width: 100%;
+    }
+
+    .join-btn,
+    .cancel-btn,
+    .book-again-btn {
+        width: 100%;
+        justify-content: center;
+        text-align: center;
+    }
+
+    }
+
+    @@media (max-width: 480px) {
+        .profile-title
+
+    {
+        font-size: 1.1rem;
+    }
+
+    .profile-subtitle {
+        font-size: 0.9rem;
+    }
+
+    .consultation-cardss {
+        padding: 14px;
+    }
+
+    .doctor-details h4 {
+        font-size: 1rem;
+    }
+
+    .speciality {
+        font-size: 0.9rem;
+    }
+
+    .consultation-details p {
+        font-size: 0.9rem;
+    }
+
+    }
+</style>
+
+<div class="profile-layout">
+    @Html.Partial("_UserSidebar")
+
+    <div class="profile-main-content" style="max-width: 1286px;">
+        <div class="consultation-header">
+            <div>
+                <h2 class="profile-title">My Consultations</h2>
+                <p class="profile-subtitle">Manage your doctor appointments and sessions</p>
+            </div>
+            <button class="orange-btn book-session">Book New Session</button>
+        </div>
+
+        <div class="consultation-filters">
+            <button class="filter-btn active">All</button>
+            <button class="filter-btn">Upcoming</button>
+            <button class="filter-btn">Completed</button>
+        </div>
+
+        <!-- Upcoming Session -->
+        <h3 class="session-title">Upcoming Session</h3>
+        <div class="consultation-cardss upcoming">
+            <div class="doctor-info">
+                <img src="https://cdn-icons-png.flaticon.com/512/4140/4140048.png" alt="Doctor">
+                <div class="doctor-details">
+                    <h4>Dr. Michael Chen</h4>
+                    <p class="speciality">Sports Medicine</p>
+                    <span class="status">Upcoming</span>
+                </div>
+            </div>
+
+            <div class="consultation-details">
+                <p><img src="~/image/consultation/calendar.png" /> 2025-04-15 &nbsp;&nbsp; <img src="~/image/consultation/Clock.png" /> 10:00 AM (30 mins)</p>
+                <p><img src="~/image/consultation/videocam.png" /> Video Call</p>
+                <p>Reason: Performance optimization consultation</p>
+                <div class="buttons">
+                    <button class="join-btn"><img src="~/image/consultation/videocam.png" /> Join Session</button>
+                    <button class="cancel-btn">Cancel</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Completed Sessions -->
+        <h3 class="session-title">Completed Sessions</h3>
+        <div class="consultation-cardss completed">
+            <div class="doctor-info">
+                <img src="https://cdn-icons-png.flaticon.com/512/4140/4140048.png" alt="Doctor">
+                <div class="doctor-details">
+                    <h4>Dr. Michael Chen</h4>
+                    <p class="speciality">Sports Medicine</p>
+                    <span class="status">Completed</span>
+                </div>
+            </div>
+
+            <div class="consultation-details">
+                <p><img src="~/image/consultation/calendar.png" /> 2025-04-15 &nbsp;&nbsp; <img src="~/image/consultation/Clock.png" /> 10:00 AM (30 mins)</p>
+                <p><img src="~/image/consultation/videocam.png" /> Video Call</p>
+                <p>Reason: Performance optimization consultation</p>
+                <div class="buttons">
+                    <button class="book-again-btn">Book Again</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

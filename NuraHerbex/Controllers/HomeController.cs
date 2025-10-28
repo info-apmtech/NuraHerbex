@@ -51,13 +51,21 @@ namespace NuraHerbex.Controllers
         }
         public IActionResult TrackOrder()
         {
-                       return View();
+            return View();
         }
         public IActionResult MyProfile()
         {
             return View();
         }
         public IActionResult MyOrders()
+        {
+            return View();
+        }
+        public IActionResult Invoice()
+        {
+            return View();
+        }
+        public IActionResult MyConsultation()
         {
             return View();
         }
