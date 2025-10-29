@@ -33,7 +33,11 @@ namespace NuraHerbex.Controllers
         {
             return View();
         }
-        public IActionResult Privacy()
+		public IActionResult Ingredients()
+		{
+			return View();
+		}
+		public IActionResult Privacy()
         {
             return View();
         }
