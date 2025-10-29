@@ -29,6 +29,10 @@ namespace NuraHerbex.Controllers
         {
             return View();
         }
+        public IActionResult Shop()
+        {
+            return View();
+        }
         public IActionResult Quiz()
         {
             return View();
@@ -38,10 +42,46 @@ namespace NuraHerbex.Controllers
 			return View();
 		}
 		public IActionResult Privacy()
+        public IActionResult Consultation()
         {
             return View();
         }
-
+        public IActionResult OrderSummary()
+        {
+            return View();
+        }
+        public IActionResult Privacy()
+        {
+            return View();
+        }
+        public IActionResult TrackOrder()
+        {
+            return View();
+        }
+        public IActionResult MyProfile()
+        {
+            return View();
+        }
+        public IActionResult MyOrders()
+        {
+            return View();
+        }
+        public IActionResult MyReturns()
+        {
+            return View();
+        }
+        public IActionResult Wishlist()
+        {
+            return View();
+        }
+        public IActionResult Invoice()
+        {
+            return View();
+        }
+        public IActionResult MyConsultation()
+        {
+            return View();
+        }
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {

@@ -1,0 +1,324 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<div class="wishlist-layout">
+    @Html.Partial("_UserSidebar")
+    <div class="wishlist-main">
+        <div class="wishlist-header">
+            <div class="wishlist-title">My Wishlist</div>
+            <div class="wishlist-subtitle">3 items saved</div>
+        </div>
+        <div class="wishlist-grid">
+            <!-- Example Wishlist Card -->
+            <div class="wishlist-card">
+                <span class="wishlist-heart" data-wish="false">&#9825;</span>
+                <img class="wishlist-img" src="~/image/shop/Stamix1.png" alt="STAMIX Level 1" />
+                <div class="wishlist-prod-title">STAMIX Level 1</div>
+                <div class="wishlist-prod-price">
+                    <span class="wishlist-price-main">$79</span>
+                    <span class="wishlist-price-old">$59.99</span>
+                </div>
+                <button class="wishlist-buy-btn">Buy Now</button>
+                <button class="wishlist-cart-btn">Add to cart</button>
+            </div>
+
+            <div class="wishlist-card">
+                <span class="wishlist-heart" data-wish="false">&#9825;</span>
+                <img class="wishlist-img" src="~/image/shop/Stamix2.png" alt="STAMIX Level 2" />
+                <div class="wishlist-prod-title">STAMIX Level 2</div>
+                <div class="wishlist-prod-price">
+                    <span class="wishlist-price-main">$79</span>
+                    <span class="wishlist-price-old">$59.99</span>
+                </div>
+                <button class="wishlist-buy-btn">Buy Now</button>
+                <button class="wishlist-cart-btn">Add to cart</button>
+            </div>
+
+            <div class="wishlist-card">
+                <span class="wishlist-heart" data-wish="false">&#9825;</span>
+                <img class="wishlist-img" src="~/image/shop/Stamix3.png" alt="STAMIX Level 2" />
+                <div class="wishlist-prod-title">STAMIX Level 2</div>
+                <div class="wishlist-prod-price">
+                    <span class="wishlist-price-main">$79</span>
+                    <span class="wishlist-price-old">$59.99</span>
+                </div>
+                <button class="wishlist-buy-btn">Buy Now</button>
+                <button class="wishlist-cart-btn">Add to cart</button>
+            </div>
+
+            <div class="wishlist-card">
+                <span class="wishlist-heart" data-wish="false">&#9825;</span>
+                <img class="wishlist-img" src="~/image/shop/Stamix1.png" alt="STAMIX Level 3" />
+                <div class="wishlist-prod-title">STAMIX Level 3</div>
+                <div class="wishlist-prod-price">
+                    <span class="wishlist-price-main">$79</span>
+                    <span class="wishlist-price-old">$59.99</span>
+                </div>
+                <button class="wishlist-buy-btn">Buy Now</button>
+                <button class="wishlist-cart-btn">Add to cart</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .wishlist-layout {
+        display: flex;
+        gap: 2.1rem;
+        background: #fff;
+        min-height: 100vh;
+    }
+
+    .wishlist-main {
+        flex: 1;
+        padding: 46px 0 0 0;
+    }
+
+    .wishlist-header {
+        margin-bottom: 22px;
+    }
+
+    .wishlist-title {
+        font-size: 1.12rem;
+        font-weight: 600;
+        margin-bottom: 3px;
+        color: #191a1d;
+    }
+
+    .wishlist-subtitle {
+        font-size: 0.97rem;
+        color: #b2b2b2;
+        margin-bottom: 12px;
+    }
+
+    .wishlist-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 30px 24px;
+        width: 100%;
+        max-width: 1100px;
+    }
+
+    .wishlist-card {
+        position: relative;
+        background: #fff8ef;
+        border: 1.3px solid #ffdfca;
+        border-radius: 20px;
+        box-shadow: none;
+        padding: 28px 22px 21px 22px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.17rem;
+        min-width: 0;
+        transition: box-shadow 0.2s, border-color 0.2s;
+    }
+
+        .wishlist-card:hover {
+            box-shadow: 0 4px 20px #ffdfca33;
+            border-color: #ffb07f;
+        }
+
+    .wishlist-heart {
+        position: absolute;
+        right: 18px;
+        top: 16px;
+        cursor: pointer;
+        color: #ff6500;
+        font-size: 1.28rem;
+        font-weight: 800;
+        transition: color 0.15s;
+        user-select: none;
+    }
+
+        .wishlist-heart.filled {
+            color: #ff3300;
+        }
+
+    .wishlist-img {
+        width: 145px;
+        height: 148px;
+        margin-bottom: 11px;
+        object-fit: contain;
+        display: block;
+    }
+
+    .wishlist-prod-title {
+        font-size: 1.06rem;
+        font-weight: 600;
+        margin-bottom: 5px;
+        color: #29292c;
+        text-align: center;
+    }
+
+    .wishlist-prod-price {
+        font-size: 1.05rem;
+        margin-bottom: 12px;
+        color: #ff6500;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        justify-content: center;
+    }
+
+    .wishlist-price-main {
+        color: #ff6500;
+        font-weight: 700;
+        font-size: 1.13rem;
+    }
+
+    .wishlist-price-old {
+        color: #a8a8a8;
+        text-decoration: line-through;
+        font-size: 1.02rem;
+        font-weight: 500;
+        margin-left: 2px;
+    }
+
+    .wishlist-buy-btn {
+        background: #ff6500;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        font-size: 1.01rem;
+        font-weight: 600;
+        width: 100%;
+        padding: 9px 0;
+        margin-bottom: 7px;
+        cursor: pointer;
+        transition: background 0.15s;
+    }
+
+        .wishlist-buy-btn:hover {
+            background: #f44201;
+        }
+
+    .wishlist-cart-btn {
+        background: #fff;
+        color: #ff6500;
+        font-size: 1rem;
+        border: 1.2px solid #ffb07f;
+        border-radius: 8px;
+        width: 100%;
+        padding: 8px 0;
+        font-weight: 500;
+        cursor: pointer;
+        margin: 0;
+        transition: border 0.14s, background 0.14s, color 0.14s;
+    }
+
+        .wishlist-cart-btn:hover {
+            background: #fff5ef;
+            border-color: #ff6500;
+            color: #eb1d00;
+        }
+    /* MOBILE STYLES */
+    @@media (max-width: 1050px) {
+        .wishlist-grid
+
+    {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 18px 13px;
+    }
+
+    }
+    @@media (max-width: 790px) {
+        .wishlist-layout
+
+    {
+        gap: 0.4rem;
+    }
+
+    .wishlist-main {
+        padding: 30px 0 0 0;
+    }
+
+    .wishlist-header {
+        margin-bottom: 14px;
+    }
+
+    }
+    @@media (max-width: 600px) {
+        .wishlist-layout
+
+    {
+        flex-direction: column;
+        gap: 0;
+    }
+
+    .wishlist-main {
+        padding: 0 0 40px 0;
+    }
+
+    .wishlist-header {
+        padding-left: 0;
+        margin-bottom: 10px;
+        margin-top: 15px;
+        margin-left:20px;
+    }
+
+    .wishlist-title {
+        font-size: 1.07rem;
+        margin-bottom: 2px;
+    }
+
+    .wishlist-subtitle {
+        font-size: 0.93rem;
+        margin-bottom: 7px;
+    }
+
+    .wishlist-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 17px;
+        align-items: center;
+        width: 100%;
+        padding: 0 !important;
+    }
+
+    .wishlist-card {
+        width: 98vw !important;
+        max-width: 420px;
+        margin-left: auto;
+        margin-right: auto;
+        min-width: 0;
+        padding: 26px 15px 18px 15px;
+        border-radius: 17px;
+        background: #fff8ef;
+    }
+
+    .wishlist-img {
+        width: 115px;
+        height: 109px;
+    }
+
+        .user-sidebar {
+            display: none !important;
+        }
+    }
+    @@media (max-width:410px) {
+        .wishlist-card
+
+    {
+        max-width: 96vw;
+    }
+
+    }
+</style>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        document.querySelectorAll(".wishlist-heart").forEach(function(heart){
+            heart.addEventListener("click", function(){
+                if (this.classList.contains("filled")) {
+                    this.classList.remove("filled");
+                    this.innerHTML = "&#9825;"; // outlined
+                } else {
+                    this.classList.add("filled");
+                    this.innerHTML = "&#10084;"; // filled
+                }
+            });
+        });
+    });
+</script>

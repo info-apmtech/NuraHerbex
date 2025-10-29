@@ -213,8 +213,7 @@
     .subscribe-section .highlight {
         color: #ff6600;
     }
-
-.subscribe-btn {
+.subscribe-action-btn {
     background: #ff9900;
     color: #fff;
     border: none;
@@ -226,7 +225,7 @@
     transition: background 0.3s;
 }
 
-    .subscribe-btn:hover {
+    .subscribe-action-btn:hover {
         background: #e68a00;
     }
 

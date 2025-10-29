@@ -1,0 +1,941 @@
+﻿@{
+    ViewData["Title"] = "OrderSummary";
+}
+<style>
+
+
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    /* Checkout Steps */
+    .checkout-steps {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 2rem;
+        margin-bottom: 4rem;
+    }
+
+    .step-item {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .step-circle {
+        width: 3rem;
+        height: 3rem;
+        border-radius: 50%;
+        background-color: #4a5568;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        color: #9ca3af;
+    }
+
+        .step-circle.active {
+            background-color: #ff6600;
+            color: #ffffff;
+        }
+
+    .step-label {
+        font-weight: 500;
+        color: #9ca3af;
+    }
+
+        .step-label.active {
+            color: #ffffff;
+        }
+
+    .step-connector {
+        width: 6rem;
+        height: 2px;
+        background-color: #374151;
+    }
+
+    /* Page Title */
+    .page-title {
+        font-size: 2.5rem;
+        font-weight: bold;
+        text-align: center;
+        margin-bottom: 3rem;
+    }
+
+    .highlight {
+        color: #ff6600;
+    }
+
+    /* Order Summary */
+    .order-summary {
+        background-color: #0f1d2a;
+        border-radius: 1rem;
+        padding: 3rem;
+    }
+
+    .summary-content {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: center;
+        gap: 4rem;
+    }
+
+    /* Product Image */
+    .product-image {
+        flex-shrink: 0;
+    }
+
+    .image-container {
+        width: 400px;
+        height: 400px;
+        /* background: linear-gradient(135deg, #0f766e 0%, #115e59 100%); */
+        border-radius: 0.75rem;
+        padding: 2rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .product-placeholder {
+        width: 100%;
+        height: 100%;
+        background-color: #ffffff;
+        border-radius: 0.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    }
+
+    .product-text {
+        text-align: center;
+        color: #1f2937;
+    }
+
+    .brand-name {
+        font-size: 3.75rem;
+        font-weight: 900;
+        letter-spacing: -0.05em;
+        margin-bottom: 1rem;
+    }
+
+    .brand-subtitle {
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: #4b5563;
+        margin-bottom: 2rem;
+    }
+
+    .product-badge {
+        display: inline-block;
+        background-color: #0d9488;
+        color: #ffffff;
+        padding: 0.75rem 1.5rem;
+        border-radius: 9999px;
+    }
+
+    .badge-text {
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    /* Product Details */
+    .product-details {
+        flex: 1;
+        max-width: 28rem;
+    }
+
+    .product-title {
+        font-size: 1.875rem;
+        font-weight: bold;
+        color: #ffffff;
+        margin-bottom: 1.5rem;
+    }
+
+    /* Quantity Section */
+    .quantity-section {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .quantity-label {
+        color: #d1d5db;
+        font-size: 1.125rem;
+    }
+
+    .quantity-controls {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .qty-btn {
+        width: 2rem;
+        height: 2rem;
+        background-color: #1b2b3b;
+        color: #ffffff;
+        border: none;
+        border-radius: 0.25rem;
+        font-size: 1.25rem;
+        font-weight: bold;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background-color 0.2s;
+    }
+
+        .qty-btn:hover {
+            background-color: #253544;
+        }
+
+    #quantity {
+        width: 3rem;
+        height: 2rem;
+        background-color: #1b2b3b;
+        color: #ffffff;
+        border: none;
+        border-radius: 0.25rem;
+        text-align: center;
+        font-size: 1rem;
+    }
+
+    /* Price */
+    .price {
+        color: #ff6600;
+        font-size: 2.25rem;
+        font-weight: bold;
+        margin-bottom: 2rem;
+    }
+
+    /* Price Breakdown */
+    .price-breakdown {
+        border-top: 1px solid #374151;
+        padding-top: 1.5rem;
+    }
+
+    .price-row {
+        display: flex;
+        justify-content: space-between;
+        color: #d1d5db;
+        font-size: 1.125rem;
+        margin-bottom: 1rem;
+    }
+
+    .divider {
+        border: none;
+        border-top: 1px solid #8f9ca8;
+        margin: 1rem 0 1.5rem 0;
+    }
+
+    .price-row.total {
+        font-size: 1.25rem;
+        font-weight: bold;
+        margin-bottom: 0;
+    }
+
+        .price-row.total span:first-child {
+            color: #ffffff;
+        }
+
+        .price-row.total span:last-child {
+            color: #ff6600;
+        }
+
+    /* Security Icons */
+    .secure-icons {
+        margin-top: 2rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+        color: #9ca3af;
+        font-size: 0.875rem;
+    }
+
+    .security-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .icon {
+        width: 1rem;
+        height: 1rem;
+    }
+
+    .separator {
+        color: #9ca3af;
+    }
+
+    /* Delivery Section */
+    .delivery-section {
+        background-color: #fff9f6;
+        border-radius: 1rem;
+        padding: 3rem;
+        margin-top: 2rem;
+        color: #1f2937;
+    }
+
+    .section-title {
+        font-size: 2rem;
+        font-weight: bold;
+        text-align: center;
+        margin-bottom: 2rem;
+        color: #1f2937;
+    }
+
+    /* Delivery Form */
+    .delivery-form {
+        margin-bottom: 2rem;
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+    }
+
+        .form-group.full-width {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-group input {
+            padding: 0.875rem 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid #ffdac0;
+            background-color: #ffe9e2;
+            color: #1f2937;
+            font-size: 0.95rem;
+            transition: border-color 0.2s;
+        }
+
+            .form-group input:focus {
+                outline: none;
+                border-color: #ff6600;
+            }
+
+            .form-group input::placeholder {
+                color: #9ca3af;
+            }
+
+    /* Delivery Options */
+    .delivery-options {
+        background-color: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+        margin-top: 2rem;
+    }
+
+    .subsection-title {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: #1f2937;
+        margin-bottom: 1rem;
+    }
+
+    .delivery-option {
+        display: block;
+        background-color: #fafafa;
+        border: 2px solid #e5e7eb;
+        border-radius: 0.75rem;
+        padding: 1rem 1.25rem;
+        margin-top: 0.75rem;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+        .delivery-option:hover {
+            border-color: #ff6600;
+            background-color: #fff;
+        }
+
+        .delivery-option input[type="radio"] {
+            display: none;
+        }
+
+            .delivery-option input[type="radio"]:checked + .option-content {
+                border-left: 3px solid #ff6600;
+                padding-left: 0.75rem;
+            }
+
+    .option-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: all 0.2s;
+    }
+
+    .option-info {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .option-icon {
+        width: 1.5rem;
+        height: 1.5rem;
+        color: #ff6600;
+    }
+
+        .option-icon.express {
+            color: #ff6600;
+        }
+
+    .option-name {
+        font-weight: 600;
+        color: #1f2937;
+        margin-bottom: 0.25rem;
+    }
+
+    .option-time {
+        font-size: 0.875rem;
+        color: #6b7280;
+    }
+
+    .option-price {
+        font-weight: 600;
+        color: #1f2937;
+        font-size: 1.125rem;
+    }
+
+    /* Coupon Section */
+    .coupon-section {
+        background-color: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+        margin-top: 1.5rem;
+    }
+
+    .coupon-input-wrapper {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-top: 0.75rem;
+    }
+
+    .coupon-icon {
+        width: 1.25rem;
+        height: 1.25rem;
+        color: #9ca3af;
+        flex-shrink: 0;
+    }
+
+    .coupon-input {
+        flex: 1;
+        padding: 0.75rem 1rem;
+        border: 1px solid #ffdac0;
+        border-radius: 0.5rem;
+        background-color: #ffe9e2;
+        color: #1f2937;
+        font-size: 0.95rem;
+    }
+
+        .coupon-input:focus {
+            outline: none;
+            border-color: #ff6600;
+        }
+
+        .coupon-input::placeholder {
+            color: #9ca3af;
+        }
+
+    .apply-btn {
+        padding: 0.75rem 1.5rem;
+        background-color: #ff6600;
+        color: #ffffff;
+        border: none;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background-color 0.2s;
+        flex-shrink: 0;
+    }
+
+        .apply-btn:hover {
+            background-color: #e55d00;
+        }
+
+    /* Proceed Button */
+    .proceed-section {
+        text-align: center;
+        margin-top: 2rem;
+    }
+
+    .proceed-btn {
+        padding: 1rem 2.5rem;
+        background-color: #ff6600;
+        color: #ffffff;
+        border: none;
+        border-radius: 0.5rem;
+        font-size: 1.125rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+
+        .proceed-btn:hover {
+            background-color: #e55d00;
+        }
+
+    /* Responsive Design */
+    @@media (max-width: 768px) {
+
+
+        .checkout-steps {
+            gap: 0.75rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .step-circle {
+            width: 2.25rem;
+            height: 2.25rem;
+            font-size: 0.75rem;
+        }
+
+        .step-label {
+            font-size: 0.75rem;
+        }
+
+        .step-connector {
+            width: 2rem;
+        }
+
+        .page-title {
+            font-size: 1.75rem;
+            margin-bottom: 2rem;
+        }
+
+        .order-summary {
+            padding: 1.5rem 1rem;
+        }
+
+        .summary-content {
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .image-container {
+            width: 100%;
+            max-width: 300px;
+            height: 300px;
+            padding: 1.5rem;
+        }
+
+        .brand-name {
+            font-size: 2.5rem;
+        }
+
+        .brand-subtitle {
+            font-size: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .product-badge {
+            padding: 0.5rem 1rem;
+        }
+
+        .badge-text {
+            font-size: 0.625rem;
+        }
+
+        .product-details {
+            width: 100%;
+        }
+
+        .product-title {
+            font-size: 1.5rem;
+        }
+
+        .quantity-section {
+            flex-wrap: wrap;
+        }
+
+        .price {
+            font-size: 1.875rem;
+        }
+
+        .price-row {
+            font-size: 1rem;
+        }
+
+            .price-row.total {
+                font-size: 1.125rem;
+            }
+
+        .secure-icons {
+            flex-direction: column;
+            gap: 0.5rem;
+            text-align: center;
+            font-size: 0.75rem;
+        }
+
+        .separator {
+            display: none;
+        }
+
+        .delivery-section {
+            padding: 2rem 1.5rem;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-row {
+            grid-template-columns: 1fr;
+        }
+
+        .subsection-title {
+            font-size: 1rem;
+        }
+
+        .option-info {
+            gap: 0.75rem;
+        }
+
+        .option-name {
+            font-size: 0.9rem;
+        }
+
+        .option-time {
+            font-size: 0.75rem;
+        }
+
+        .option-price {
+            font-size: 1rem;
+        }
+
+        .coupon-input-wrapper {
+            flex-wrap: wrap;
+        }
+
+        .coupon-input {
+            width: 100%;
+        }
+
+        .apply-btn {
+            width: 100%;
+        }
+
+        .proceed-btn {
+            width: 100%;
+            padding: 1rem 1.5rem;
+            font-size: 1rem;
+        }
+    }
+
+    @@media (max-width: 480px) {
+
+        .checkout-steps {
+            gap: 0.5rem;
+        }
+
+        .step-circle {
+            width: 2rem;
+            height: 2rem;
+            font-size: 0.625rem;
+        }
+
+        .step-label {
+            display: none;
+        }
+
+        .step-connector {
+            width: 1.5rem;
+        }
+
+        .page-title {
+            font-size: 1.5rem;
+        }
+
+        .order-summary,
+        .delivery-section {
+            padding: 1.5rem 1rem;
+        }
+
+        .image-container {
+            max-width: 250px;
+            height: 250px;
+            padding: 1rem;
+        }
+
+        .brand-name {
+            font-size: 2rem;
+        }
+
+        .product-title {
+            font-size: 1.25rem;
+        }
+
+        .delivery-option {
+            padding: 0.875rem 1rem;
+        }
+
+        .option-content {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.75rem;
+        }
+
+        .option-price {
+            align-self: flex-end;
+        }
+    }
+</style>
+
+
+<!-- Main Content -->
+<div class="order-summary">
+    <!-- Checkout Steps -->
+    <div class="checkout-steps">
+        <div class="step-item">
+            <div class="step-circle active">1</div>
+            <span class="step-label active">Checkout</span>
+        </div>
+
+        <div class="step-connector"></div>
+
+        <div class="step-item">
+            <div class="step-circle">2</div>
+            <span class="step-label">Payment</span>
+        </div>
+
+        <div class="step-connector"></div>
+
+        <div class="step-item">
+            <div class="step-circle">3</div>
+            <span class="step-label">Confirmation</span>
+        </div>
+    </div>
+
+    <!-- Order Summary Title -->
+    <h1 class="page-title" style="color:white;">
+        Order <span class="highlight">Summary</span>
+    </h1>
+
+    <div class="summary-content">
+        <!-- Product Image -->
+        <div class="product-image">
+            <div class="image-container">
+                <img src="~/image/consultation/stamix activate.png" alt="Stamix Activate" style="width: 100%; height: 100%; object-fit: contain; border-radius: 0.5rem;" />
+            </div>
+        </div>
+
+        <!-- Product Details -->
+        <div class="product-details">
+            <h2 class="product-title">Level 1 : Activate</h2>
+
+            <!-- Quantity Controls -->
+            <div class="quantity-section">
+                <span class="quantity-label">Quantity :</span>
+                <div class="quantity-controls">
+                    <button class="qty-btn" onclick="decrementQuantity()">−</button>
+                    <input type="text" id="quantity" value="1" readonly>
+                    <button class="qty-btn" onclick="incrementQuantity()">+</button>
+                </div>
+            </div>
+
+            <!-- Price -->
+            <div class="price">$ 49</div>
+
+            <!-- Price Breakdown -->
+            <div class="price-breakdown">
+                <div class="price-row">
+                    <span>Subtotal</span>
+                    <span id="subtotal">$ 49.00</span>
+                </div>
+
+                <div class="price-row">
+                    <span>Delivery</span>
+                    <span>$ 5.00</span>
+                </div>
+
+                <hr class="divider">
+
+                <div class="price-row total">
+                    <span>Total</span>
+                    <span id="total">$ 54.00</span>
+                </div>
+            </div>
+
+            <!-- Security Icons -->
+            <div class="secure-icons">
+                <div class="security-item">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                    </svg>
+                    <span>100% Secure Payment</span>
+                </div>
+                <span class="separator">|</span>
+                <div class="security-item">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                    </svg>
+                    <span>SSL Verified & Encrypted</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delivery Address Section -->
+<div class="delivery-section">
+    <div class="container">
+        <h2 class="section-title">
+            Delivery <span class="highlight">Address</span>
+        </h2>
+
+        <form class="delivery-form">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="firstName">First Name</label>
+                    <input type="text" id="firstName" placeholder="John">
+                </div>
+                <div class="form-group">
+                    <label for="lastName">Last Name</label>
+                    <input type="text" id="lastName" placeholder="Doe">
+                </div>
+            </div>
+
+            <div class="form-group full-width">
+                <label for="streetAddress">Street Address</label>
+                <input type="text" id="streetAddress" placeholder="123 main Street, Apt 4B">
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="city">City</label>
+                    <input type="text" id="city" placeholder="New York">
+                </div>
+                <div class="form-group">
+                    <label for="state">State</label>
+                    <input type="text" id="state" placeholder="NY">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="zipCode">ZIP Code</label>
+                    <input type="text" id="zipCode" placeholder="10001">
+                </div>
+                <div class="form-group">
+                    <label for="phone">Phone</label>
+                    <input type="tel" id="phone" placeholder="(555) 123-4567">
+                </div>
+            </div>
+        </form>
+
+        <!-- Delivery Options -->
+        <div class="delivery-options">
+            <h3 class="subsection-title">Delivery Options</h3>
+
+            <label class="delivery-option">
+                <input type="radio" name="delivery" value="standard" checked>
+                <div class="option-content">
+                    <div class="option-info">
+                        <svg class="option-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="1" y="3" width="15" height="13"></rect>
+                            <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
+                            <circle cx="5.5" cy="18.5" r="2.5"></circle>
+                            <circle cx="18.5" cy="18.5" r="2.5"></circle>
+                        </svg>
+                        <div>
+                            <div class="option-name">Standard Delivery</div>
+                            <div class="option-time">5-7 Business days</div>
+                        </div>
+                    </div>
+                    <div class="option-price">$ 5.00</div>
+                </div>
+            </label>
+
+            <label class="delivery-option">
+                <input type="radio" name="delivery" value="express">
+                <div class="option-content">
+                    <div class="option-info">
+                        <svg class="option-icon express" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                        </svg>
+                        <div>
+                            <div class="option-name">Express Delivery</div>
+                            <div class="option-time">2-3 Business days</div>
+                        </div>
+                    </div>
+                    <div class="option-price">$ 15.00</div>
+                </div>
+            </label>
+        </div>
+
+        <!-- Coupon Code -->
+        <div class="coupon-section">
+            <h3 class="subsection-title">Coupon Code</h3>
+            <div class="coupon-input-wrapper">
+                <svg class="coupon-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
+                    <line x1="7" y1="7" x2="7.01" y2="7"></line>
+                </svg>
+                <input type="text" class="coupon-input" placeholder="Enter Coupon code">
+                <button class="apply-btn">Apply</button>
+            </div>
+        </div>
+
+        <!-- Proceed Button -->
+        <div class="proceed-section">
+            <button class="proceed-btn">Proceed to Payment</button>
+        </div>
+    </div>
+</div>
+
+<script>
+        const PRICE_PER_ITEM = 49;
+    const DELIVERY_FEE = 5;
+
+    function incrementQuantity() {
+        const quantityInput = document.getElementById('quantity');
+        let quantity = parseInt(quantityInput.value);
+        quantity++;
+        quantityInput.value = quantity;
+        updatePrices(quantity);
+    }
+
+    function decrementQuantity() {
+        const quantityInput = document.getElementById('quantity');
+        let quantity = parseInt(quantityInput.value);
+        if (quantity > 1) {
+            quantity--;
+            quantityInput.value = quantity;
+            updatePrices(quantity);
+        }
+    }
+
+    function updatePrices(quantity) {
+        const subtotal = PRICE_PER_ITEM * quantity;
+        const total = subtotal + DELIVERY_FEE;
+
+        document.getElementById('subtotal').textContent = `$ ${subtotal.toFixed(2)}`;
+        document.getElementById('total').textContent = `$ ${total.toFixed(2)}`;
+    }
+
+</script>

@@ -1,0 +1,342 @@
+﻿@{
+    ViewData["Title"] = "Shop";
+}
+
+<section class="shop-hero-section">
+    <div class="shop-hero-container">
+        <div class="shop-hero-header">
+            <h2 class="shop-hero-title">STAMIX Shop</h2>
+            <p class="shop-hero-subtitle">Choose Your Level of Transformation</p>
+        </div>
+        <div class="shop-main-content">
+            <div class="shop-product-image">
+                <img src="~/image/shop/Stamix1.png" alt="STAMIX Level 1" />
+            </div>
+            <div class="shop-product-content">
+                <div class="shop-product-details-row">
+                    <div class="shop-product-details">
+                        <!-- Desktop structure, badge above title -->
+                        <span class="shop-badge">ACTIVATE</span>
+                        <h1 class="shop-level-title">STAMIX Level 1</h1>
+                        <!-- Mobile structure, badge and title in a line -->
+                        <div class="shop-mobile-title-row">
+                            <span class="shop-mobile-title">STAMIX Level 1</span>
+                            <span class="shop-mobile-badge">ACTIVATE</span>
+                        </div>
+                        <p class="shop-level-description">
+                            Begin your transformation with foundational energy and focus
+                        </p>
+                        <div class="shop-rating-row">
+                            <div class="shop-stars">
+                                <span>★</span><span>★</span><span>★</span><span>★</span><span>★</span>
+                            </div>
+                            <span class="rating-text">(4.8/5 from 247 reviews)</span>
+                        </div>
+                        <div class="shop-price-row">
+                            <span class="shop-price">
+                                ₹ 2,499 <span class="unit-tag">/per box</span>
+                            </span>
+                        </div>
+                        <!-- Action row split for better wrapping on mobile -->
+                        <div class="shop-action-row">
+                            <div class="shop-action-buttons">
+                                <button class="shop-buy-btn">Buy Now</button>
+                                <button class="shop-quiz-btn">Take Quiz</button>
+                            </div>
+                            <span class="shop-choose-help">Confused to Choose Your Level?</span>
+                        </div>
+                    </div>
+                    <div class="shop-product-thumbs">
+                        <img src="~/image/shop/Stamix1.png" alt="level 1" class="active" />
+                        <img src="~/image/shop/Stamix2.png" alt="level 2" />
+                        <img src="~/image/shop/Stamix3.png" alt="level 3" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="potential-section">
+    <div class="potential-container">
+        <div class="potential-left">
+            <div class="potential-heading-sub">Your Next Level Awaits</div>
+            <h2 class="potential-heading">
+                Transform Your <span class="potential-highlight">Potential</span>
+            </h2>
+            <p class="potential-desc">
+                Join thousands of men who've unlocked their peak performance with STAMIX Level 1. Your transformation starts with this choice.
+            </p>
+            <ul class="potential-steps">
+                <li>
+                    <span class="step-num">1</span>
+                    <div class="step-info">
+                        <span class="step-title">Order Today</span>
+                        <span class="step-desc">Secure your premium supply</span>
+                    </div>
+                </li>
+                <li>
+                    <span class="step-num">2</span>
+                    <div class="step-info">
+                        <span class="step-title">Start Your Journey</span>
+                        <span class="step-desc">Feel the Difference in Days</span>
+                    </div>
+                </li>
+                <li>
+                    <span class="step-num">3</span>
+                    <div class="step-info">
+                        <span class="step-title">Achieve Your Peak</span>
+                        <span class="step-desc">Unlock Your Full Potential</span>
+                    </div>
+                </li>
+            </ul>
+        </div>
+        <div class="potential-right">
+            <div class="price-card">
+                <div class="price-top">
+                    <div class="price-row">
+                        <span class="price-currency">₹</span>
+                        <span class="price-current">2,499</span>
+                        <div class="price-side">
+                            <span class="price-old">₹ 3,199</span>
+                            <span class="price-off">22 % OFF</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="price-supply">per box (15-days supply)</div>
+                <div class="price-limited">⚡ Limited time offer - ends soon!</div>
+                <div class="price-qty">
+                    <button type="button">-</button>
+                    <span>1</span>
+                    <button type="button">+</button>
+                </div>
+                <div class="price-total">
+                    Total : <span class="price-current">₹ 2,499</span>
+                </div>
+                <button class="price-btn-main">
+                    <span class="price-btn-icon">🛒</span> Start My Transformation
+                </button>
+                <button class="price-btn-subscribe">
+                    <span class="price-btn-subscribe-icon">🔔</span>
+                    Subscribe & Save 20 %
+                </button>
+                <div class="price-features">
+                    <div class="price-feature">
+                        <span class="price-feature-icon">🛡️</span>
+                        <span class="price-feature-label">30-Day Guarantee</span>
+                    </div>
+                    <div class="price-feature">
+                        <span class="price-feature-icon">⚡</span>
+                        <span class="price-feature-label">Fast Shipping</span>
+                    </div>
+                    <div class="price-feature">
+                        <span class="price-feature-icon">⭐</span>
+                        <span class="price-feature-label">Premium Quality</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="benefits-section">
+    <h2 class="benefits-title">
+        Key <span class="highlight">Benefits</span>
+    </h2>
+    <div class="benefits-grid">
+        <div class="benefit-card">
+            <div class="benefit-icon">
+                <!-- SVG for Focus (Target/Bullseye) -->
+                <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                    <circle cx="16" cy="16" r="10" stroke="#ff8800" stroke-width="2" />
+                    <circle cx="16" cy="16" r="4" stroke="#ff8800" stroke-width="2" />
+                    <circle cx="16" cy="16" r="1.5" fill="#ff8800" />
+                </svg>
+            </div>
+            <div class="benefit-title">Improved Focus</div>
+            <div class="benefit-desc">Mental clarity for better Performance</div>
+        </div>
+        <div class="benefit-card">
+            <div class="benefit-icon">
+                <!-- SVG for Energy (Lightning Bolt) -->
+                <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                    <polyline points="14,3 5,17 15,17 12,29 27,13 17,13 18,3"
+                              fill="none" stroke="#ff8800" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+            </div>
+            <div class="benefit-title">Enhanced Energy</div>
+            <div class="benefit-desc">Natural caffeine boost without the crash</div>
+        </div>
+        <div class="benefit-card">
+            <div class="benefit-icon">
+                <!-- SVG for Antioxidant (Shield) -->
+                <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                    <path d="M16 4 L26 8 V16c0 7-6 11-10 12C8 27 6 23 6 16V8Z" stroke="#ff8800" stroke-width="2" fill="none" />
+                </svg>
+            </div>
+            <div class="benefit-title">Antioxidant Support</div>
+            <div class="benefit-desc">Cellular protection and recovery</div>
+        </div>
+        <div class="benefit-card">
+            <div class="benefit-icon">
+                <!-- SVG for Stamina (Clock) -->
+                <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                    <circle cx="16" cy="16" r="12" stroke="#ff8800" stroke-width="2" />
+                    <line x1="16" y1="16" x2="22" y2="16" stroke="#ff8800" stroke-width="2" stroke-linecap="round" />
+                    <line x1="16" y1="10" x2="16" y2="16" stroke="#ff8800" stroke-width="2" stroke-linecap="round" />
+                </svg>
+            </div>
+            <div class="benefit-title">All-Day Stamina</div>
+            <div class="benefit-desc">Sustained energy throughout the day</div>
+        </div>
+    </div>
+</section>
+
+<section class="ingredients-section">
+    <h2 class="ingredients-title">
+        Premium <span class="highlight">Ingredients</span>
+    </h2>
+    <div class="ingredients-flexgrid">
+        <div class="ingredient-card">
+            <div class="ingredient-img">
+                <img src="~/image/shop/glass-cup-dishware-healthy-food 1.png" alt="Green Tea Extract" />
+            </div>
+            <div class="ingredient-title">Green Tea Extract</div>
+            <div class="ingredient-desc">Natural Energy & Antioxidants</div>
+        </div>
+        <div class="ingredient-card">
+            <div class="ingredient-img">
+                <img src="~/image/shop/3598266 1.png" alt="B-Complex Vitamins" />
+            </div>
+            <div class="ingredient-title">B-Complex Vitamins</div>
+            <div class="ingredient-desc">Energy metabolism support</div>
+        </div>
+        <div class="ingredient-card">
+            <div class="ingredient-img">
+                <img src="~/image/shop/closeup-spear-thistle-flower 1.png" alt="Rhodiola Rosea" />
+            </div>
+            <div class="ingredient-title">Rhodiola Rosea</div>
+            <div class="ingredient-desc">Stress adaptation & focus</div>
+        </div>
+        <div class="ingredient-card">
+            <div class="ingredient-img">
+                <img src="~/image/shop/traditional-chinese-medicine-astragalus-membranaceus 1.png" alt="Ginseng" />
+            </div>
+            <div class="ingredient-title">Ginseng</div>
+            <div class="ingredient-desc">Enhanced performance</div>
+        </div>
+    </div>
+</section>
+<section class="who-section">
+    <h2 class="who-title">Who This is For</h2>
+    <div class="who-grid">
+        <div class="who-card">
+            <div class="who-icon">
+                <!-- User/person SVG for "Busy Professionals" -->
+                <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                    <circle cx="16" cy="13" r="6" stroke="#ff8800" stroke-width="2" />
+                    <path d="M7 27c0-5 6-6 9-6s9 1 9 6" stroke="#ff8800" stroke-width="2" fill="none" />
+                </svg>
+            </div>
+            <div class="who-head">Busy Professionals</div>
+            <div class="who-desc">
+                Starting their wellness journey<br>
+                who need consistent energy throughout the day
+            </div>
+        </div>
+        <div class="who-card">
+            <div class="who-icon">
+                <!-- Target/bullseye SVG for "Health-Conscious Beginners" -->
+                <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                    <circle cx="16" cy="16" r="10" stroke="#ff8800" stroke-width="2" />
+                    <circle cx="16" cy="16" r="4" stroke="#ff8800" stroke-width="2" />
+                    <circle cx="16" cy="16" r="1.5" fill="#ff8800" />
+                </svg>
+            </div>
+            <div class="who-head">Health-Conscious Beginners</div>
+            <div class="who-desc">
+                Taking their first step into supplementation with natural ingredients
+            </div>
+        </div>
+        <div class="who-card">
+            <div class="who-icon">
+                <!-- Trophy/award SVG for "Daily Energy Seekers" -->
+                <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                    <rect x="11" y="8" width="10" height="8" rx="2" stroke="#ff8800" stroke-width="2" />
+                    <path d="M14 16v3a2 2 0 1 0 4 0v-3" stroke="#ff8800" stroke-width="2" />
+                    <path d="M11 13.5c-1.7-.3-3.2-1.3-3.2-2.8V9" stroke="#ff8800" stroke-width="2" fill="none" />
+                    <path d="M21 13.5c1.7-.3 3.2-1.3 3.2-2.8V9" stroke="#ff8800" stroke-width="2" fill="none" />
+                </svg>
+            </div>
+            <div class="who-head">Daily Energy Seekers</div>
+            <div class="who-desc">
+                Looking to replace coffee with sustained, clean energy
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="testimonials-section">
+    <h2 class="testimonials-title">What our customers Say</h2>
+    <div class="testimonials-rating-row">
+        <span class="stars">★★★★★</span>
+        <span class="score">4.8 Out of 5</span>
+    </div>
+    <div class="testimonials-meta">
+        Based on 1,247+ Verified Reviews
+    </div>
+    <div class="testimonials-carousel">
+        <div class="testimonials-card neutral">
+            <div class="testimonial-meta">
+                <div class="avatar">MS</div>
+                <div>
+                    <div class="name">Mike S.</div>
+                    <div class="verified">Verified Purchase <span class="date">2 weeks ago</span></div>
+                </div>
+            </div>
+            <div class="stars">★★★★★</div>
+            <div class="text">
+                “Game changer! I've been using STAMIX Level 1 for 3 weeks and my energy levels are through the roof. No more afternoon crashes”
+            </div>
+        </div>
+        <div class="testimonials-card blue">
+            <div class="testimonial-meta">
+                <div class="avatar">AR</div>
+                <div>
+                    <div class="name">Alex R.</div>
+                    <div class="verified">Verified Purchase <span class="date">3 weeks ago</span></div>
+                </div>
+            </div>
+            <div class="stars">★★★★★</div>
+            <div class="text">
+                “Perfect entry point into wellness supplements. Natural energy boost without jitters. My focus at work has improved significantly”
+            </div>
+        </div>
+        <div class="testimonials-card purple">
+            <div class="testimonial-meta">
+                <div class="avatar">DM</div>
+                <div>
+                    <div class="name">David M</div>
+                    <div class="verified">Verified Purchase <span class="date">1 month ago</span></div>
+                </div>
+            </div>
+            <div class="stars">★★★★★</div>
+            <div class="text">
+                “Game changer! I've been using STAMIX Level 1 for 3 weeks and my energy levels are through the roof. No more afternoon crashes”
+            </div>
+        </div>
+        <div class="testimonials-card pink">
+            <div class="testimonial-meta">
+                <div class="avatar">MS</div>
+                <div>
+                    <div class="name">Mike S.</div>
+                    <div class="verified">Verified Purchase <span class="date">2 weeks ago</span></div>
+                </div>
+            </div>
+            <div class="stars">★★★★★</div>
+            <div class="text">
+                “Game changer! I've been using STAMIX Level 1 for 3 weeks and my energy levels are through the roof. No more afternoon crashes”
+            </div>
+        </div>
+    </div>
+</section>

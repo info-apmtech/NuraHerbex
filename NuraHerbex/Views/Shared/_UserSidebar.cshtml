@@ -1,0 +1,175 @@
+﻿<div class="user-sidebar">
+    <div class="user-sidebar-profile">
+        <img class="user-avatar" src="~/image/userSidebar/Ellipse 8.png" alt="Profile" />
+        <div class="user-name">Merin Albert</div>
+    </div>
+    <nav class="user-sidebar-menu">
+        <ul>
+            <li class="@(ViewContext.RouteData.Values["action"]?.ToString() == "MyProfile" ? "active" : "") sidebar-link" onclick="location.href='@Url.Action("MyProfile", "Home")'">
+                <img src="~/image/userSidebar/user.png" alt="profile" />
+                <span>My Profile</span>
+            </li>
+            <li class="@(ViewContext.RouteData.Values["action"]?.ToString() == "MyOrders" ? "active" : "") sidebar-link" onclick="location.href='@Url.Action("MyOrders", "Home")'">
+                <img src="~/image/userSidebar/mdi_shopping-outline.png" alt="orders" />
+                <span>My Orders</span>
+            </li>
+            <li class="@(ViewContext.RouteData.Values["action"]?.ToString() == "MyReturns" ? "active" : "") sidebar-link" onclick="location.href='@Url.Action("MyReturns", "Home")'">
+                <img src="~/image/userSidebar/majesticons_box-line.png" alt="returns" />
+                <span>My Returns</span>
+            </li>
+            <li class="@(ViewContext.RouteData.Values["action"]?.ToString() == "Wishlist" ? "active" : "") sidebar-link" onclick="location.href='@Url.Action("Wishlist", "Home")'">
+                <img src="~/image/userSidebar/card.png" alt="wishlist" />
+                <span>My Wishlist</span>
+            </li>
+            <li class="@(ViewContext.RouteData.Values["action"]?.ToString() == "Consultations" ? "active" : "") sidebar-link" onclick="location.href='@Url.Action("Consultations", "Home")'">
+                <img src="~/image/userSidebar/gift.png" alt="consultations" />
+                <span>My Consultations</span>
+            </li>
+        </ul>
+        <hr class="sidebar-separator" />
+        <ul>
+            <li class="sidebar-link help @(ViewContext.RouteData.Values["action"]?.ToString() == "HelpCenter" ? "active" : "")" onclick="location.href='@Url.Action("HelpCenter", "Home")'">
+                <img src="~/image/userSidebar/info-circle.png" alt="help" />
+                <span>Help Center</span>
+            </li>
+        </ul>
+    </nav>
+    <button class="logout-btn">
+        <img src="~/image/userSidebar/logout.png" alt="Logout" />
+        <span>Logout</span>
+    </button>
+</div>
+<style>
+    .user-sidebar {
+        width: 240px;
+        min-height: 670px;
+        border-radius: 16px;
+        background: #fff7f0;
+        border: 3px solid #fae3d0;
+        padding: 26px 0 20px 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-top: 32px; 
+        margin-left: 28px;
+    }
+
+    .user-sidebar-profile {
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 13px;
+        width: 100%;
+        padding: 0 0 12px 22px; /* aligns with nav text */
+        margin-bottom: 8px;
+    }
+
+    .user-avatar {
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 3px solid #fff;
+        background: #ffe7d3;
+        display: block;
+    }
+
+    .user-name {
+        font-weight: 700;
+        color: #20202a;
+        font-size: 1.1rem;
+        margin: 0;
+        padding: 0;
+        line-height: 1.25;
+    }
+
+
+    .user-sidebar-menu {
+        width: 100%;
+    }
+
+        .user-sidebar-menu ul {
+            list-style: none;
+            padding: 0 0;
+            margin: 0 0 0 0;
+            width: 100%;
+        }
+
+        .user-sidebar-menu li {
+            display: flex;
+            align-items: center;
+            color: #bcbcbc;
+            font-size: 1.07rem;
+            font-weight: 400;
+            gap: 13px;
+            border-radius: 9px;
+            padding: 11px 0 11px 22px;
+            margin: 2px 0;
+            cursor: pointer;
+            background: none;
+            border: none;
+            transition: color 0.17s, background 0.17s;
+        }
+
+            .user-sidebar-menu li .sidebar-icon {
+                width: 23px;
+                height: 22px;
+                display: inline-block;
+                margin-right: 13px;
+                flex-shrink: 0;
+            }
+
+            .user-sidebar-menu li.active,
+            .user-sidebar-menu li:active {
+                color: #fb6700;
+                font-weight: 600;
+                background: none;
+            }
+
+                .user-sidebar-menu li.active .sidebar-icon svg *,
+                .user-sidebar-menu li:active .sidebar-icon svg * {
+                    stroke: #fb6700 !important;
+                }
+
+    .sidebar-separator {
+        border: none;
+        border-top: 1px solid #f4e8dd;
+        margin: 9px 0;
+        width: 90%;
+    }
+
+    .user-sidebar-menu li.help {
+        margin-top: 6px;
+        color: #c8c4c2;
+    }
+
+    .logout-btn {
+        width: 85%;
+        margin-top: auto;
+        margin-bottom: 0.6rem;
+        background: #fb6608;
+        box-shadow: 0 2px 18px #fd986230;
+        color: #fff;
+        border: none;
+        border-radius: 13px;
+        font-size: 1.08rem;
+        font-weight: 700;
+        padding: 0.92rem 0;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        transition: background 0.15s;
+    }
+
+        .logout-btn:hover {
+            background: #e55206;
+        }
+
+    .logout-icon {
+        display: flex;
+        align-items: center;
+    }
+
+</style>
