@@ -41,7 +41,7 @@ namespace NuraHerbex.Controllers
 		{
 			return View();
 		}
-		public IActionResult Privacy()
+		
         public IActionResult Consultation()
         {
             return View();
