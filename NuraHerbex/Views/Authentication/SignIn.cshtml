@@ -13,6 +13,7 @@
     <link rel="stylesheet" href="~/css/loginstyle.css" asp-append-version="true" />
 </head>
 <body>
+    <partial name="_HeaderLayout" />
     <div class="container-fluid main-container">
         <div class="row justify-content-center align-items-center g-5">
             <!-- Left Section - Hidden on mobile, visible on lg and up -->
@@ -101,7 +102,7 @@
 
                         <div class="remember-forgot">
                             <label class="checkbox-label">
-                                <input type="checkbox" class="custom-checkbox">
+                                <input type="checkbox" class="custom-checkbox"checked>
                                 <span>Remember me</span>
                             </label>
                             <a asp-action="forgetpassword" asp-controller="Authentication" class="forgot-link">Forgot password?</a>
@@ -166,7 +167,7 @@
                         </div>
 
                         <label class="checkbox-label mb-3">
-                            <input type="checkbox" class="custom-checkbox" required>
+                            <input type="checkbox" class="custom-checkbox" required checked>
                             <span>I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a></span>
                         </label>
 
@@ -194,7 +195,7 @@
                             <span>FaceBook</span>
                         </button>
                     </div>
-                    <a asp-action="index" asp-controller="Home" style="float:right!important; color:white;">Back</a>
+                    @* <a asp-action="index" asp-controller="Home" style="float:right!important; color:white;">Back</a> *@
                 </div>
             </div>
         </div>
