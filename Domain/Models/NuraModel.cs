@@ -84,4 +84,75 @@ namespace Domain.Models
         public string CreatedBy { get; set; }
 
     }
+    public class Blog
+    {
+        public int Id { get; set; }
+        public string? Title { get; set; }
+        public string? Description { get; set; }
+        public string? Image1Path { get; set; }
+        public string? Image2Path { get; set; }
+        public string? ReadTime { get; set; }
+        public string? WrittenBy { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
+
+        [NotMapped]
+        [Display(Name = "Blog Image Main")]
+        public IFormFile? BlogImage1 { get; set; }
+
+        [NotMapped]
+        [Display(Name = "Blog Image Side")]
+        public IFormFile? BlogImage2 { get; set; }
+
+        public string? BlogCategoryIds { get; set; }
+
+        [NotMapped]
+        [Display(Name = "Blog Category")]
+        public string[] BlogCategories { get; set; }
+
+        [NotMapped]
+        public int PreviousBlogId { get; set; }
+        [NotMapped]
+        public int NextBlogId { get; set; }
+    }
+
+    public class BlogCategory
+    {
+        public int Id { get; set; }
+        public string? Name { get; set; }
+        public bool IsActive { get; set; } = true;
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
+    }
+    public class Quiz
+    {
+        public int Id { get; set; }
+        public string Title { get; set; }
+        public string Description { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
+
+        // Navigation property for related questions
+        public List<QuizQuestion> Questions { get; set; } = new List<QuizQuestion>();
+    }
+
+    public class QuizQuestion
+    {
+        public int Id { get; set; }
+        public int QuizId { get; set; }
+        public string QuestionText { get; set; }
+
+        // Navigation property for question's options
+        public List<QuizOption> Options { get; set; } = new List<QuizOption>();
+
+        public Quiz Quiz { get; set; }
+    }
+
+    public class QuizOption
+    {
+        public int Id { get; set; }
+        public int QuestionId { get; set; }
+        public string OptionText { get; set; }
+        public bool IsCorrect { get; set; } // optional, if you track correct answers
+
+        public QuizQuestion Question { get; set; }
+    }
+
 }
