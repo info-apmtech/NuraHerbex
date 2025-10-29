@@ -8,5 +8,9 @@ namespace NuraHerbex.Controllers
         {
             return View();
         }
+        public IActionResult UserCreation()
+        {
+            return View();
+        }
     }
 }
