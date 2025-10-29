@@ -77,6 +77,10 @@ namespace NuraHerbex.Controllers
         {
             return View();
         }
+        public ActionResult _ShoppingCartPartial()
+        {
+            return PartialView("_ShoppingCartPartial");
+        }
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
