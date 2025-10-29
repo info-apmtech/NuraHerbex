@@ -37,7 +37,12 @@
                         <path d="M12 6v6l4 2" stroke="white" stroke-width="2" fill="none"></path>
                     </svg>
                 </div>
-                <p class="badge-text">Precision-Crafted for peak performance</p>
+                <a href="@Url.Action("Consultation", "Home")"
+                   style="text-decoration:none; color:inherit; display:inline-block; cursor:pointer; transition: transform 0.2s ease, color 0.2s ease;"
+                   onmouseover="this.style.color='#28a745'; this.style.transform='translateY(-2px)';"
+                   onmouseout="this.style.color='inherit'; this.style.transform='translateY(0)';">
+                    <p class="badge-text" style="margin:0;">Precision-Crafted for peak performance</p>
+                </a>
             </div>
         </div>
         <div class="our-story-image">
@@ -176,7 +181,7 @@
         <p class="about-cta-description">
             Ready to unlock your potential? Discover the power of premium, natural wellness solutions designed specifically for men.
         </p>
-        <button class="about-cta-button">Shop Now</button>
+        <button onclick="location.href='@Url.Action("Shop", "Home")'" class="about-cta-button">Shop Now</button>
     </div>
 </section>
 

@@ -1,11 +1,11 @@
 ﻿@{
     ViewData["Title"] = "Home";
 }
-<style>
+@* <style>
     .feature-icon{
         background: #f44900;
     }
-</style>
+</style> *@
 
 <!-- Hero Section -->
 <section class="hero-section">
@@ -21,8 +21,8 @@
                     Natural wellness to boost energy, stamina, and confidence.
                 </p>
                 <div class="hero-buttons">
-                    <button class="hero-btn hero-btn-primary">Take Quiz</button>
-                    <button class="hero-btn hero-btn-secondary">Shop Now</button>
+                    <button class="btn-cta-primary" onclick="location.href='@Url.Action("Quiz", "Home")'">Take Quiz</button>
+                    <button class="btn-cta-secondary" onclick="location.href='@Url.Action("Shop", "Home")'">Shop Now</button>
                 </div>
             </div>
 
@@ -74,7 +74,7 @@
             .modal-content {
                 background: #fff;
                 border-radius: 8px;
-                width: 400px; /* increased from 340px */
+                width: 400px; 
                 max-width: 90vw;
                 box-shadow: 0 4px 16px rgba(0,0,0,0.3);
                 padding: 0;
@@ -84,27 +84,38 @@
 
         </style>
         <script>
-            $(document).ready(function() {
-    $('.floating-btn[aria-label="Cart"]').on('click', function() {
-        $.get('/Home/_ShoppingCartPartial', function(data) {
-            $('#cartPopupContent').html(data);
-            $('#cartModal').fadeIn(200);
-        });
-    });
+            $(document).ready(function () {
 
-    // Close the modal if click happens outside modal content
-    $('#cartModal').on('click', function(e) {
-        if (!$(e.target).closest('.modal-content').length) {
-            $('#cartModal').fadeOut(200);
-        }
-    });
+                // Reusable function to open the cart popup
+                function openCartModal() {
+                    $.get('/Home/_ShoppingCartPartial', function (data) {
+                        $('#cartPopupContent').html(data);
+                        $('#cartModal').fadeIn(200);
+                    });
+                }
 
-    // Close modal on clicking close button
-    $(document).on('click', '.close-btn', function() {
-        $('#cartModal').fadeOut(200);
-    });
-});
+                // When floating cart button is clicked
+                $('.floating-btn[aria-label="Cart"]').on('click', function () {
+                    openCartModal();
+                });
 
+                // When "Add to Cart" button is clicked
+                $(document).on('click', '.btn-add-cart', function () {
+                    openCartModal();
+                });
+
+                // Close popup when clicking outside modal content
+                $('#cartModal').on('click', function (e) {
+                    if (!$(e.target).closest('.modal-content').length) {
+                        $('#cartModal').fadeOut(200);
+                    }
+                });
+
+                // Close popup when clicking close button (if exists)
+                $(document).on('click', '.close-btn', function () {
+                    $('#cartModal').fadeOut(200);
+                });
+            });
         </script>
     </div>
 
@@ -233,9 +244,9 @@
                 <div class="card-info">
                     <h3 class="card-level-title">Level 3: Unleash</h3>
                     <p class="card-level-description">Peak physical performance, maximum cognitive function, and elite recovery protocols.</p>
-                    <p class="card-price">$129</p>
+                    <p class="card-price">₹129</p>
                     <div class="card-buttons">
-                        <button class="btn-buy-now">Buy Now</button>
+                        <button class="btn-buy-now" onclick="location.href='@Url.Action("Shop", "Home")'">Buy Now</button>
                         <button class="btn-add-cart">Add to Cart</button>
                     </div>
                 </div>
@@ -254,9 +265,9 @@
                 <div class="card-info">
                     <h3 class="card-level-title">Level 1: Activate</h3>
                     <p class="card-level-description">Activate healthy testosterone, relieve stress, and restore the energy and balance you've been missing.</p>
-                    <p class="card-price">$49</p>
+                    <p class="card-price">₹49</p>
                     <div class="card-buttons">
-                        <button class="btn-buy-now">Buy Now</button>
+                        <button class="btn-buy-now" onclick="location.href='@Url.Action("Shop", "Home")'">Buy Now</button>
                         <button class="btn-add-cart">Add to Cart</button>
                     </div>
                 </div>
@@ -275,9 +286,9 @@
                 <div class="card-info">
                     <h3 class="card-level-title">Level 2: Elevate</h3>
                     <p class="card-level-description">Optimize testosterone naturally, accelerate muscle recovery, and build stress resilience.</p>
-                    <p class="card-price">$79</p>
+                    <p class="card-price">₹79</p>
                     <div class="card-buttons">
-                        <button class="btn-buy-now">Buy Now</button>
+                        <button class="btn-buy-now" onclick="location.href='@Url.Action("Shop", "Home")'">Buy Now</button>
                         <button class="btn-add-cart">Add to Cart</button>
                     </div>
                 </div>
@@ -348,7 +359,7 @@
         </div>
 
         <div class="ingredients-cta">
-            <button class="btn-see-all">See All 27 Ingredients</button>
+            <button onclick="location.href='@Url.Action("Ingredients", "Home")'" class="btn-see-all">See All 27 Ingredients</button>
         </div>
     </div>
 </section>
@@ -366,7 +377,7 @@
             <!-- Essential Plan -->
             <div class="pricing-card">
                 <h3 class="plan-name">Essential</h3>
-                <div class="plan-price">$49</div>
+                <div class="plan-price">₹49</div>
                 <p class="plan-duration">4 Weeks</p>
                 <ul class="plan-features">
                     <li>
@@ -394,14 +405,14 @@
                         Progress tracking app
                     </li>
                 </ul>
-                <button class="btn-plan">Get Started</button>
+                <button onclick="location.href='@Url.Action("Plan", "Home")'" class="btn-plan">Get Started</button>
             </div>
 
             <!-- Performance Plan (Featured) -->
             <div class="pricing-card pricing-featured">
                 <span class="popular-badge">Most Popular</span>
                 <h3 class="plan-name">Performance</h3>
-                <div class="plan-price">$79</div>
+                <div class="plan-price">₹79</div>
                 <p class="plan-duration">8 Weeks</p>
                 <ul class="plan-features">
                     <li>
@@ -435,13 +446,13 @@
                         Workout plans
                     </li>
                 </ul>
-                <button class="btn-plan btn-plan-featured">Learn More</button>
+                <button onclick="location.href='@Url.Action("Plan", "Home")'" class="btn-plan btn-plan-featured">Learn More</button>
             </div>
 
             <!-- Elite Plan -->
             <div class="pricing-card">
                 <h3 class="plan-name">Elite</h3>
-                <div class="plan-price">$149</div>
+                <div class="plan-price">₹149</div>
                 <p class="plan-duration">12 Weeks</p>
                 <ul class="plan-features">
                     <li>
@@ -475,7 +486,7 @@
                         Custom nutrition & workout plans
                     </li>
                 </ul>
-                <button class="btn-plan">Get Started</button>
+                <button onclick="location.href='@Url.Action("Plan", "Home")'" class="btn-plan">Get Started</button>
             </div>
         </div>
 
@@ -647,7 +658,7 @@
         <div class="blog-scroll-wrapper">
             <div class="blog-grid">
                 <!-- Blog Card 1 -->
-                <div class="blog-card">
+                <div class="blog-card" style="cursor:pointer;" onclick="location.href='@Url.Action("Blog", "Home")'">
                     <div class="blog-image">
                         <img src="~/image/HomePage/tablet.png" alt="Natural Testosterone Boosters" />
                     </div>
@@ -674,7 +685,7 @@
                 </div>
 
                 <!-- Blog Card 2 -->
-                <div class="blog-card">
+                <div class="blog-card" style="cursor:pointer;" onclick="location.href='@Url.Action("Blog", "Home")'">
                     <div class="blog-image">
                         <img src="~/image/HomePage/mountain.png" alt="Natural Testosterone Boosters" />
                     </div>
@@ -701,7 +712,7 @@
                 </div>
 
                 <!-- Blog Card 3 -->
-                <div class="blog-card">
+                <div class="blog-card" style="cursor:pointer;" onclick="location.href='@Url.Action("Blog", "Home")'">
                     <div class="blog-image">
                         <img src="~/image/HomePage/girl-workout.png" alt="Natural Testosterone Boosters" />
                     </div>
@@ -728,7 +739,7 @@
                 </div>
 
                 <!-- Blog Card 4 (Additional) -->
-                <div class="blog-card">
+                <div class="blog-card" style="cursor:pointer;" onclick="location.href='@Url.Action("Blog", "Home")'">
                     <div class="blog-image">
                         <img src="~/image/HomePage/tablet.png" alt="Natural Testosterone Boosters" />
                     </div>
@@ -757,7 +768,7 @@
         </div>
 
         <div class="blog-cta">
-            <button class="btn-view-articles">View All Articles</button>
+            <button onclick="location.href='@Url.Action("Blog", "Home")'" class="btn-view-articles">View All Articles</button>
         </div>
     </div>
 </section>
@@ -774,8 +785,8 @@
         <h2 class="cta-title">Your next level <span class="highlight-text">starts now</span></h2>
         <p class="cta-subtitle">Don't wait another day to unlock your potential. Join thousands of men who've already made the transformation.</p>
         <div class="cta-buttons">
-            <button class="btn-cta-primary">Take Quiz</button>
-            <button class="btn-cta-secondary">Shop Now</button>
+            <button class="btn-cta-primary" onclick="location.href='@Url.Action("Quiz", "Home")'">Take Quiz</button>
+            <button class="btn-cta-secondary" onclick="location.href='@Url.Action("Shop", "Home")'">Shop Now</button>
         </div>
     </div>
 </section>
