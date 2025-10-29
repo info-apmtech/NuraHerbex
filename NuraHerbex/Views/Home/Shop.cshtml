@@ -41,7 +41,7 @@
                         <div class="shop-action-row">
                             <div class="shop-action-buttons">
                                 <button class="shop-buy-btn">Buy Now</button>
-                                <button class="shop-quiz-btn">Take Quiz</button>
+                                <button onclick="location.href='@Url.Action("Quiz", "Home")'" class="shop-quiz-btn">Take Quiz</button>
                             </div>
                             <span class="shop-choose-help">Confused to Choose Your Level?</span>
                         </div>
@@ -197,34 +197,38 @@
         Premium <span class="highlight">Ingredients</span>
     </h2>
     <div class="ingredients-flexgrid">
-        <div class="ingredient-card">
+        <div class="ingredient-card" style="cursor:pointer;" onclick="location.href='@Url.Action("Ingredients", "Home")'">
             <div class="ingredient-img">
                 <img src="~/image/shop/glass-cup-dishware-healthy-food 1.png" alt="Green Tea Extract" />
             </div>
             <div class="ingredient-title">Green Tea Extract</div>
             <div class="ingredient-desc">Natural Energy & Antioxidants</div>
         </div>
-        <div class="ingredient-card">
+
+        <div class="ingredient-card" style="cursor:pointer;" onclick="location.href='@Url.Action("Ingredients", "Home")'">
             <div class="ingredient-img">
                 <img src="~/image/shop/3598266 1.png" alt="B-Complex Vitamins" />
             </div>
             <div class="ingredient-title">B-Complex Vitamins</div>
             <div class="ingredient-desc">Energy metabolism support</div>
         </div>
-        <div class="ingredient-card">
+
+        <div class="ingredient-card" style="cursor:pointer;" onclick="location.href='@Url.Action("Ingredients", "Home")'">
             <div class="ingredient-img">
                 <img src="~/image/shop/closeup-spear-thistle-flower 1.png" alt="Rhodiola Rosea" />
             </div>
             <div class="ingredient-title">Rhodiola Rosea</div>
             <div class="ingredient-desc">Stress adaptation & focus</div>
         </div>
-        <div class="ingredient-card">
+
+        <div class="ingredient-card" style="cursor:pointer;" onclick="location.href='@Url.Action("Ingredients", "Home")'">
             <div class="ingredient-img">
                 <img src="~/image/shop/traditional-chinese-medicine-astragalus-membranaceus 1.png" alt="Ginseng" />
             </div>
             <div class="ingredient-title">Ginseng</div>
             <div class="ingredient-desc">Enhanced performance</div>
         </div>
+
     </div>
 </section>
 <section class="who-section">

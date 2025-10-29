@@ -404,8 +404,16 @@
             Ready to transform knowledge into Results? Discover your Personalized wellness Journey.
         </p>
         <div class="blog-cta-buttons">
-            <a href="#" class="blog-cta-btn blog-cta-btn-primary">Explore Plans</a>
-            <a href="#" class="blog-cta-btn blog-cta-btn-secondary">Take the Quiz</a>
+            <a href="@Url.Action("Plan", "Home")"
+               class="blog-cta-btn blog-cta-btn-primary"
+               style="text-decoration:none;">
+                Explore Plans
+            </a>
+            <a href="@Url.Action("Quiz", "Home")"
+               class="blog-cta-btn blog-cta-btn-secondary"
+               style="text-decoration:none;">
+               Take the Quiz
+           </a>
         </div>
     </div>
 </section>
