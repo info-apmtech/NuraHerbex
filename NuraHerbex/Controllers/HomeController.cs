@@ -37,6 +37,11 @@ namespace NuraHerbex.Controllers
         {
             return View();
         }
+		public IActionResult Ingredients()
+		{
+			return View();
+		}
+		
         public IActionResult Consultation()
         {
             return View();
