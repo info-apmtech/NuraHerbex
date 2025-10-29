@@ -7,6 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Folder Include="wwwroot\image\Ingredients\" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Folder Include="Views\Admin\" />
   </ItemGroup>
 
