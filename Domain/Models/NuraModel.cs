@@ -87,62 +87,30 @@ namespace Domain.Models
     public class Blog
     {
         public int Id { get; set; }
-        public string? Title { get; set; }
-        public string? Description { get; set; }
-        public string? Image1Path { get; set; }
-        public string? Image2Path { get; set; }
-        public string? ReadTime { get; set; }
-        public string? WrittenBy { get; set; }
+        public string Title { get; set; }
+        public string Description { get; set; }
+        public string Image1Path { get; set; }
+        public string ReadTime { get; set; }
+        public string WrittenBy { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.Now;
-
-        [NotMapped]
-        [Display(Name = "Blog Image Main")]
-        public IFormFile? BlogImage1 { get; set; }
-
-        [NotMapped]
-        [Display(Name = "Blog Image Side")]
-        public IFormFile? BlogImage2 { get; set; }
-
-        public string? BlogCategoryIds { get; set; }
-
-        [NotMapped]
-        [Display(Name = "Blog Category")]
-        public string[] BlogCategories { get; set; }
-
-        [NotMapped]
-        public int PreviousBlogId { get; set; }
-        [NotMapped]
-        public int NextBlogId { get; set; }
+        public string BlogCategoryIds { get; set; }
+        public int ReadCount { get; set; } = 0;
     }
 
     public class BlogCategory
     {
         public int Id { get; set; }
-        public string? Name { get; set; }
+        public string Name { get; set; }
         public bool IsActive { get; set; } = true;
         public DateTime CreatedAt { get; set; } = DateTime.Now;
     }
-    public class Quiz
-    {
-        public int Id { get; set; }
-        public string Title { get; set; }
-        public string Description { get; set; }
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
-
-        // Navigation property for related questions
-        public List<QuizQuestion> Questions { get; set; } = new List<QuizQuestion>();
-    }
-
     public class QuizQuestion
     {
         public int Id { get; set; }
-        public int QuizId { get; set; }
         public string QuestionText { get; set; }
 
-        // Navigation property for question's options
+        // Navigation property to options
         public List<QuizOption> Options { get; set; } = new List<QuizOption>();
-
-        public Quiz Quiz { get; set; }
     }
 
     public class QuizOption
@@ -150,9 +118,49 @@ namespace Domain.Models
         public int Id { get; set; }
         public int QuestionId { get; set; }
         public string OptionText { get; set; }
-        public bool IsCorrect { get; set; } // optional, if you track correct answers
+    }
 
-        public QuizQuestion Question { get; set; }
+
+    public class ConsultationBooking
+    {
+        public int Id { get; set; }
+
+        [Required, MaxLength(100)]
+        public string FirstName { get; set; }
+
+        [Required, MaxLength(100)]
+        public string LastName { get; set; }
+
+        [Required, EmailAddress]
+        public string Email { get; set; }
+
+        [Required, MaxLength(20)]
+        public string Phone { get; set; }
+
+        [Required]
+        public ConsultationType ConsultationType { get; set; }
+
+        public string? PreferredDoctorId { get; set; }  
+        public RegisterUser PreferredDoctor { get; set; }
+
+        [Required]
+        public TimeSlot PreferredTimeSlot { get; set; }
+
+        public string? Concerns { get; set; }
+        public string? Medications { get; set; }
+
+        public DateTime SubmittedAt { get; set; } = DateTime.Now;
+    }
+    public class Ingredient
+    {
+        public int Id { get; set; }
+        public string ImagePath { get; set; }
+        public string IngredientName { get; set; }
+        public string? ScientificName { get; set; }
+        public string? Benefits { get; set; }    
+        public string? Evidence { get; set; } 
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public bool IsActive { get; set; } = true;
     }
 
 }

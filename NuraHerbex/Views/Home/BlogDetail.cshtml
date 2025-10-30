@@ -1,0 +1,126 @@
+﻿@{
+    ViewData["Title"] = "Blog Details";
+}
+
+<style>
+    .article-header {
+        background: #1a1d2e;
+        padding: 40px 0 0 0;
+    }
+
+    .article-title {
+        font-family: 'IBM Plex Sans', sans-serif;
+        font-weight: 700;
+        font-size: 2.2rem;
+        text-align: center;
+        color: White;
+        margin-bottom: 18px;
+    }
+
+    .meta-date-readtime {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 18px;
+        margin-bottom: 18px;
+        font-size: 1rem;
+    }
+
+        .meta-date-readtime span {
+            color: navajowhite;
+            font-weight: 600;
+        }
+
+    .blog-main-image {
+        display: block;
+        margin: 0 auto 26px auto;
+        width: 640px;
+        max-width: 95vw;
+        border-radius: 15px;
+        box-shadow: 0 2px 32px rgba(0,0,0,.08);
+    }
+
+    .meta-section {
+        margin-bottom: 30px;
+        display: flex;
+        gap: 24px;
+        justify-content: center;
+    }
+
+    .meta-label {
+        font-weight: 600;
+        color: #555;
+        margin-bottom: 2px;
+        display: block;
+    }
+
+    .meta-value {
+        background: #f44900;
+        color: white;
+        padding: 4px 12px;
+        border-radius: 13px;
+        font-size: 13px;
+        font-weight: 500;
+    }
+
+    .article-content {
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: 0 2px 24px rgba(0, 0, 0, 0.05);
+        padding: 38px 34px 36px 34px;
+        max-width: 1275px;
+        margin: 0 auto 32px auto;
+    }
+
+        .article-content p {
+            font-size: 17px;
+            line-height: 1.6;
+            color: #374151;
+            margin-bottom: 20px;
+        }
+    @@media (max-width: 900px) {
+        .blog-main-image
+
+    {
+        width: 98vw;
+    }
+
+    .article-content {
+        padding: 18px 10px;
+    }
+
+    }
+</style>
+
+<article>
+    <header class="article-header">
+        <h1 class="article-title">5 Morning Habits That Boost Energy and Focus All Day</h1>
+        <div class="meta-date-readtime">
+            <span>Dr.Marcus Chen</span>
+            <span>15 Dec, 2024</span>
+            <span>5 min Read</span>
+        </div>
+    </header>
+
+    <img src="/image/blog/man-meditating-lotus-pose.png" alt="Blog Cover" class="blog-main-image" />
+
+    <div class="meta-section">
+        <div>
+            <span class="meta-label">Category</span>
+            <span class="meta-value">Lifestyle</span>
+            <span class="meta-value">Wellness</span>
+        </div>
+    </div>
+
+    <section class="article-content">
+        <p>
+            Simple, science-backed routines that successful men use to optimize their daily performance and mental clarity.
+        </p>
+        <p>
+            Discover actionable tips including hydration, mindful movement, strategic nutrition, and the power of setting intentions for a high-energy day.
+        </p>
+        <p>
+            These routines help support vitality, focus, and holistic wellness, aligning with top advice from experienced experts like Dr. Marcus Chen.
+        </p>
+    </section>
+</article>

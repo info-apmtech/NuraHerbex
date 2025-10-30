@@ -64,7 +64,19 @@
                     <li class="nav-item">
                         <a href="index.html" class="nav-link "><span class="pcoded-micon"><i class="feather icon-home"></i></span><span class="pcoded-mtext">Dashboard</span></a>
                     </li>
-                    <li class="nav-item pcoded-hasmenu">
+                    <li class="nav-item">
+                        <a href ="@Url.Action("UserCreation", "Admin")" class="nav-link "><span class="pcoded-micon"><i class="feather icon-home"></i></span><span class="pcoded-mtext">User Creation</span></a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="@Url.Action("AdminBlog", "Admin")" class="nav-link "><span class="pcoded-micon"><i class="feather icon-home"></i></span><span class="pcoded-mtext">Blogs</span></a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="@Url.Action("AdminBlogCategory", "Admin")" class="nav-link "><span class="pcoded-micon"><i class="feather icon-home"></i></span><span class="pcoded-mtext">Blog Category</span></a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="@Url.Action("AdminIncredient", "Admin")" class="nav-link "><span class="pcoded-micon"><i class="feather icon-home"></i></span><span class="pcoded-mtext">Incredient</span></a>
+                    </li>
+                    @* <li class="nav-item pcoded-hasmenu">
                         <a href="#!" class="nav-link "><span class="pcoded-micon"><i class="feather icon-layout"></i></span><span class="pcoded-mtext">Page layouts</span></a>
                         <ul class="pcoded-submenu">
                             <li><a href="layout-vertical.html" target="_blank">Vertical</a></li>
@@ -124,10 +136,10 @@
                         </ul>
                     </li>
                     <li class="nav-item"><a href="sample-page.html" class="nav-link "><span class="pcoded-micon"><i class="feather icon-sidebar"></i></span><span class="pcoded-mtext">Sample page</span></a></li>
-
+ *@
                 </ul>
 
-                <div class="card text-center">
+@*                 <div class="card text-center">
                     <div class="card-block">
                         <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
                         <i class="feather icon-sunset f-40"></i>
@@ -136,7 +148,7 @@
                         <a href="https://1.envato.market/PgJNQ" target="_blank" class="btn btn-primary btn-sm text-white m-0">Upgrade</a>
                     </div>
                 </div>
-
+ *@
             </div>
         </div>
     </nav>
@@ -158,7 +170,7 @@
         </div>
         <div class="collapse navbar-collapse">
             <ul class="navbar-nav mr-auto">
-                <li class="nav-item">
+               @*  <li class="nav-item">
                     <a href="#!" class="pop-search"><i class="feather icon-search"></i></a>
                     <div class="search-bar">
                         <input type="text" class="form-control border-0 shadow-none" placeholder="Search hear">
@@ -180,8 +192,8 @@
                             </ul>
                         </div>
                     </div>
-                </li>
-                <li class="nav-item">
+                </li> *@
+              @*   <li class="nav-item">
                     <div class="dropdown mega-menu">
                         <a class="dropdown-toggle h-drop" href="#" data-toggle="dropdown">
                             Mega
@@ -233,10 +245,10 @@
                             </div>
                         </div>
                     </div>
-                </li>
+                </li> *@
             </ul>
             <ul class="navbar-nav ml-auto">
-                <li>
+@*                 <li>
                     <div class="dropdown">
                         <a class="dropdown-toggle" href="#" data-toggle="dropdown">
                             <i class="icon feather icon-bell"></i>
@@ -300,7 +312,7 @@
                         </div>
                     </div>
                 </li>
-                <li>
+ *@                <li>
                     <div class="dropdown drp-user">
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown">
                             <i class="feather icon-user"></i>

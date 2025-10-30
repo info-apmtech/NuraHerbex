@@ -1,0 +1,97 @@
+﻿@{
+    ViewData["Title"] = "Blog Category Management";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="pcoded-main-container">
+    <div class="pcoded-content">
+        <div class="d-flex flex-column align-items-center" style="min-height: 90vh;">
+            <div class="w-100" style="max-width: 600px;">
+
+                <div class="d-flex justify-content-between align-items-center mt-4 mb-3">
+                    <h4 class="mb-0">Blog Categories</h4>
+                </div>
+
+                <!-- Nav Tabs -->
+                <ul class="nav nav-tabs mb-3" id="categoryTab" role="tablist">
+                    <li class="nav-item">
+                        <a class="nav-link active text-uppercase" id="category-list-tab" data-toggle="tab" href="#category-list" role="tab" aria-controls="category-list" aria-selected="true">List</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-uppercase" id="add-category-tab" data-toggle="tab" href="#add-category" role="tab" aria-controls="add-category" aria-selected="false">Add Category</a>
+                    </li>
+                </ul>
+
+                <!-- Tab Content -->
+                <div class="tab-content" id="categoryTabContent">
+
+                    <!-- Category List -->
+                    <div class="tab-pane fade show active" id="category-list" role="tabpanel" aria-labelledby="category-list-tab">
+                        <div class="card shadow-sm">
+                            <div class="card-header bg-white border-bottom-0">
+                                <h5 class="mb-0">Category List</h5>
+                            </div>
+                            <div class="card-body p-3">
+                                <table class="table table-bordered table-striped mb-0 w-100">
+                                    <thead class="table-dark">
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Status</th>
+                                            <th>Created At</th>
+                                            <th style="min-width: 120px;">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- Static data for sample -->
+                                        <tr>
+                                            <td>Performance</td>
+                                            <td><span class="badge bg-success">Active</span></td>
+                                            <td>01 Jan 2025</td>
+                                            <td>
+                                                <button class="btn btn-sm btn-warning">Edit</button>
+                                                <button class="btn btn-sm btn-danger">Delete</button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Wellness</td>
+                                            <td><span class="badge bg-secondary">Inactive</span></td>
+                                            <td>15 Feb 2025</td>
+                                            <td>
+                                                <button class="btn btn-sm btn-warning">Edit</button>
+                                                <button class="btn btn-sm btn-danger">Delete</button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Add Category Form -->
+                    <div class="tab-pane fade" id="add-category" role="tabpanel" aria-labelledby="add-category-tab">
+                        <div class="card shadow-sm">
+                            <div class="card-header bg-white border-bottom-0">
+                                <h5 class="mb-0">Add New Category</h5>
+                            </div>
+                            <div class="card-body">
+                                <form method="post" action="/Admin/AddCategory">
+                                    <div class="mb-3">
+                                        <label for="CategoryName" class="form-label">Category Name</label>
+                                        <input type="text" id="CategoryName" name="CategoryName" class="form-control" required />
+                                    </div>
+                                    <div class="mb-3 form-check">
+                                        <input type="checkbox" class="form-check-input" id="IsActive" name="IsActive" checked />
+                                        <label class="form-check-label" for="IsActive">Is Active</label>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary">Add Category</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>

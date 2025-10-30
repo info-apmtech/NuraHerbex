@@ -24,6 +24,9 @@ namespace NuraHerbex.Controllers
         public IActionResult Blog()
         {
             return View();
+        }public IActionResult BlogDetail()
+        {
+            return View();
         }
         public IActionResult Plan()
         {
