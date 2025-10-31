@@ -1,4 +1,8 @@
-﻿@{
+﻿@model Domain.ViewModel.BlogViewModel
+
+@{
+    var isEdit = Model.NewBlog.Id > 0;
+    var activeTab = TempData["ActiveTab"]?.ToString() ?? (isEdit ? "newblog" : "list");
     ViewData["Title"] = "Blog Management";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
 }
@@ -11,17 +15,27 @@
                     <h4 class="mb-0">Blog Management</h4>
                 </div>
 
+                <!-- Tabs -->
                 <ul class="nav nav-tabs mb-3" id="blogTab" role="tablist">
                     <li class="nav-item">
-                        <a class="nav-link active text-uppercase" id="list-tab" data-toggle="tab" href="#list" role="tab" aria-controls="list" aria-selected="true">List</a>
+                        <a class="nav-link text-uppercase @(activeTab == "list" ? "active" : "")"
+                           id="list-tab" data-toggle="tab" href="#list" role="tab"
+                           aria-controls="list" aria-selected="@(activeTab == "list" ? "true" : "false")">
+                            List
+                        </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link text-uppercase" id="newblog-tab" data-toggle="tab" href="#newblog" role="tab" aria-controls="newblog" aria-selected="false">New Blog</a>
+                        <a class="nav-link text-uppercase @(activeTab == "newblog" ? "active" : "")"
+                           id="newblog-tab" data-toggle="tab" href="#newblog" role="tab"
+                           aria-controls="newblog" aria-selected="@(activeTab == "newblog" ? "true" : "false")">
+                            @(!isEdit ? "New Blog" : "Edit Blog")
+                        </a>
                     </li>
                 </ul>
 
                 <div class="tab-content" id="blogTabContent">
-                    <div class="tab-pane fade show active" id="list" role="tabpanel" aria-labelledby="list-tab">
+                    <!-- Blog List -->
+                    <div class="tab-pane fade @(activeTab == "list" ? "show active" : "")" id="list" role="tabpanel" aria-labelledby="list-tab">
                         <div class="card shadow-sm">
                             <div class="card-header bg-white border-bottom-0">
                                 <h5 class="mb-0">Blog List</h5>
@@ -40,29 +54,42 @@
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            <!-- Sample data; replace with your dynamic rows -->
-                                            <tr>
-                                                <td>The Science Behind Peak Male Performance</td>
-                                                <td>Performance, Wellness</td>
-                                                <td>Dr. Marcus Chen</td>
-                                                <td>8 min Read</td>
-                                                <td>12 Mar 2025</td>
-                                                <td>
-                                                    <button class="btn btn-sm btn-warning">Edit</button>
-                                                    <button class="btn btn-sm btn-danger">Delete</button>
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td>5 Morning Habits That Boost Energy</td>
-                                                <td>Lifestyle</td>
-                                                <td>Dr. Marcus Chen</td>
-                                                <td>5 min Read</td>
-                                                <td>15 Dec 2024</td>
-                                                <td>
-                                                    <button class="btn btn-sm btn-warning">Edit</button>
-                                                    <button class="btn btn-sm btn-danger">Delete</button>
-                                                </td>
-                                            </tr>
+                                            @if (Model.BlogList.Any())
+                                            {
+                                                foreach (var blog in Model.BlogList)
+                                                {
+                                                    <tr>
+                                                        <td>@blog.Title</td>
+                                                        <td>
+                                                            @{
+                                                                var catNames = Model.Categories
+                                                                .Where(c => blog.BlogCategoryIds.Split(',').Contains(c.Id.ToString()))
+                                                                .Select(c => c.Name);
+                                                            }
+                                                            @string.Join(", ", catNames)
+                                                        </td>
+                                                        <td>@blog.WrittenBy</td>
+                                                        <td>@blog.ReadTime</td>
+                                                        <td>@blog.CreatedAt.ToString("dd MMM yyyy")</td>
+                                                        <td>
+                                                            <form method="get" asp-action="AdminBlog" asp-route-id="@blog.Id" style="display:inline;">
+                                                                <button type="submit" class="btn btn-sm btn-warning">Edit</button>
+                                                            </form>
+
+                                                            <form method="post" asp-action="DeleteBlog" asp-route-id="@blog.Id" onsubmit="return confirm('Are you sure you want to delete this blog?');" style="display:inline;">
+                                                                @Html.AntiForgeryToken()
+                                                                <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                                                            </form>
+                                                        </td>
+                                                    </tr>
+                                                }
+                                            }
+                                            else
+                                            {
+                                                <tr>
+                                                    <td colspan="6" class="text-center">No blogs found.</td>
+                                                </tr>
+                                            }
                                         </tbody>
                                     </table>
                                 </div>
@@ -70,62 +97,94 @@
                         </div>
                     </div>
 
-                    <div class="tab-pane fade" id="newblog" role="tabpanel" aria-labelledby="newblog-tab">
+                    <!-- Add/Edit Blog Form -->
+                    <div class="tab-pane fade @(activeTab == "newblog" ? "show active" : "")" id="newblog" role="tabpanel" aria-labelledby="newblog-tab">
                         <div class="card shadow-sm">
                             <div class="card-header bg-white border-bottom-0">
-                                <h5 class="mb-0">Create Blog</h5>
+                                <h5 class="mb-0">@(!isEdit ? "Create Blog" : "Edit Blog")</h5>
                             </div>
                             <div class="card-body">
-                                <form method="post" action="/Admin/CreateBlog" enctype="multipart/form-data">
+                                <form asp-action="AdminBlog" asp-controller="Admin" method="post" enctype="multipart/form-data">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" asp-for="NewBlog.Id" />
+
                                     <div class="row mb-3">
                                         <div class="col-md-6">
-                                            <label for="Title">Title</label>
-                                            <input type="text" id="Title" name="Title" class="form-control" required />
+                                            <label asp-for="NewBlog.Title"></label>
+                                            <input asp-for="NewBlog.Title" class="form-control" required />
+                                            <span asp-validation-for="NewBlog.Title" class="text-danger"></span>
                                         </div>
                                         <div class="col-md-6">
-                                            <label for="WrittenBy">Written By</label>
-                                            <input type="text" id="WrittenBy" name="WrittenBy" class="form-control" required />
+                                            <label asp-for="NewBlog.WrittenBy"></label>
+                                            <input asp-for="NewBlog.WrittenBy" class="form-control" required />
+                                            <span asp-validation-for="NewBlog.WrittenBy" class="text-danger"></span>
                                         </div>
                                     </div>
 
                                     <div class="mb-3">
-                                        <label for="Description">Description</label>
-                                        <textarea id="Description" name="Description" class="form-control" rows="6"></textarea>
+                                        <label asp-for="NewBlog.Description"></label>
+                                        <textarea asp-for="NewBlog.Description" class="form-control" @* id="editor" *@ rows="6" required></textarea>
+                                        <span asp-validation-for="NewBlog.Description" class="text-danger"></span>
                                     </div>
+
 
                                     <div class="row mb-3">
                                         <div class="col-md-6">
-                                            <label for="ReadTime">Read Time</label>
-                                            <input type="text" id="ReadTime" name="ReadTime" class="form-control" placeholder="e.g., 5 min read" />
+                                            <label asp-for="NewBlog.ReadTime"></label>
+                                            <input asp-for="NewBlog.ReadTime" class="form-control" placeholder="e.g., 5 min read" />
+                                            <span asp-validation-for="NewBlog.ReadTime" class="text-danger"></span>
                                         </div>
                                         <div class="col-md-6">
-                                            <label for="BlogCategoryIds">Categories</label>
-                                            <select id="BlogCategoryIds" name="BlogCategoryIds" class="form-control"required>
-                                                <option value="">Select Category</option>
-                                                <option value="1">Performance</option>
-                                                <option value="2">Wellness</option>
-                                                <option value="3">Lifestyle</option>
-                                                <option value="4">Nutrition</option>
+                                            <label asp-for="SelectedCategoryIds">Categories</label>
+                                            <select asp-for="SelectedCategoryIds"
+                                                    asp-items="@(new MultiSelectList(Model.Categories, "Id", "Name", Model.SelectedCategoryIds))"
+                                                    multiple
+                                                    class="form-control selectpicker"
+                                                    data-live-search="true"
+                                                    required>
                                             </select>
+                                            <span asp-validation-for="SelectedCategoryIds" class="text-danger"></span>
                                         </div>
                                     </div>
 
                                     <div class="row mb-3">
                                         <div class="col-md-6">
-                                            <label for="Image1Path">Main Image</label>
-                                            <input type="file" id="Image1Path" name="Image1Path" class="form-control" />
+                                            <label>Main Image</label>
+                                            <input asp-for="ImageFile" type="file" class="form-control" />
+                                            <input type="hidden" asp-for="NewBlog.ImagePath" />
+
+                                            @if (!string.IsNullOrEmpty(Model.NewBlog.ImagePath))
+                                            {
+                                                <img src="@Model.NewBlog.ImagePath" alt="Blog Image" class="img-fluid mt-2" style="max-height: 150px;" />
+                                            }
+
+                                            <span asp-validation-for="NewBlog.ImagePath" class="text-danger"></span>
                                         </div>
+                                        
+                                    <div class="form-check mb-3">
+                                        <input asp-for="NewBlog.IsFeatured" class="form-check-input" type="checkbox" id="isFeaturedCheckbox" />
+                                        <label asp-for="NewBlog.IsFeatured" class="form-check-label" for="isFeaturedCheckbox">
+                                            Featured
+                                        </label>
+                                    </div>
                                     </div>
 
-                                    <button type="submit" class="btn btn-primary">Save</button>
+                                    <button type="submit" class="btn btn-primary">@(!isEdit ? "Create" : "Update")</button>
                                 </form>
                             </div>
                         </div>
                     </div>
-
-                </div>
-
+                </div> <!-- tab-content -->
             </div>
         </div>
     </div>
 </div>
+
+@* <script src="https://cdn.ckeditor.com/ckeditor5/41.2.1/classic/ckeditor.js"></script>
+<script>
+    ClassicEditor
+        .create(document.querySelector('#editor'))
+        .catch(error => {
+            console.error(error);
+        });
+</script> *@

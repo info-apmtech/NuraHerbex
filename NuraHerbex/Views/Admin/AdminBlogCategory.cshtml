@@ -1,97 +1,121 @@
-﻿@{
+﻿@model Domain.ViewModel.BlogCategoryViewModel
+
+@{
+    var isEdit = Model.NewCategory.Id > 0;
     ViewData["Title"] = "Blog Category Management";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
 }
 
 <div class="pcoded-main-container">
     <div class="pcoded-content">
-        <div class="d-flex flex-column align-items-center" style="min-height: 90vh;">
-            <div class="w-100" style="max-width: 600px;">
 
-                <div class="d-flex justify-content-between align-items-center mt-4 mb-3">
-                    <h4 class="mb-0">Blog Categories</h4>
-                </div>
-
-                <!-- Nav Tabs -->
-                <ul class="nav nav-tabs mb-3" id="categoryTab" role="tablist">
-                    <li class="nav-item">
-                        <a class="nav-link active text-uppercase" id="category-list-tab" data-toggle="tab" href="#category-list" role="tab" aria-controls="category-list" aria-selected="true">List</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-uppercase" id="add-category-tab" data-toggle="tab" href="#add-category" role="tab" aria-controls="add-category" aria-selected="false">Add Category</a>
-                    </li>
-                </ul>
-
-                <!-- Tab Content -->
-                <div class="tab-content" id="categoryTabContent">
-
-                    <!-- Category List -->
-                    <div class="tab-pane fade show active" id="category-list" role="tabpanel" aria-labelledby="category-list-tab">
-                        <div class="card shadow-sm">
-                            <div class="card-header bg-white border-bottom-0">
-                                <h5 class="mb-0">Category List</h5>
-                            </div>
-                            <div class="card-body p-3">
-                                <table class="table table-bordered table-striped mb-0 w-100">
-                                    <thead class="table-dark">
-                                        <tr>
-                                            <th>Name</th>
-                                            <th>Status</th>
-                                            <th>Created At</th>
-                                            <th style="min-width: 120px;">Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <!-- Static data for sample -->
-                                        <tr>
-                                            <td>Performance</td>
-                                            <td><span class="badge bg-success">Active</span></td>
-                                            <td>01 Jan 2025</td>
-                                            <td>
-                                                <button class="btn btn-sm btn-warning">Edit</button>
-                                                <button class="btn btn-sm btn-danger">Delete</button>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>Wellness</td>
-                                            <td><span class="badge bg-secondary">Inactive</span></td>
-                                            <td>15 Feb 2025</td>
-                                            <td>
-                                                <button class="btn btn-sm btn-warning">Edit</button>
-                                                <button class="btn btn-sm btn-danger">Delete</button>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Add Category Form -->
-                    <div class="tab-pane fade" id="add-category" role="tabpanel" aria-labelledby="add-category-tab">
-                        <div class="card shadow-sm">
-                            <div class="card-header bg-white border-bottom-0">
-                                <h5 class="mb-0">Add New Category</h5>
-                            </div>
-                            <div class="card-body">
-                                <form method="post" action="/Admin/AddCategory">
-                                    <div class="mb-3">
-                                        <label for="CategoryName" class="form-label">Category Name</label>
-                                        <input type="text" id="CategoryName" name="CategoryName" class="form-control" required />
-                                    </div>
-                                    <div class="mb-3 form-check">
-                                        <input type="checkbox" class="form-check-input" id="IsActive" name="IsActive" checked />
-                                        <label class="form-check-label" for="IsActive">Is Active</label>
-                                    </div>
-                                    <button type="submit" class="btn btn-primary">Add Category</button>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
-
+        <div class="row heading-bg mb-3">
+            <div class="col-12">
+                <h4>Blog Categories</h4>
             </div>
         </div>
+
+        <ul class="nav nav-tabs mb-3" id="categoryTab" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link text-uppercase @(isEdit ? "" : "active")" id="category-list-tab" data-toggle="tab" href="#category-list" role="tab" aria-controls="category-list" aria-selected="@(isEdit ? "false" : "true")">List</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-uppercase @(isEdit ? "active" : "")" id="add-category-tab" data-toggle="tab" href="#add-category" role="tab" aria-controls="add-category" aria-selected="@(isEdit ? "true" : "false")">
+                    @(!isEdit ? "Add Category" : "Edit Category")
+                </a>
+            </li>
+        </ul>
+
+        <div class="tab-content" id="categoryTabContent">
+
+            <!-- Category List -->
+            <div class="tab-pane fade @(isEdit ? "" : "show active")" id="category-list" role="tabpanel" aria-labelledby="category-list-tab">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-white border-bottom-0">
+                        <h5 class="mb-0">Category List</h5>
+                    </div>
+                    <div class="card-body p-3">
+                        <table class="table table-bordered table-striped mb-0 w-100">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>#</th>
+                                    <th>Name</th>
+                                    <th>Status</th>
+                                    <th>Created At</th>
+                                    <th style="min-width: 160px;">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model.CategoryList.Any())
+                                {
+                                    int sno = 1;
+                                    foreach (var item in Model.CategoryList)
+                                    {
+                                        <tr>
+                                            <td>@sno</td>
+                                            <td>@item.Name</td>
+                                            <td>
+                                                <span class="badge @(item.IsActive ? "bg-success" : "bg-secondary")">
+                                                    @(item.IsActive ? "Active" : "Inactive")
+                                                </span>
+                                            </td>
+                                            <td>@item.CreatedAt.ToString("dd MMM yyyy")</td>
+                                            <td>
+                                                <form method="get" asp-action="AdminBlogCategory" asp-route-id="@item.Id" style="display:inline;">
+                                                    <button type="submit" class="btn btn-sm btn-warning">Edit</button>
+                                                </form>
+
+                                                <form method="post" asp-action="DeleteCategory" asp-route-id="@item.Id" style="display:inline" onsubmit="return confirm('Are you sure you want to delete this category?');">
+                                                    @Html.AntiForgeryToken()
+                                                    <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                        sno++;
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="5" class="text-center">No categories found</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Add / Edit Category Form -->
+            <div class="tab-pane fade @(isEdit ? "show active" : "")" id="add-category" role="tabpanel" aria-labelledby="add-category-tab">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-white border-bottom-0">
+                        <h5 class="mb-0">@(!isEdit ? "Add New Category" : "Edit Category")</h5>
+                    </div>
+                    <div class="card-body">
+                        <form asp-action="AdminBlogCategory" asp-controller="Admin" method="post">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" asp-for="NewCategory.Id" />
+
+                            <div class="mb-3">
+                                <label asp-for="NewCategory.Name" class="form-label"></label>
+                                <input asp-for="NewCategory.Name" class="form-control" required />
+                                <span asp-validation-for="NewCategory.Name" class="text-danger"></span>
+                            </div>
+
+                            <div class="mb-3 form-check">
+                                <input asp-for="NewCategory.IsActive" class="form-check-input" />
+                                <label asp-for="NewCategory.IsActive" class="form-check-label"></label>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary">@(!isEdit ? "Add Category" : "Update Category")</button>
+                            <a asp-action="AdminBlogCategory" asp-route-id="0" class="btn btn-secondary ms-2">Clear</a>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
     </div>
 </div>

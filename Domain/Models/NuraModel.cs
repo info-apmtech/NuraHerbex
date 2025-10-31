@@ -90,7 +90,9 @@ namespace Domain.Models
     public class Blog
     {
         public int Id { get; set; }
+        [Required(ErrorMessage = "Title is required")]
         public string Title { get; set; }
+        [Required(ErrorMessage = "Description is required")]
         public string Description { get; set; }
         public string ImagePath { get; set; }
         public string ReadTime { get; set; }
