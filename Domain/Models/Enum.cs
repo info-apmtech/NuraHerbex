@@ -8,7 +8,7 @@ namespace Domain.Models
 {
     public enum UserRole
     {
-        Admin, Employee, Doctor, Patient, 
+        Admin, Employee, Doctor, Customer, 
     }
     public enum Specialities
     {
@@ -21,11 +21,5 @@ namespace Domain.Models
     public enum ProductLevels
     {
         Level1,Level2,Level3, Level4
-    }
-    public enum TimeSlot
-    {
-        Morning,    // 8:00 - 12:00
-        Afternoon,  // 12:00 - 17:00
-        Evening     // Optional, can add if needed
     }
 }

@@ -46,10 +46,13 @@ namespace Domain.Models
         [Display(Name = "Pincode")]
         public string? Pincode { get; set; }
         public string? Experience { get; set; }// for doctor
-        public bool isActive { get; set; } = true; //need to discuss
-        
-    }
-    public class GST
+        public bool isActive { get; set; } = true; //need to check user active
+        public bool? isWorking { get; set; } = true; // need to check doctor availability
+		public string FirstName { get; set; }
+		public string? LastName { get; set; }
+		//public string? MobileNo { get; set; }
+	}
+	public class GST
     {
         [Key]
         public int Id { get; set; }
@@ -70,7 +73,7 @@ namespace Domain.Models
         [Key]
         public int Id { get; set; }
         public string ProductName { get; set; }
-        public ProductLevels Level { get; set; }
+        public string? SubTitle { get; set; }
         public string? Description { get; set; }
         public decimal Amount { get; set; } = 0; //For Gst need to discuss
         public int GSTId { get; set; }
