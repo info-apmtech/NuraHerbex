@@ -14,6 +14,6 @@ namespace Domain.Interface
 		Task<List<RegisterUser>> GetUsersByRoleAsync(UserRole role);
 		Task<RegisterUser?> GetUserByIdAsync(string id);
 		Task<IdentityResult> AddOrUpdateUserAsync(RegisterUser user);
-		Task<LoginResponse?> SignInAsync(LoginModel model);
+		//Task<LoginResponse?> SignInAsync(LoginModel model);
 	}
 }

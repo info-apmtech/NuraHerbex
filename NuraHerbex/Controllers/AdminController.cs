@@ -8,43 +8,11 @@ using System.Text;
 
 namespace NuraHerbex.Controllers
 {
-    public class AdminController : Controller
-    {
-        public IActionResult Index()
-        {
-            return View();
-        }
-        public IActionResult UserCreation()
-        {
-            return View();
-        }
-        public IActionResult AdminBlog()
-        {
-            return View();
-        }
-        public IActionResult AdminBlogCategory()
-        {
-            return View();
-        } 
-        public IActionResult AdminIncredient()
-        {
-            return View();
-        }
-        public IActionResult Product()
-        {
-            return View();
-        }
-        public IActionResult DoctorConsultation()
-        {
-            return View();
-        }
-
-    }
+	public class AdminController : Controller
+	{
 		private readonly IHttpClientFactory _httpClientFactory;
 		private readonly IHttpContextAccessor _httpContextAccessor;
 		private readonly ITokenService _tokenService;
-
-
 		public AdminController(IHttpClientFactory httpClientFactory, IHttpContextAccessor httpContextAccessor, ITokenService tokenService)
 		{
 			_httpClientFactory = httpClientFactory;
@@ -53,7 +21,34 @@ namespace NuraHerbex.Controllers
 		}
 		private HttpClient AuthorizedClient => _httpClientFactory.CreateAuthorizedClient(_httpContextAccessor);
 		private string GetUserId() => _httpContextAccessor.GetUserId(_tokenService);
-
+		public IActionResult Index()
+		{
+			return View();
+		}
+		public IActionResult UserCreation()
+		{
+			return View();
+		}
+		public IActionResult AdminBlog()
+		{
+			return View();
+		}
+		public IActionResult AdminBlogCategory()
+		{
+			return View();
+		}
+		public IActionResult AdminIncredient()
+		{
+			return View();
+		}
+		public IActionResult Product()
+		{
+			return View();
+		}
+		public IActionResult DoctorConsultation()
+		{
+			return View();
+		}
 
 		[HttpGet]
 		public async Task<IActionResult> UserRegistration(RegisterUserViewModel model, string? id = null)
@@ -96,7 +91,7 @@ namespace NuraHerbex.Controllers
 			{
 				TempData["Success"] = "User Registered Successfully!";
 				//return RedirectToAction("Authentication","SignIn", new { role = model.RegisteredUser.Role });
-				return RedirectToAction("SignIn","Authentication");
+				return RedirectToAction("SignIn", "Authentication");
 			}
 
 			var errorMsg = await response.Content.ReadAsStringAsync();
@@ -109,5 +104,6 @@ namespace NuraHerbex.Controllers
 			// Example: load countries/states/specialties
 			await Task.CompletedTask;
 		}
+
 	}
 }

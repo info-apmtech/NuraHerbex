@@ -59,50 +59,50 @@ namespace Domain.Implementation
 			//	return IdentityResult.Success;
 			//}
 		}
-		public async Task<LoginResponse?> SignInAsync(LoginModel model)
-		{
-			var user = await _usermanager.FindByNameAsync(model.Username);
-			if (user == null)
-				return null;
+		//public async Task<LoginResponse?> SignInAsync(LoginModel model)
+		//{
+		//	var user = await _usermanager.FindByNameAsync(model.Username);
+		//	if (user == null)
+		//		return null;
 
-			var validPassword = await _usermanager.CheckPasswordAsync(user, model.Password);
-			if (!validPassword)
-				return null;
+		//	var validPassword = await _usermanager.CheckPasswordAsync(user, model.Password);
+		//	if (!validPassword)
+		//		return null;
 
-			var roles = await _usermanager.GetRolesAsync(user);
+		//	var roles = await _usermanager.GetRolesAsync(user);
 
-			// Create claims
-			var claims = new List<Claim>
-		{
-			new Claim(ClaimTypes.NameIdentifier, user.Id),
-			new Claim(ClaimTypes.Name, user.UserName)
-		};
+		//	// Create claims
+		//	var claims = new List<Claim>
+		//{
+		//	new Claim(ClaimTypes.NameIdentifier, user.Id),
+		//	new Claim(ClaimTypes.Name, user.UserName)
+		//};
 
-			foreach (var role in roles)
-				claims.Add(new Claim(ClaimTypes.Role, role));
+		//	foreach (var role in roles)
+		//		claims.Add(new Claim(ClaimTypes.Role, role));
 
-			// Generate JWT
-			var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
-			var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+		//	// Generate JWT
+		//	var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
+		//	var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-			var token = new JwtSecurityToken(
-				issuer: _config["Jwt:Issuer"],
-				audience: _config["Jwt:Audience"],
-				claims: claims,
-				expires: DateTime.Now.AddHours(1),
-				signingCredentials: creds
-			);
+		//	var token = new JwtSecurityToken(
+		//		issuer: _config["Jwt:Issuer"],
+		//		audience: _config["Jwt:Audience"],
+		//		claims: claims,
+		//		expires: DateTime.Now.AddHours(1),
+		//		signingCredentials: creds
+		//	);
 
-			var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
+		//	var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
 
-			return new LoginResponse
-			{
-				Token = tokenString,
-				Expiration = token.ValidTo,
-				Username = user.UserName,
-				Roles = roles.FirstOrDefault() ?? "User"
-			};
-		}
+		//	return new LoginResponse
+		//	{
+		//		Token = tokenString,
+		//		Expiration = token.ValidTo,
+		//		Username = user.UserName,
+		//		Roles = roles.FirstOrDefault() ?? "User"
+		//	};
+		//}
 	}
 
 }
