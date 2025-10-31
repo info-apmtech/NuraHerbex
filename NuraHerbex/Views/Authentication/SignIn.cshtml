@@ -1,4 +1,5 @@
-﻿@{
+﻿@model Domain.ViewModel.RegisterUserViewModel
+@{
     Layout = null;
 }
 <!DOCTYPE html>
@@ -80,13 +81,13 @@
                     </div>
 
                     <!-- SIGN IN -->
-                    <form id="signinForm" class="auth-form" autocomplete="on">
+                    <form id="signinForm" class="auth-form" autocomplete="on" asp-action="SignIn" asp-controller="Authentication">
                         <!-- Email -->
                         <div class="input-wrapper">
                             <label class="form-label">Email Address</label>
                             <div class="position-relative">
                                 <img src="../image/signin/material-symbols_mail-outline.png" alt="Email" class="input-icon">
-                                <input type="email" class="form-input" placeholder="your.email@example.com" required>
+                                <input type="text" class="form-input" placeholder="your.email@example.com"asp-for="RegisteredUser.UserName" required>
                             </div>
                         </div>
 
@@ -95,14 +96,14 @@
                             <label class="form-label">Password</label>
                             <div class="position-relative">
                                 <img src="../image/signin/mdi_password-outline.png" alt="Password" class="input-icon">
-                                <input type="password" id="passwordInput" class="form-input" placeholder="Enter Your Password" required>
+                                <input type="password" id="passwordInput" class="form-input" placeholder="Enter Your Password" asp-for="RegisteredUser.Password" required>
                                 <img src="../image/signin/iconoir_eye-solid.png" alt="Toggle Password" class="eye-icon" onclick="togglePassword('passwordInput')">
                             </div>
                         </div>
 
                         <div class="remember-forgot">
                             <label class="checkbox-label">
-                                <input type="checkbox" class="custom-checkbox"checked>
+                                <input type="checkbox" class="custom-checkbox" asp-for="RegisteredUser.isActive" checked>
                                 <span>Remember me</span>
                             </label>
                             <a asp-action="forgetpassword" asp-controller="Authentication" class="forgot-link">Forgot password?</a>
@@ -115,27 +116,33 @@
                     </form>
 
                     <!-- SIGN UP -->
-                    <form id="signupForm" class="auth-form d-none" autocomplete="on">
+                    <form id="signupForm" class="auth-form d-none" autocomplete="on" asp-controller="Admin" asp-action="UserRegistration"method="post">
                         <div class="row">
                             <div class="col-sm-6">
                                 <div class="input-wrapper">
                                     <label class="form-label">First Name</label>
-                                    <input type="text" class="form-input" placeholder="John" required>
+                                    <input type="text" class="form-input" placeholder="John"asp-for="RegisteredUser.FirstName" required>
                                 </div>
                             </div>
                             <div class="col-sm-6">
                                 <div class="input-wrapper">
                                     <label class="form-label">Last Name</label>
-                                    <input type="text" class="form-input" placeholder="Doe" required>
+                                    <input type="text" class="form-input" placeholder="Doe" asp-for="RegisteredUser.LastName" required>
                                 </div>
                             </div>
                         </div>
-
+                        <div class="input-wrapper">
+                            <label class="form-label">UserName</label>
+                            <div class="position-relative">
+                                @* <img src="../image/signin/material-symbols_mail-outline.png" alt="username" class="input-icon"> *@
+                                <input type="text" class="form-input" placeholder="UserName" asp-for="RegisteredUser.UserName" required>
+                            </div>
+                        </div>
                         <div class="input-wrapper">
                             <label class="form-label">Mobile Number</label>
                             <div class="position-relative">
                                 <img src="../image/signin/phoneicon.svg" alt="Phone" class="input-icon">
-                                <input type="tel" class="form-input" placeholder="+91 234567890" required>
+                                <input type="tel" class="form-input" placeholder="+91 234567890" asp-for="RegisteredUser.PhoneNumber" required>
                                 <button type="button" class="btn btn-sm btn-outline-warning position-absolute end-0 top-50 translate-middle-y me-2">Verify</button>
                             </div>
                         </div>
@@ -144,7 +151,7 @@
                             <label class="form-label">Email Address</label>
                             <div class="position-relative">
                                 <img src="../image/signin/material-symbols_mail-outline.png" alt="Email" class="input-icon">
-                                <input type="email" class="form-input" placeholder="your.email@example.com" required>
+                                <input type="email" class="form-input" placeholder="your.email@example.com" asp-for="RegisteredUser.Email" required>
                             </div>
                         </div>
 
@@ -152,7 +159,7 @@
                             <label class="form-label">Password</label>
                             <div class="position-relative">
                                 <img src="../image/signin/mdi_password-outline.png" alt="Password" class="input-icon">
-                                <input type="password" id="signupPassword" class="form-input" placeholder="Enter Your Password" required>
+                                <input type="password" id="signupPassword" class="form-input" placeholder="Enter Your Password"asp-for="RegisteredUser.Password" required>
                                 <img src="../image/signin/iconoir_eye-solid.png" alt="Toggle Password" class="eye-icon" onclick="togglePassword('signupPassword')">
                             </div>
                         </div>
@@ -161,13 +168,13 @@
                             <label class="form-label">Confirm Password</label>
                             <div class="position-relative">
                                 <img src="../image/signin/mdi_password-outline.png" alt="Confirm" class="input-icon">
-                                <input type="password" id="signupConfirm" class="form-input" placeholder="Enter Your Password" required>
+                                <input type="password" id="signupConfirm" class="form-input" placeholder="Enter Your Password" asp-for="RegisteredUser.NMConfirmPassword" required>
                                 <img src="../image/signin/iconoir_eye-solid.png" alt="Toggle Password" class="eye-icon" onclick="togglePassword('signupConfirm')">
                             </div>
                         </div>
 
                         <label class="checkbox-label mb-3">
-                            <input type="checkbox" class="custom-checkbox" required checked>
+                            <input type="checkbox" class="custom-checkbox"asp-for="RegisteredUser.isActive" required checked>
                             <span>I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a></span>
                         </label>
 
@@ -244,19 +251,19 @@
             alert('Sign in functionality would be implemented here');
         });
 
-        document.getElementById('signupForm').addEventListener('submit', function (e) {
-            e.preventDefault();
-            const payload = {
-                firstName: this.querySelector('input[placeholder="John"]').value,
-                lastName: this.querySelector('input[placeholder="Doe"]').value,
-                phone: this.querySelector('input[type="tel"]').value,
-                email: this.querySelector('input[type="email"]').value,
-                password: this.querySelector('#signupPassword').value,
-                confirm: this.querySelector('#signupConfirm').value
-            };
-            console.log('Sign Up:', payload);
-            alert('Sign up functionality would be implemented here');
-        });
+        // document.getElementById('signupForm').addEventListener('submit', function (e) {
+        //     e.preventDefault();
+        //     const payload = {
+        //         firstName: this.querySelector('input[placeholder="John"]').value,
+        //         lastName: this.querySelector('input[placeholder="Doe"]').value,
+        //         phone: this.querySelector('input[type="tel"]').value,
+        //         email: this.querySelector('input[type="email"]').value,
+        //         password: this.querySelector('#signupPassword').value,
+        //         confirm: this.querySelector('#signupConfirm').value
+        //     };
+        //     console.log('Sign Up:', payload);
+        //     alert('Sign up functionality would be implemented here');
+        // });
                 // Show left panel only on large screens
         function checkScreenSize() {
             const leftPanel = document.querySelector('.left-section-desktop');

@@ -8,7 +8,7 @@ namespace Domain.Models
 {
     public enum UserRole
     {
-        Admin, Employee, Doctor, Patient, 
+        Admin, Employee, Doctor, Customer, 
     }
     public enum Specialities
     {
@@ -17,9 +17,5 @@ namespace Domain.Models
     public enum ConsultationType
     {
         VideoCall,VoiceCall,InPerson
-    }
-    public enum ProductLevels
-    {
-        Level1,Level2,Level3, Level4
     }
 }

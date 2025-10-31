@@ -11,6 +11,7 @@ namespace Domain.Models
     public class NuraDbContext : IdentityDbContext<RegisterUser>
     {
         public NuraDbContext(DbContextOptions<NuraDbContext> options) : base(options) { }
-
-    }
+		public DbSet<GST> GSTDetails { get; set; }
+		public DbSet<Product> ProductDetails { get; set; }
+	}
 }
