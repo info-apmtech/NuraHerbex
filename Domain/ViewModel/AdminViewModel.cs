@@ -9,14 +9,14 @@ using System.Threading.Tasks;
 
 namespace Domain.ViewModel
 {
-    public class LoginModel
-    {
-        [Required]
-        public string Username { get; set; } = null!;
-        [Required]
-        [DataType(DataType.Password)]
-        public string Password { get; set; } = null!;
-    }
+    //public class LoginModel
+    //{
+    //    [Required]
+    //    public string Username { get; set; } = null!;
+    //    [Required]
+    //    [DataType(DataType.Password)]
+    //    public string Password { get; set; } = null!;
+    //}
 	public class LoginResponseModel
 	{
 		public string Token { get; set; }
@@ -29,6 +29,12 @@ namespace Domain.ViewModel
 	}
 	public class RegisterUserViewModel
 	{
+		[Required]
+		public string Username { get; set; } = null!;
+		[Required]
+		[DataType(DataType.Password)]
+		public string Password { get; set; } = null!;
+		public bool IsActive { get; set; } = true;
 		public UserRole role { get; set; }
 		public RegisterUser? RegisteredUser { get; set; }
 		public List<RegisterUser>? UserList { get; set; }

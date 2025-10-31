@@ -87,7 +87,7 @@
                             <label class="form-label">Email Address</label>
                             <div class="position-relative">
                                 <img src="../image/signin/material-symbols_mail-outline.png" alt="Email" class="input-icon">
-                                <input type="text" class="form-input" placeholder="your.email@example.com"asp-for="RegisteredUser.UserName" required>
+                                <input type="text" class="form-input" placeholder="your.email@example.com"asp-for="Username" required>
                             </div>
                         </div>
 
@@ -96,14 +96,14 @@
                             <label class="form-label">Password</label>
                             <div class="position-relative">
                                 <img src="../image/signin/mdi_password-outline.png" alt="Password" class="input-icon">
-                                <input type="password" id="passwordInput" class="form-input" placeholder="Enter Your Password" asp-for="RegisteredUser.Password" required>
+                                <input type="password" id="passwordInput" class="form-input" placeholder="Enter Your Password" asp-for="Password" required>
                                 <img src="../image/signin/iconoir_eye-solid.png" alt="Toggle Password" class="eye-icon" onclick="togglePassword('passwordInput')">
                             </div>
                         </div>
 
                         <div class="remember-forgot">
                             <label class="checkbox-label">
-                                <input type="checkbox" class="custom-checkbox" asp-for="RegisteredUser.isActive" checked>
+                                <input type="checkbox" class="custom-checkbox" asp-for="IsActive" checked>
                                 <span>Remember me</span>
                             </label>
                             <a asp-action="forgetpassword" asp-controller="Authentication" class="forgot-link">Forgot password?</a>
@@ -243,13 +243,13 @@
         }
 
         // Form submit handlers
-        document.getElementById('signinForm').addEventListener('submit', function (e) {
-            e.preventDefault();
-            const email = this.querySelector('input[type="email"]').value;
-            const password = this.querySelector('input[type="password"]').value;
-            console.log('Sign In:', { email, password });
-            alert('Sign in functionality would be implemented here');
-        });
+        // document.getElementById('signinForm').addEventListener('submit', function (e) {
+        //     e.preventDefault();
+        //     const email = this.querySelector('input[type="email"]').value;
+        //     const password = this.querySelector('input[type="password"]').value;
+        //     console.log('Sign In:', { email, password });
+        //     alert('Sign in functionality would be implemented here');
+        // });
 
         // document.getElementById('signupForm').addEventListener('submit', function (e) {
         //     e.preventDefault();

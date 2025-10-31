@@ -65,7 +65,7 @@ namespace APIs.Controllers
 		}
 
 		[HttpPost("SignIn")]
-		public async Task<IActionResult> SignIn([FromBody] LoginModel model)
+		public async Task<IActionResult> SignIn([FromBody] RegisterUserViewModel model)
 		{
 			if (!ModelState.IsValid)
 				return BadRequest(ModelState);

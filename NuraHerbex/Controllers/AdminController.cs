@@ -12,15 +12,15 @@ namespace NuraHerbex.Controllers
 	{
 		private readonly IHttpClientFactory _httpClientFactory;
 		private readonly IHttpContextAccessor _httpContextAccessor;
-		private readonly ITokenService _tokenService;
-		public AdminController(IHttpClientFactory httpClientFactory, IHttpContextAccessor httpContextAccessor, ITokenService tokenService)
+		//private readonly ITokenService _tokenService;
+		public AdminController(IHttpClientFactory httpClientFactory, IHttpContextAccessor httpContextAccessor/*, ITokenService tokenService*/)
 		{
 			_httpClientFactory = httpClientFactory;
 			_httpContextAccessor = httpContextAccessor;
-			_tokenService = tokenService;
+			//_tokenService = tokenService;
 		}
 		private HttpClient AuthorizedClient => _httpClientFactory.CreateAuthorizedClient(_httpContextAccessor);
-		private string GetUserId() => _httpContextAccessor.GetUserId(_tokenService);
+		//private string GetUserId() => _httpContextAccessor.GetUserId(_tokenService);
 		public IActionResult Index()
 		{
 			return View();

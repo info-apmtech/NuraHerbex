@@ -28,7 +28,7 @@ namespace NuraHerbex.Controllers
             return View();
         }
 		[HttpPost]
-		public async Task<IActionResult> SignIn(LoginModel model, string? returnUrl = null)
+		public async Task<IActionResult> SignIn(RegisterUserViewModel model, string? returnUrl = null)
 		{
 			if (!ModelState.IsValid)
 				return View(model);
