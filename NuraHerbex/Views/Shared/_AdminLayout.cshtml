@@ -62,10 +62,19 @@
                         <label>Navigation</label>
                     </li>
                     <li class="nav-item">
-                        <a href="index.html" class="nav-link "><span class="pcoded-micon"><i class="feather icon-home"></i></span><span class="pcoded-mtext">Dashboard</span></a>
+                        <a href="@Url.Action("Index", "Admin")" class="nav-link "><span class="pcoded-micon"><i class="feather icon-home"></i></span><span class="pcoded-mtext">Dashboard</span></a>
                     </li>
                     <li class="nav-item">
                         <a href ="@Url.Action("UserCreation", "Admin")" class="nav-link "><span class="pcoded-micon"><i class="feather icon-home"></i></span><span class="pcoded-mtext">User Creation</span></a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="@Url.Action("Product", "Admin")" class="nav-link "><span class="pcoded-micon"><i class="feather icon-home"></i></span><span class="pcoded-mtext">Product</span></a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="@Url.Action("AdminIncredient", "Admin")" class="nav-link "><span class="pcoded-micon"><i class="feather icon-home"></i></span><span class="pcoded-mtext">Incredient</span></a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="@Url.Action("DoctorConsultation", "Admin")" class="nav-link "><span class="pcoded-micon"><i class="feather icon-home"></i></span><span class="pcoded-mtext">Doctor Consultation</span></a>
                     </li>
                     <li class="nav-item">
                         <a href="@Url.Action("AdminBlog", "Admin")" class="nav-link "><span class="pcoded-micon"><i class="feather icon-home"></i></span><span class="pcoded-mtext">Blogs</span></a>
@@ -73,9 +82,7 @@
                     <li class="nav-item">
                         <a href="@Url.Action("AdminBlogCategory", "Admin")" class="nav-link "><span class="pcoded-micon"><i class="feather icon-home"></i></span><span class="pcoded-mtext">Blog Category</span></a>
                     </li>
-                    <li class="nav-item">
-                        <a href="@Url.Action("AdminIncredient", "Admin")" class="nav-link "><span class="pcoded-micon"><i class="feather icon-home"></i></span><span class="pcoded-mtext">Incredient</span></a>
-                    </li>
+                    
                     @* <li class="nav-item pcoded-hasmenu">
                         <a href="#!" class="nav-link "><span class="pcoded-micon"><i class="feather icon-layout"></i></span><span class="pcoded-mtext">Page layouts</span></a>
                         <ul class="pcoded-submenu">

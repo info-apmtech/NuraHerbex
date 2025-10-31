@@ -89,12 +89,14 @@ namespace Domain.Models
         public int Id { get; set; }
         public string Title { get; set; }
         public string Description { get; set; }
-        public string Image1Path { get; set; }
+        public string ImagePath { get; set; }
         public string ReadTime { get; set; }
         public string WrittenBy { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.Now;
         public string BlogCategoryIds { get; set; }
+        public bool IsFeatured { get; set; }
         public int ReadCount { get; set; } = 0;
+
     }
 
     public class BlogCategory

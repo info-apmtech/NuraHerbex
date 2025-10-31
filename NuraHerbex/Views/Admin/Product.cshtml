@@ -1,0 +1,145 @@
+﻿@{
+    ViewData["Title"] = "Product Management";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="pcoded-main-container">
+    <div class="pcoded-content">
+        <div class="d-flex flex-column align-items-center" style="min-height: 90vh;">
+            <div class="w-100" style="max-width: 1100px;">
+                <div class="d-flex justify-content-between align-items-center mt-4 mb-3">
+                    <h4 class="mb-0">Product Management</h4>
+                </div>
+
+                <ul class="nav nav-tabs mb-3" id="productTab" role="tablist">
+                    <li class="nav-item">
+                        <a class="nav-link active text-uppercase" id="list-tab" data-toggle="tab" href="#list" role="tab" aria-controls="list" aria-selected="true">List</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-uppercase" id="newproduct-tab" data-toggle="tab" href="#newproduct" role="tab" aria-controls="newproduct" aria-selected="false">New Product</a>
+                    </li>
+                </ul>
+
+                <div class="tab-content" id="productTabContent">
+                    <div class="tab-pane fade show active" id="list" role="tabpanel" aria-labelledby="list-tab">
+                        <div class="card shadow-sm">
+                            <div class="card-header bg-white border-bottom-0">
+                                <h5 class="mb-0">Product List</h5>
+                            </div>
+                            <div class="card-body p-3">
+                                <div class="table-responsive">
+                                    <table id="productTable" class="table table-striped table-bordered mb-0 w-100">
+                                        <thead>
+                                            <tr>
+                                                <th>#</th>
+                                                <th>Product Name</th>
+                                                <th>Level</th>
+                                                <th>Amount</th>
+                                                <th>GST</th>
+                                                <th>Discount %</th>
+                                                <th style="min-width:120px;">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>1</td>
+                                                <td>Example Product 1</td>
+                                                <td>Basic</td>
+                                                <td>500</td>
+                                                <td>GST 18%</td>
+                                                <td>10</td>
+                                                <td>
+                                                    <button class="btn btn-sm btn-info" data-toggle="tooltip" title="Edit product">Edit</button>
+                                                    <button class="btn btn-sm btn-danger" data-toggle="tooltip" title="Delete product">Delete</button>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>2</td>
+                                                <td>Example Product 2</td>
+                                                <td>Premium</td>
+                                                <td>1500</td>
+                                                <td>GST 18%</td>
+                                                <td>15</td>
+                                                <td>
+                                                    <button class="btn btn-sm btn-info" data-toggle="tooltip" title="Edit product">Edit</button>
+                                                    <button class="btn btn-sm btn-danger" data-toggle="tooltip" title="Delete product">Delete</button>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>3</td>
+                                                <td>Example Product 3</td>
+                                                <td>Standard</td>
+                                                <td>900</td>
+                                                <td>GST 12%</td>
+                                                <td>5</td>
+                                                <td>
+                                                    <button class="btn btn-sm btn-info" data-toggle="tooltip" title="Edit product">Edit</button>
+                                                    <button class="btn btn-sm btn-danger" data-toggle="tooltip" title="Delete product">Delete</button>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tab-pane fade" id="newproduct" role="tabpanel" aria-labelledby="newproduct-tab">
+                        <div class="card shadow-sm">
+                            <div class="card-header bg-white border-bottom-0">
+                                <h5 class="mb-0">Create Product</h5>
+                            </div>
+                            <div class="card-body">
+                                <form method="post" enctype="multipart/form-data" action="/Product/Create">
+                                    <div class="row mb-3">
+                                        <div class="col-md-4">
+                                            <label for="ProductName">Product Name</label>
+                                            <input type="text" id="ProductName" name="ProductName" class="form-control" required />
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label for="Level">Level</label>
+                                            <select id="Level" name="Level" class="form-control" required>
+                                                <option value="">Select Level</option>
+                                                <option>Basic</option>
+                                                <option>Standard</option>
+                                                <option>Premium</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label for="Amount">Amount</label>
+                                            <input type="number" id="Amount" name="Amount" class="form-control" step="0.01" required />
+                                        </div>
+                                    </div>
+
+                                    <div class="row mb-3">
+                                        <div class="col-md-4">
+                                            <label for="GSTId">GST</label>
+                                            <select id="GSTId" name="GSTId" class="form-control" required>
+                                                <option>GST 5%</option>
+                                                <option>GST 12%</option>
+                                                <option>GST 18%</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label for="DiscountPercentage">Discount Percentage</label>
+                                            <input type="number" id="DiscountPercentage" name="DiscountPercentage" class="form-control" step="0.01" />
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label for="ProductFiles">Product Images</label>
+                                            <input type="file" id="ProductFiles" name="ProductFiles" class="form-control" multiple />
+                                        </div>
+                                    </div>
+
+                                    <button type="submit" class="btn btn-primary">Create Product</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
