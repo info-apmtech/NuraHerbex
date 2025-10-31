@@ -84,4 +84,85 @@ namespace Domain.Models
         public string CreatedBy { get; set; }
 
     }
+    public class Blog
+    {
+        public int Id { get; set; }
+        public string Title { get; set; }
+        public string Description { get; set; }
+        public string ImagePath { get; set; }
+        public string ReadTime { get; set; }
+        public string WrittenBy { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public string BlogCategoryIds { get; set; }
+        public bool IsFeatured { get; set; }
+        public int ReadCount { get; set; } = 0;
+
+    }
+
+    public class BlogCategory
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public bool IsActive { get; set; } = true;
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
+    }
+    public class QuizQuestion
+    {
+        public int Id { get; set; }
+        public string QuestionText { get; set; }
+
+        // Navigation property to options
+        public List<QuizOption> Options { get; set; } = new List<QuizOption>();
+    }
+
+    public class QuizOption
+    {
+        public int Id { get; set; }
+        public int QuestionId { get; set; }
+        public string OptionText { get; set; }
+    }
+
+
+    public class ConsultationBooking
+    {
+        public int Id { get; set; }
+
+        [Required, MaxLength(100)]
+        public string FirstName { get; set; }
+
+        [Required, MaxLength(100)]
+        public string LastName { get; set; }
+
+        [Required, EmailAddress]
+        public string Email { get; set; }
+
+        [Required, MaxLength(20)]
+        public string Phone { get; set; }
+
+        [Required]
+        public ConsultationType ConsultationType { get; set; }
+
+        public string? PreferredDoctorId { get; set; }  
+        public RegisterUser PreferredDoctor { get; set; }
+
+        [Required]
+        public TimeSlot PreferredTimeSlot { get; set; }
+
+        public string? Concerns { get; set; }
+        public string? Medications { get; set; }
+
+        public DateTime SubmittedAt { get; set; } = DateTime.Now;
+    }
+    public class Ingredient
+    {
+        public int Id { get; set; }
+        public string ImagePath { get; set; }
+        public string IngredientName { get; set; }
+        public string? ScientificName { get; set; }
+        public string? Benefits { get; set; }    
+        public string? Evidence { get; set; } 
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public bool IsActive { get; set; } = true;
+    }
+
 }
