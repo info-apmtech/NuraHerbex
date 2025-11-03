@@ -292,6 +292,7 @@ namespace Domain.Implementation
                     return IdentityResult.Failed(new IdentityError { Description = "Ingredient not found" });
 
                 existing.IngredientName = ingredient.IngredientName;
+                existing.IngredientCategoryId = ingredient.IngredientCategoryId;
                 existing.ScientificName = ingredient.ScientificName;
                 existing.Benefits = ingredient.Benefits;
                 existing.Evidence = ingredient.Evidence;
@@ -319,6 +320,55 @@ namespace Domain.Implementation
             _db.Ingredients.Remove(existing);
             await _db.SaveChangesAsync();
 
+            return IdentityResult.Success;
+        }
+
+        //Ingredient Category
+
+        // Get all categories
+        public async Task<List<IngredientCategory>> GetIngredientCategoriesAsync()
+        {
+            return await _db.IngredientCategories.OrderByDescending(c => c.CreatedAt).ToListAsync();
+        }
+
+        // Get category by Id
+        public async Task<IngredientCategory> GetIngredientCategoryByIdAsync(int id)
+        {
+            return await _db.IngredientCategories.FindAsync(id);
+        }
+
+        // Add or update category
+        public async Task<IdentityResult> AddOrUpdateIngredientCategoryAsync(IngredientCategory category)
+        {
+            if (category == null) return IdentityResult.Failed(new IdentityError { Description = "Category cannot be null" });
+
+            if (category.Id > 0)
+            {
+                var existing = await _db.IngredientCategories.FindAsync(category.Id);
+                if (existing == null) return IdentityResult.Failed(new IdentityError { Description = "Category not found" });
+
+                existing.Name = category.Name;
+                existing.IsActive = category.IsActive;
+                _db.IngredientCategories.Update(existing);
+            }
+            else
+            {
+                category.CreatedAt = DateTime.UtcNow;
+                await _db.IngredientCategories.AddAsync(category);
+            }
+
+            await _db.SaveChangesAsync();
+            return IdentityResult.Success;
+        }
+
+        // Delete category
+        public async Task<IdentityResult> DeleteIngredientCategoryAsync(int id)
+        {
+            var existing = await _db.IngredientCategories.FindAsync(id);
+            if (existing == null) return IdentityResult.Failed(new IdentityError { Description = "Category not found" });
+
+            _db.IngredientCategories.Remove(existing);
+            await _db.SaveChangesAsync();
             return IdentityResult.Success;
         }
 

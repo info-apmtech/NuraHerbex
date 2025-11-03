@@ -89,6 +89,42 @@ namespace NuraHerbex.Controllers
 
             return View(vm);
         }
+        public async Task<IActionResult> BlogsByCategory(int categoryId)
+        {
+            var blogsResponse = await _httpClient.GetAsync("AdminAPI/blogs");
+            var categoriesResponse = await _httpClient.GetAsync("AdminAPI/blogcategories");
+
+            var blogs = new List<Blog>();
+            var categories = new List<BlogCategory>();
+
+            if (blogsResponse.IsSuccessStatusCode)
+            {
+                var json = await blogsResponse.Content.ReadAsStringAsync();
+                blogs = JsonConvert.DeserializeObject<List<Blog>>(json);
+            }
+
+            if (categoriesResponse.IsSuccessStatusCode)
+            {
+                var json = await categoriesResponse.Content.ReadAsStringAsync();
+                categories = JsonConvert.DeserializeObject<List<BlogCategory>>(json);
+            }
+
+            // Filter blogs by category
+            var filteredBlogs = blogs.Where(b => !b.IsFeatured &&
+                b.BlogCategoryIds.Split(',', StringSplitOptions.RemoveEmptyEntries)
+                                 .Contains(categoryId.ToString()))
+                .OrderByDescending(b => b.CreatedAt)
+                .ToList();
+
+            var vm = new BlogViewModel
+            {
+                BlogList = filteredBlogs,
+                Categories = categories,
+                CategoryId = categoryId 
+            };
+
+            return View("BlogsByCategory", vm);
+        }
 
         public IActionResult Plan()
         {
@@ -102,11 +138,36 @@ namespace NuraHerbex.Controllers
         {
             return View();
         }
-		public IActionResult Ingredients()
-		{
-			return View();
-		}
-		
+        public async Task<IActionResult> Ingredients()
+        {
+            var ingredientsResponse = await _httpClient.GetAsync("AdminAPI/ingredients");
+            var categoriesResponse = await _httpClient.GetAsync("AdminAPI/ingredientcategories");
+
+            var ingredients = new List<Ingredient>();
+            var categories = new List<IngredientCategory>();
+
+            if (ingredientsResponse.IsSuccessStatusCode)
+            {
+                var json = await ingredientsResponse.Content.ReadAsStringAsync();
+                ingredients = JsonConvert.DeserializeObject<List<Ingredient>>(json) ?? new List<Ingredient>();
+            }
+
+            if (categoriesResponse.IsSuccessStatusCode)
+            {
+                var json = await categoriesResponse.Content.ReadAsStringAsync();
+                categories = JsonConvert.DeserializeObject<List<IngredientCategory>>(json) ?? new List<IngredientCategory>();
+            }
+
+            var vm = new IngredientViewModel
+            {
+                IngredientList = ingredients,
+                IngredientCategories = categories
+            };
+
+            return View(vm);
+        }
+
+
         public IActionResult Consultation()
         {
             return View();

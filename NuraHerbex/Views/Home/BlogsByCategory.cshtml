@@ -1,0 +1,132 @@
+﻿@model Domain.ViewModel.BlogViewModel
+
+<section class="latest-articles-section">
+    <div class="latest-articles-container">
+        <div class="top-row">
+            <div class="latest-header">
+                <h2 class="latest-title">
+                    @Model.Categories.FirstOrDefault(c => c.Id == Model.CategoryId)?.Name
+                </h2>
+                <p class="latest-subtitle">Explore articles filtered by selected category.</p>
+            </div>
+
+            <div class="sidebar-widget search-widget">
+                <h3 class="widget-title">Search Articles</h3>
+                <div class="search-box">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <path d="m21 21-4.35-4.35"></path>
+                    </svg>
+                    <input id="searchInput" type="text" placeholder="Search here" class="search-input" />
+                </div>
+            </div>
+        </div>
+
+        <div class="bottom-row">
+            <div class="latest-grid">
+                @foreach (var blog in Model.BlogList)
+                {
+                    <article onclick="location.href='@Url.Action("BlogDetail", "Home", new { id = blog.Id })'" class="latest-card">
+                        <div class="latest-image">
+                            <img src="@blog.ImagePath" alt="@blog.Title" />
+                            <span class="latest-category">
+                                @string.Join(", ", Model.Categories.Where(c => blog.BlogCategoryIds.Split(',', StringSplitOptions.RemoveEmptyEntries).Contains(c.Id.ToString())).Select(c => c.Name))
+                            </span>
+                        </div>
+                        <div class="latest-content">
+                            <h3 class="latest-card-title">@blog.Title</h3>
+                            <p class="latest-excerpt">@blog.Description</p>
+                            <div class="latest-meta">
+                                <span class="author">@blog.WrittenBy</span>
+                                <span class="date">@blog.CreatedAt.ToString("MMM dd, yyyy")</span>
+                                <span class="read-time">@blog.ReadTime</span>
+                            </div>
+                        </div>
+                    </article>
+                }
+            </div>
+
+            <aside class="articles-sidebar">
+                <!-- Categories -->
+                <div class="sidebar-widget categories-widget">
+                    <h3 class="widget-title">
+                        Categories
+                        <div class="mobile-search-input">
+                            <div class="search-box">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="11" cy="11" r="8"></circle>
+                                    <path d="m21 21-4.35-4.35"></path>
+                                </svg>
+                                <input type="text" placeholder="Search articles here" class="search-input" />
+                            </div>
+                        </div>
+                    </h3>
+                    <ul class="categories-list">
+                        @foreach (var cat in Model.Categories)
+                        {
+                            <li>
+                                <a href="@Url.Action("BlogsByCategory", "Home", new { categoryId = cat.Id })">
+                                    @cat.Name
+                                    <span>(@Model.BlogList.Count(b => b.BlogCategoryIds.Split(',', StringSplitOptions.RemoveEmptyEntries).Contains(cat.Id.ToString())))</span>
+                                </a>
+                            </li>
+                        }
+                    </ul>
+                </div>
+
+                <!-- Popular Reads -->
+                <div class="sidebar-widget popular-widget">
+                    <h3 class="widget-title">Popular Reads</h3>
+                    <ol class="popular-list">
+                        @foreach (var blog in Model.BlogList.OrderByDescending(b => b.ReadCount).Take(4))
+                        {
+                            <li>
+                                <a href="@Url.Action("BlogDetail", "Home", new { id = blog.Id })">@blog.Title</a>
+                            </li>
+                        }
+                    </ol>
+                </div>
+
+                <!-- Newsletter -->
+                <div class="sidebar-widget newsletter-widget">
+                    <h3 class="widget-title">Stay Informed</h3>
+                    <p class="newsletter-text">Get Wellness Insights Delivered to your inbox</p>
+                    <input type="email" placeholder="Your Email Address" class="newsletter-input" />
+                    <button class="newsletter-btn">Subscribe</button>
+                </div>
+            </aside>
+        </div>
+    </div>
+</section>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const searchInput = document.getElementById('searchInput');
+        if (!searchInput) return;
+
+        searchInput.addEventListener('input', function () {
+            const query = this.value.toLowerCase();
+
+            // Latest articles cards
+            const latestArticles = document.querySelectorAll('.latest-articles-section .latest-card');
+            latestArticles.forEach(article => {
+                const text = article.textContent.toLowerCase();
+                article.style.display = text.includes(query) ? '' : 'none';
+            });
+
+            // Categories list items
+            const categoryItems = document.querySelectorAll('.categories-list li');
+            categoryItems.forEach(li => {
+                const text = li.textContent.toLowerCase();
+                li.style.display = text.includes(query) ? '' : 'none';
+            });
+
+            // Popular reads list items
+            const popularItems = document.querySelectorAll('.popular-list li');
+            popularItems.forEach(li => {
+                const text = li.textContent.toLowerCase();
+                li.style.display = text.includes(query) ? '' : 'none';
+            });
+        });
+    });
+</script>

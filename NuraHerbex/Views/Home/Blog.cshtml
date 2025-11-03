@@ -78,7 +78,7 @@
 
         <div class="bottom-row">
             <div class="latest-grid">
-                @foreach (var blog in Model.BlogList.OrderByDescending(b => b.CreatedAt).Take(4))
+                 @foreach (var blog in Model.BlogList.Where(b => !b.IsFeatured).OrderByDescending(b => b.CreatedAt).Take(4))
                 {
                     <article onclick="location.href='@Url.Action("BlogDetail", "Home", new { id = blog.Id })'" class="latest-card">
                         <div class="latest-image">
@@ -121,7 +121,12 @@
                     <ul class="categories-list">
                         @foreach (var cat in Model.Categories)
                         {
-                            <li><a href="#">@cat.Name <span>(@Model.BlogList.Count(b => b.BlogCategoryIds.Split(',', System.StringSplitOptions.RemoveEmptyEntries).Contains(cat.Id.ToString())))</span></a></li>
+                            <li>
+                                <a href="@Url.Action("BlogsByCategory", "Home", new { categoryId = cat.Id })">
+                                    @cat.Name
+                                    <span>(@Model.BlogList.Count(b => b.BlogCategoryIds.Split(',', StringSplitOptions.RemoveEmptyEntries).Contains(cat.Id.ToString())))</span>
+                                </a>
+                            </li>
                         }
                     </ul>
                 </div>
@@ -130,7 +135,7 @@
                 <div class="sidebar-widget popular-widget">
                     <h3 class="widget-title">Popular Reads</h3>
                     <ol class="popular-list">
-                        @foreach (var blog in Model.BlogList.OrderByDescending(b => b.ReadCount).Take(4))
+                        @foreach (var blog in Model.BlogList.Where(b => !b.IsFeatured).OrderByDescending(b => b.ReadCount).Take(4))
                         {
                             <li><a href="@Url.Action("BlogDetail", "Home", new { id = blog.Id })">@blog.Title</a></li>
                         }
@@ -180,7 +185,7 @@
         </div>
 
         <div class="recommended-grid">
-            @foreach (var blog in Model.BlogList.OrderByDescending(b => b.ReadCount).Take(3))
+            @foreach (var blog in Model.BlogList.Where(b => !b.IsFeatured).OrderByDescending(b => b.ReadCount).Take(3))
             {
                 <article class="recommended-card">
                     <div class="recommended-image">
