@@ -25,19 +25,19 @@ namespace Domain.Implementation
 		private readonly UserManager<RegisterUser> _usermanager;
 		private readonly IConfiguration _config;
 		private readonly IHttpClientFactory _httpClientFactory;
-		private readonly NuraDbContext _dbContext;
+		private readonly NuraDbContext _db;
 		private readonly IEmailService _emailService;
 
 		// In-memory OTP store (You can store this in DB/Redis for production)
 		private static readonly ConcurrentDictionary<string, (string Otp, DateTime Expiry)> _otpStore = new();
 
 
-		public AdminService(UserManager<RegisterUser> userManager,IConfiguration config,IHttpClientFactory httpClientFactory, NuraDbContext dbContext, IEmailService emailService)
+		public AdminService(UserManager<RegisterUser> userManager,IConfiguration config,IHttpClientFactory httpClientFactory, NuraDbContext db, IEmailService emailService)
 		{
 			_usermanager = userManager;
 			_config = config;
 			_httpClientFactory = httpClientFactory;
-			_dbContext = dbContext;
+			_db = db;
 			_emailService = emailService;
 		}
 
@@ -169,17 +169,10 @@ namespace Domain.Implementation
 				return $"Password reset failed: {errors}";
 			}
 
-        //	return new LoginResponse
-        //	{
-        //		Token = tokenString,
-        //		Expiration = token.ValidTo,
-        //		Username = user.UserName,
-        //		Roles = roles.FirstOrDefault() ?? "User"
-        //	};
-        //}
-
-        //BlogCategory
-        public async Task<BlogCategory> GetBlogCategoryByIdAsync(int id)
+			return "Password has been reset successfully.";
+		}
+		//BlogCategory
+		public async Task<BlogCategory> GetBlogCategoryByIdAsync(int id)
         {
             return await _db.BlogCategoryDetails.FindAsync(id);
         }
@@ -286,8 +279,6 @@ namespace Domain.Implementation
         {
             return await _db.Ingredients.FindAsync(id);
         }
-			return "Password has been reset successfully.";
-		}
 
         public async Task<IdentityResult> AddOrUpdateIngredientAsync(Ingredient ingredient)
         {
