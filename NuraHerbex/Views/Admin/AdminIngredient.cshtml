@@ -48,8 +48,7 @@
                                                 <th>Image</th>
                                                 <th>Name</th>
                                                 <th>Scientific Name</th>
-                                                <th>Benefits</th>
-                                                <th>Evidence</th>
+                                                <th>Category</th>
                                                 <th>Created At</th>
                                                 <th style="min-width:120px;">Active</th>
                                                 <th style="min-width:120px;">Actions</th>
@@ -64,8 +63,9 @@
                                                         <td><img src="@ingredient.ImagePath" alt="Image" style="width:40px;height:40px;border-radius:6px;" /></td>
                                                         <td>@ingredient.IngredientName</td>
                                                         <td>@ingredient.ScientificName</td>
-                                                        <td>@ingredient.Benefits</td>
-                                                        <td>@ingredient.Evidence</td>
+                                                        <td>
+                                                            @Model.IngredientCategories.FirstOrDefault(c => c.Id == ingredient.IngredientCategoryId)?.Name
+                                                        </td>
                                                         <td>@ingredient.CreatedAt.ToString("dd MMM yyyy")</td>
                                                         <td>
                                                             @if (ingredient.IsActive)
@@ -121,10 +121,32 @@
                                             <span asp-validation-for="NewIngredient.IngredientName" class="text-danger"></span>
                                         </div>
                                         <div class="col-md-6">
+                                            <label asp-for="NewIngredient.IngredientCategoryId">Category</label>
+                                            <select asp-for="NewIngredient.IngredientCategoryId" class="form-control"
+                                                    asp-items="@(new SelectList(Model.IngredientCategories, "Id", "Name", Model.NewIngredient.IngredientCategoryId))">
+                                                <option value="">Select category</option>
+                                            </select>
+                                            <span asp-validation-for="NewIngredient.IngredientCategoryId" class="text-danger"></span>
+                                        </div>
+                                        <br />
+                                        <div class="col-md-6">
                                             <label asp-for="NewIngredient.ScientificName"></label>
                                             <input asp-for="NewIngredient.ScientificName" class="form-control" />
                                             <span asp-validation-for="NewIngredient.ScientificName" class="text-danger"></span>
                                         </div>
+                                        <div class="col-md-6">
+                                            <label>Main Image</label>
+                                            <input asp-for="ImageFile" type="file" class="form-control" />
+                                            <input type="hidden" asp-for="NewIngredient.ImagePath" />
+
+                                            @if (!string.IsNullOrEmpty(Model.NewIngredient.ImagePath))
+                                            {
+                                                <img src="@Model.NewIngredient.ImagePath" alt="Ingredient Image" class="img-fluid mt-2" style="max-height: 150px;" />
+                                            }
+
+                                            <span asp-validation-for="NewIngredient.ImagePath" class="text-danger"></span>
+                                        </div>
+
                                     </div>
                                     <div class="mb-3">
                                         <label asp-for="NewIngredient.Benefits"></label>
@@ -136,19 +158,6 @@
                                         <input asp-for="NewIngredient.Evidence" class="form-control" />
                                         <span asp-validation-for="NewIngredient.Evidence" class="text-danger"></span>
                                     </div>
-                                    <div class="mb-3">
-                                        <label>Main Image</label>
-                                        <input asp-for="ImageFile" type="file" class="form-control" />
-                                        <input type="hidden" asp-for="NewIngredient.ImagePath" />
-
-                                        @if (!string.IsNullOrEmpty(Model.NewIngredient.ImagePath))
-                                        {
-                                            <img src="@Model.NewIngredient.ImagePath" alt="Ingredient Image" class="img-fluid mt-2" style="max-height: 150px;" />
-                                        }
-
-                                        <span asp-validation-for="NewIngredient.ImagePath" class="text-danger"></span>
-                                    </div>
-
                                     <div class="form-check mb-3">
                                         <input asp-for="NewIngredient.IsActive" class="form-check-input" type="checkbox" id="isActiveCheckbox" />
                                         <label asp-for="NewIngredient.IsActive" class="form-check-label" for="isActiveCheckbox">

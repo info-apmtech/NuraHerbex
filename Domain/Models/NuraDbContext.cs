@@ -19,5 +19,6 @@ namespace Domain.Models
 		public DbSet<QuizOption> QuizOptions { get; set; }
 		public DbSet<ConsultationBooking> ConsultationBookingDetails { get; set; }
 		public DbSet<Ingredient> Ingredients { get; set; }
+		public DbSet<IngredientCategory> IngredientCategories { get; set; }
 	}
 }

@@ -30,10 +30,16 @@ namespace Domain.Interface
         Task<IdentityResult> AddOrUpdateBlogAsync(Blog blog);
         Task<IdentityResult> DeleteBlogAsync(int id);
 
-        //Incredients
+        //Ingredients
         Task<List<Ingredient>> GetIngredientsAsync();
         Task<Ingredient> GetIngredientByIdAsync(int id);
         Task<IdentityResult> AddOrUpdateIngredientAsync(Ingredient ingredient);
         Task<IdentityResult> DeleteIngredientAsync(int id);
-	}
+
+        //Ingredient Category
+        Task<List<IngredientCategory>> GetIngredientCategoriesAsync();
+        Task<IngredientCategory> GetIngredientCategoryByIdAsync(int id);
+        Task<IdentityResult> AddOrUpdateIngredientCategoryAsync(IngredientCategory category);
+        Task<IdentityResult> DeleteIngredientCategoryAsync(int id);
+    }
 }

@@ -211,6 +211,52 @@ namespace APIs.Controllers
             return BadRequest(result.Errors);
         }
 
+        //Ingredients Category
+        // IngredientCategory APIs
+        [AllowAnonymous]
+        [HttpGet("ingredientcategories")]
+        public async Task<IActionResult> GetIngredientCategories()
+        {
+            var categories = await _adminservice.GetIngredientCategoriesAsync();
+            return Ok(categories);
+        }
+
+        [AllowAnonymous]
+        [HttpGet("ingredientcategory/{id}")]
+        public async Task<IActionResult> GetIngredientCategory(int id)
+        {
+            var category = await _adminservice.GetIngredientCategoryByIdAsync(id);
+            if (category == null)
+                return NotFound();
+
+            return Ok(category);
+        }
+
+        [AllowAnonymous]
+        [HttpPost("ingredientcategory")]
+        public async Task<IActionResult> AddOrUpdateIngredientCategory([FromBody] IngredientCategory category)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var result = await _adminservice.AddOrUpdateIngredientCategoryAsync(category);
+
+            if (result.Succeeded)
+                return Ok(new { success = true, message = "Ingredient category saved successfully" });
+
+            return BadRequest(result.Errors);
+        }
+
+        [AllowAnonymous]
+        [HttpDelete("ingredientcategory/{id}")]
+        public async Task<IActionResult> DeleteIngredientCategory(int id)
+        {
+            var result = await _adminservice.DeleteIngredientCategoryAsync(id);
+            if (result.Succeeded)
+                return Ok(new { success = true, message = "Ingredient category deleted successfully" });
+
+            return BadRequest(result.Errors);
+        }
 
 
     }

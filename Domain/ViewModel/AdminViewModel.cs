@@ -106,12 +106,19 @@ namespace Domain.ViewModel
         public List<BlogCategory> Categories { get; set; } = new List<BlogCategory>();
         public IFormFile ImageFile { get; set; }
         public List<int> SelectedCategoryIds { get; set; } = new List<int>();
+        public int CategoryId { get; set; }
     }
     public class IngredientViewModel
     {
+        public List<IngredientCategory> IngredientCategories { get; set; } = new List<IngredientCategory>();
         public List<Ingredient> IngredientList { get; set; } = new List<Ingredient>();
         public Ingredient NewIngredient { get; set; } = new Ingredient();
         public IFormFile ImageFile { get; set; }
+    }
+    public class IngredientCategoryViewModel
+    {
+        public List<IngredientCategory> CategoryList { get; set; } = new List<IngredientCategory>();
+        public IngredientCategory NewCategory { get; set; } = new IngredientCategory();
     }
 
 }

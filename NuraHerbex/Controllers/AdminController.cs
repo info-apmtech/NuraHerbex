@@ -238,7 +238,6 @@ namespace NuraHerbex.Controllers
 
 
         //Incredients
-        [HttpGet]
         public async Task<IActionResult> AdminIngredient(int id = 0)
         {
             var response = await AuthorizedClient.GetAsync("AdminAPI/ingredients");
@@ -251,6 +250,11 @@ namespace NuraHerbex.Controllers
                 IngredientList = ingredients,
                 NewIngredient = new Ingredient()
             };
+
+            var categoryResponse = await AuthorizedClient.GetAsync("AdminAPI/ingredientcategories");
+            vm.IngredientCategories = categoryResponse.IsSuccessStatusCode
+                ? JsonConvert.DeserializeObject<List<IngredientCategory>>(await categoryResponse.Content.ReadAsStringAsync())
+                : new List<IngredientCategory>();
 
             if (id > 0)
             {
@@ -265,6 +269,7 @@ namespace NuraHerbex.Controllers
 
             return View(vm);
         }
+
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -321,6 +326,71 @@ namespace NuraHerbex.Controllers
                 TempData["Error"] = $"Delete failed: {await response.Content.ReadAsStringAsync()}";
 
             return RedirectToAction(nameof(AdminIngredient));
+        }
+
+        //Ingredient Category
+        [HttpGet]
+        public async Task<IActionResult> AdminIngredientCategory(int id = 0)
+        {
+            var response = await AuthorizedClient.GetAsync("AdminAPI/ingredientcategories");
+            var categories = response.IsSuccessStatusCode
+                ? JsonConvert.DeserializeObject<List<IngredientCategory>>(await response.Content.ReadAsStringAsync()) ?? new List<IngredientCategory>()
+                : new List<IngredientCategory>();
+
+            var vm = new IngredientCategoryViewModel
+            {
+                CategoryList = categories,
+                NewCategory = new IngredientCategory()
+            };
+
+            if (id > 0)
+            {
+                var catResp = await AuthorizedClient.GetAsync($"AdminAPI/ingredientcategory/{id}");
+                if (catResp.IsSuccessStatusCode)
+                {
+                    var category = JsonConvert.DeserializeObject<IngredientCategory>(await catResp.Content.ReadAsStringAsync());
+                    if (category != null)
+                        vm.NewCategory = category;
+                }
+            }
+
+            return View(vm);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AdminIngredientCategory(IngredientCategoryViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                TempData["Error"] = "Validation failed";
+                return View(model);
+            }
+
+            var response = await AuthorizedClient.PostAsJsonAsync("AdminAPI/ingredientcategory", model.NewCategory);
+
+            if (response.IsSuccessStatusCode)
+            {
+                TempData["Success"] = model.NewCategory.Id > 0 ? "Category updated successfully" : "Category added successfully";
+                return RedirectToAction(nameof(AdminIngredientCategory), new { id = 0 });
+            }
+
+            var error = await response.Content.ReadAsStringAsync();
+            TempData["Error"] = $"Error: {error}";
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteIngredientCategory(int id)
+        {
+            var response = await AuthorizedClient.DeleteAsync($"AdminAPI/ingredientcategory/{id}");
+            if (response.IsSuccessStatusCode)
+                TempData["Success"] = "Category deleted successfully!";
+            else
+                TempData["Error"] = $"Delete failed: {await response.Content.ReadAsStringAsync()}";
+
+            return RedirectToAction(nameof(AdminIngredientCategory));
         }
 
         public IActionResult Product()

@@ -1,4 +1,6 @@
-﻿<style>
+﻿@model Domain.ViewModel.IngredientViewModel
+
+<style>
 	.ingredients-section {
 		background-color: #ffffff;
 		padding: 0 0 4.5rem;
@@ -1327,342 +1329,76 @@
 			<h1><span class="highlight">Holistic Wellness </span> & Vitality Ingredients</h1>
 			<p class="ind-subtitle">A carefully curated blend of herbs, seeds, nuts, and natural tonics that support vitality, testosterone, fertility, stress reduction, digestion, and overall wellness.</p>
 		</div>
-		<div class="divider">
-			<span class="divider-text">Adaptogens & Stress Support</span>
-		</div>
 
-		<!-- Ingredients Grid -->
-		<div class="ingredients-grid">
-			<!-- Ashwagandha -->
-			<div class="ingredient-cards">
-				<div class="image-placeholder">
-					<img src="~/image/Ingredients/Ashwagandha.png" alt="Ashwagandha">
-				</div>
-				<h6><strong>Ashwagandha</strong> <em>(Withania somnifera)</em></h6>
-				<div class="para">
-					<p>
-						<strong>Benefits:</strong> Adaptogen, reduces stress, improves testosterone, supports strength & recovery, may improve sperm quality and muscle growth.@* <br /> *@
-					</p>
-					<p>
-						<strong>Evidence:</strong>Multiple human trials confirm stress reduction & testosterone support.
-					</p>
-				</div>
+		@{
+			var firstCategory = Model.IngredientCategories.FirstOrDefault(c => c.IsActive);
+			var otherCategories = Model.IngredientCategories.Where(c => c.IsActive && c.Id != firstCategory?.Id).ToList();
+		}
 
-			</div>
-
-			<!-- Shatavari -->
-			<div class="ingredient-cards">
-				<div class="image-placeholder">
-					<img src="~/image/Ingredients/Shatavari.png" alt="Shatavari">
-				</div>
-				<h6><strong>Shatavari</strong> <em>(Asparagus racemosus)</em></h6>
-				<div class="para">
-					<p><strong>Benefits:</strong> Benefits: Female reproductive tonic, hormone balance, adaptogenic.</p>
-					<p>
-						<strong>Evidence:</strong>Traditionally used in women’s health (estrogenic). Mild adaptogen.
-					</p>
-				</div>
-			</div>
-
-			<!-- Licorice -->
-			<div class="ingredient-cards">
-				<div class="image-placeholder">
-					<img src="~/image/Ingredients/Licorice.png" alt="Licorice">
-				</div>
-				<h6><strong>Licorice</strong> <em>(Glycyrrhiza glabra)</em></h6>
-				<div class="para">
-					<p><strong>Benefits:</strong> Adaptogen, gut healing, anti-inflammatory, supports adrenal health.</p>
-					<p>
-						<strong>Evidence:</strong> Can increase blood pressure in sensitive individuals if high dose.
-					</p>
-				</div>
-			</div>
-
-			<!-- Amurka -->
-			<div class="ingredient-cards">
-				<div class="image-placeholder">
-					<img src="~/image/Ingredients/Amurka.png" alt="Amurka">
-				</div>
-				<h6><strong>Amurka</strong> <em></em></h6>
-				<div class="para">
-					<p><strong>Benefits:</strong> Rich in vitamin C and antioxidants, amla boosts immunity, promotes healthy skin and hair, supports digestive health, and helps regulate blood sugar levels.</p>
-				</div>
-			</div>
-		</div>
-		<div id="more-content" class="hidden-content">
+		<!-- Show first category always -->
+		@if (firstCategory != null)
+		{
 			<div class="divider">
-				<span class="divider-text">Testosterone & Male Vitality Boosters</span>
+				<span class="divider-text">@firstCategory.Name</span>
 			</div>
 			<div class="ingredients-grid">
-				<div class="ingredient-cards">
-					<div class="image-placeholder">
-						<img src="~/image/Ingredients/HimalayanShilajit.png" alt="Himalayan Shilajit">
+				@foreach (var ingredient in Model.IngredientList.Where(i => i.IngredientCategoryId == firstCategory.Id))
+				{
+					<div class="ingredient-cards">
+						<div class="image-placeholder">
+							<img src="@ingredient.ImagePath" alt="@ingredient.IngredientName" />
+						</div>
+						<h6>
+							<strong>@ingredient.IngredientName</strong>
+							<em>@ingredient.ScientificName</em>
+						</h6>
+						<div class="para">
+							@if (!string.IsNullOrWhiteSpace(ingredient.Benefits))
+							{
+								<p><strong>Benefits:</strong> @ingredient.Benefits</p>
+							}
+							@if (!string.IsNullOrWhiteSpace(ingredient.Evidence))
+							{
+								<p><strong>Evidence:</strong> @ingredient.Evidence</p>
+							}
+						</div>
 					</div>
-					<h6><strong>Himalayan Shilajit</strong> <em>(Purified)</em></h6>
-					<div class="para">
-						<p><strong>Benefits:</strong>Mineral-rich (fulvic acid, trace minerals), testosterone booster, anti-fatigue, supports mitochondrial energy.</p>
-						<p>
-							<strong>Evidence:</strong>Human trials show increased total testosterone & vitality in men
-						</p>
-					</div>
-				</div>
-				<div class="ingredient-cards">
-					<div class="image-placeholder">
-						<img src="~/image/Ingredients/Gokshura.png" alt="Gokshura">
-					</div>
-					<h6><strong>Gokshura</strong> <em>(Tribulus terrestris)</em></h6>
-					<div class="para">
-						<p><strong>Benefits:</strong>Traditionally for libido & urinary health. Modern data: may support sexual function, but testosterone-boosting claims are inconclusive.</p>
-						<p>
-							<strong>Evidence:</strong>Effectiveness varies by extract potency
-						</p>
-					</div>
-				</div>
-				<div class="ingredient-cards">
-					<div class="image-placeholder">
-						<img src="~/image/Ingredients/SafedMusli.png" alt="Safed Musli">
-					</div>
-					<h6>
-						<strong>Safed Musli</strong> <em>(Chlorophytum borivilianum)</em>
-					</h6>
-					<div class="para">
-						<p><strong>Benefits:</strong>Aphrodisiac, improves stamina, anti-fatigue, supports spermatogenesis.</p>
-						<p>
-							<strong>Evidence:</strong>Some clinical support for sexual wellness & energy.
-						</p>
-					</div>
-				</div>
-				<div class="ingredient-cards">
-					<div class="image-placeholder">
-						<img src="~/image/Ingredients/SalabPanja.png" alt="Salab Panja">
-					</div>
-					<h6>
-						<strong>Salab Panja</strong> <em>(Orchis latifolia tuber)</em>
-					</h6>
-					<div class="para">
-						<p><strong>Benefits:</strong>Rare Ayurvedic herb for stamina, rejuvenation, aphrodisiac effect. Limited modern research. Mostly traditional evidence.</p>
-					</div>
-				</div>
-				<div class="ingredient-cards">
-					<div class="image-placeholder">
-						<img src="~/image/Ingredients/SalabMisri.png" alt="Salab Misri">
-					</div>
-					<h6>
-						<strong>Salab Misri</strong> <em>(Orchis mascula / Orchis latifolia subspecies)</em>
-					</h6>
-					<div class="para">
-						<p><strong>Benefits:</strong>Similar to Salab Panja → reproductive health, vitality, nerve tonic. Very limited clinical data.</p>
-					</div>
-				</div>
-				<div class="ingredient-cards">
-					<div class="image-placeholder">
-						<img src="~/image/Ingredients/VelvetBean.png" alt="Velvet Bean">
-					</div>
-					<h6>
-						<strong>Velvet Bean</strong> <em>(Mucuna pruriens)</em>
-					</h6>
-					<div class="para">
-						<p><strong>Benefits:</strong>Rich in L-DOPA (dopamine precursor), supports mood, sexual function, may increase testosterone.</p>
-						<p><strong>Evidence:</strong>Strong data in male infertility & dopamine regulation.</p>
-					</div>
-				</div>
+				}
 			</div>
-			<div class="divider">
-				<span class="divider-text">Aphrodisiac & Fertility Enhancers</span>
-			</div>
-			<div class="ingredients-grid">
-				<div class="ingredient-cards">
-					<div class="image-placeholder">
-						<img src="~/image/Ingredients/HimalayanShilajit.png" alt="Drumstick Flower & Resin">
-					</div>
-					<h6>
-						<strong>Drumstick Flower & Resin</strong> <em>(Moringa oleifera)</em>
-					</h6>
-					<div class="para">
-						<p><strong>Benefits:</strong>Nutrient-rich (vitamins, minerals), aphrodisiac in Ayurveda, antioxidant, supports fertility & vitality.</p>
-					</div>
-				</div>
-				<div class="ingredient-cards">
-					<div class="image-placeholder">
-						<img src="~/image/Ingredients/Gokshura.png" alt="Onion Seed">
-					</div>
-					<h6>
-						<strong>Onion Seed</strong> <em></em>
-					</h6>
-					<div class="para">
-						<p><strong>Benefits:</strong>Similar to Kalonji, supports immunity, fertility, antioxidant effect.</p>
-					</div>
-				</div>
-				<div class="ingredient-cards">
-					<div class="image-placeholder">
-						<img src="~/image/Ingredients/SafedMusli.png" alt="Radish Seed">
-					</div>
-					<h6>
-						<strong>Radish Seed</strong> <em>(Chlorophytum borivilianum)</em>
-					</h6>
-					<div class="para">
-						<p><strong>Benefits:</strong>Traditionally aphrodisiac, supports digestion, detox, some sperm quality support.</p>
-					</div>
-				</div>
-				<div class="ingredient-cards">
-					<div class="image-placeholder">
-						<img src="~/image/Ingredients/SalabPanja.png" alt="Watermelon Seed">
-					</div>
-					<h6>
-						<strong>Watermelon Seed</strong> <em>(Orchis latifolia tuber)</em>
-					</h6>
-					<div class="para">
-						<p><strong>Benefits:</strong>Protein, magnesium, supports hydration & vascular function (due to arginine content).</p>
-					</div>
-				</div>
-			</div>
-			<div class="divider">
-				<span class="divider-text">Nutrient-Rich Superfoods (Seeds & Nuts)</span>
-			</div>
-			<div class="ingredients-grid">
-				<div class="ingredient-cards">
-					<div class="image-placeholder">
-						<img src="~/image/Ingredients/PumpkinSeed.png" alt="Pumpkin Seed">
-					</div>
-					<h6>
-						<strong>Pumpkin Seed</strong> <em>(Moringa oleifera)</em>
-					</h6>
-					<div class="para">
-						<p><strong>Benefits:</strong>Zinc-rich (supports testosterone, prostate health), omega-3, antioxidants.</p>
-						<p><strong>Evidence:</strong>Good for prostate, sperm health, and nutrient density</p>
-					</div>
-				</div>
-				<div class="ingredient-cards">
-					<div class="image-placeholder">
-						<img src="~/image/Ingredients/Almond.png" alt="Almond">
-					</div>
-					<h6>
-						<strong>Almond</strong> <em></em>
-					</h6>
-					<div class="para">
-						<p><strong>Benefits:</strong>Vitamin E, healthy fats, antioxidant, supports brain & skin.</p>
-					</div>
-				</div>
-				<div class="ingredient-cards">
-					<div class="image-placeholder">
-						<img src="~/image/Ingredients/Walnut.png" alt="Walnut">
-					</div>
-					<h6>
-						<strong>Walnut</strong> <em>(Chlorophytum borivilianum)</em>
-					</h6>
-					<div class="para">
-						<p><strong>Benefits:</strong>Omega-3 ALA, brain health, anti-inflammatory, heart protective.</p>
-					</div>
-				</div>
-				<div class="ingredient-cards">
-					<div class="image-placeholder">
-						<img src="~/image/Ingredients/Pista.png" alt="Pista">
-					</div>
-					<h6>
-						<strong>Pista</strong> <em>(Pistachio)</em>
-					</h6>
-					<div class="para">
-						<p><strong>Benefits:</strong>Antioxidants (lutein, polyphenols), protein, heart health, supports vascular function.</p>
-					</div>
-				</div>
-				<div class="ingredient-cards">
-					<div class="image-placeholder">
-						<img src="~/image/Ingredients/LotusSeeds.png" alt="Lotus Seeds">
-					</div>
-					<h6>
-						<strong>Lotus Seeds</strong> <em>(Makhana)</em>
-					</h6>
-					<div class="para">
-						<p><strong>Benefits:</strong>Nervine tonic, antioxidant, cooling, supports stress reduction, good carb source.</p>
-					</div>
-				</div>
-				<div class="ingredient-cards">
-					<div class="image-placeholder">
-						<img src="~/image/Ingredients/Gooseberry.png" alt="Gooseberry">
-					</div>
-					<h6>
-						<strong>Gooseberry</strong> <em>(Amla)</em>
-					</h6>
-					<div class="para">
-						<p><strong>Benefits:</strong>Rich in Vitamin C, strong antioxidant, supports immunity, hair, skin, digestion</p>
-					</div>
-				</div>
-			</div>
-			<div class="divider">
-				<span class="divider-text">Digestive & Gut Health Support</span>
-			</div>
-			<div class="ingredients-grid">
-				<div class="ingredient-cards">
-					<div class="image-placeholder">
-						<img src="~/image/Ingredients/Jayfal.png" alt="Rumi Mastagi">
-					</div>
-					<h6>
-						<strong>Rumi Mastagi</strong> <em>(Pistacia lentiscus resin / Mastic gum)</em>
-					</h6>
-					<div class="para">
-						<p><strong>Benefits:</strong>Anti-inflammatory, gut health, may support digestion & liver.</p>
-						<p><strong>Evidence:</strong>Studies show antibacterial and gut-healing properties.</p>
-					</div>
-				</div>
-				<div class="ingredient-cards">
-					<div class="image-placeholder">
-						<img src="~/image/Ingredients/Kalonji.png" alt="Kalonji">
-					</div>
-					<h6>
-						<strong>Kalonji</strong> <em>(Nigella sativa / Black seed)</em>
-					</h6>
-					<div class="para">
-						<p><strong>Benefits:</strong>Strong antioxidant, supports immunity, anti-inflammatory, may regulate blood sugar & cholesterol.</p>
-						<p><strong>Evidence:</strong> Good clinical data for metabolic support.</p>
-					</div>
-				</div>
-				<div class="ingredient-cards">
-					<div class="image-placeholder">
-						<img src="~/image/Ingredients/Cardamom.png" alt="Cardamom">
-					</div>
-					<h6>
-						<strong>Cardamom</strong> <em></em>
-					</h6>
-					<div class="para">
-						<p><strong>Benefits:</strong>Digestive aid, antioxidant, mild anti-inflammatory, supports detox pathways.</p>
-					</div>
-				</div>
-			</div>
-			<div class="divider">
-				<span class="divider-text">Adaptogens & Stress Support</span>
-			</div>
-			<div class="ingredients-grid">
-				<div class="ingredient-cards">
-					<div class="image-placeholder">
-						<img src="~/image/Ingredients/Jayfal.png" alt="Jayfal">
-					</div>
-					<h6>
-						<strong>Jayfal</strong> <em>(Nutmeg)</em>
-					</h6>
-					<div class="para">
-						<p><strong>Benefits:</strong>Mild aphrodisiac, antioxidant, calming effect on nerves.</p>
-						<p><strong>Evidence:</strong>High dose can be toxic (hallucinations, liver risk).</p>
+		}
 
-					</div>
+		<!-- Hide other categories initially -->
+		<div id="more-content" style="display:none;">
+			@foreach (var category in otherCategories)
+			{
+				<div class="divider">
+					<span class="divider-text">@category.Name</span>
 				</div>
-				<div class="ingredient-cards">
-					<div class="image-placeholder">
-						<img src="~/image/Ingredients/Kalonji.png" alt="Palm Candy">
-					</div>
-					<h6>
-						<strong>Palm Candy</strong> <em>(Natural sugar crystal)</em>
-					</h6>
-					<div class="para">
-						<p><strong>Benefits:</strong>Mild sweetener with trace minerals.</p>
-						<p><strong>Evidence:</strong>Adds sugar load → must be minimal.</p>
-					</div>
+				<div class="ingredients-grid">
+					@foreach (var ingredient in Model.IngredientList.Where(i => i.IngredientCategoryId == category.Id))
+					{
+						<div class="ingredient-cards">
+							<div class="image-placeholder">
+								<img src="@ingredient.ImagePath" alt="@ingredient.IngredientName" />
+							</div>
+							<h6>
+								<strong>@ingredient.IngredientName</strong>
+								<em>@ingredient.ScientificName</em>
+							</h6>
+							<div class="para">
+								@if (!string.IsNullOrWhiteSpace(ingredient.Benefits))
+								{
+									<p><strong>Benefits:</strong> @ingredient.Benefits</p>
+								}
+								@if (!string.IsNullOrWhiteSpace(ingredient.Evidence))
+								{
+									<p><strong>Evidence:</strong> @ingredient.Evidence</p>
+								}
+							</div>
+						</div>
+					}
 				</div>
-			</div>
-
-			@* <div class="divider">
-			<span class="divider-text">View Less</span>
-		</div> *@
-
+			}
 		</div>
 
 		<!-- CTA Button -->
@@ -1872,8 +1608,8 @@
 		this.textContent = "View Less";
 	  } else {
 		moreContent.style.display = "none";
-		this.textContent = "View All 20 + Ingredients";
-		window.scrollTo({ top: 0, behavior: "smooth" }); // optional: scroll to top
+		this.textContent = "View All 20+ Ingredients";
+		window.scrollTo({ top: 0, behavior: "smooth" });
 	  }
 	});
 </script>

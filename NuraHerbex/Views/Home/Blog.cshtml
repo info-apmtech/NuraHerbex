@@ -121,7 +121,12 @@
                     <ul class="categories-list">
                         @foreach (var cat in Model.Categories)
                         {
-                            <li><a href="#">@cat.Name <span>(@Model.BlogList.Count(b => b.BlogCategoryIds.Split(',', System.StringSplitOptions.RemoveEmptyEntries).Contains(cat.Id.ToString())))</span></a></li>
+                            <li>
+                                <a href="@Url.Action("BlogsByCategory", "Home", new { categoryId = cat.Id })">
+                                    @cat.Name
+                                    <span>(@Model.BlogList.Count(b => b.BlogCategoryIds.Split(',', StringSplitOptions.RemoveEmptyEntries).Contains(cat.Id.ToString())))</span>
+                                </a>
+                            </li>
                         }
                     </ul>
                 </div>

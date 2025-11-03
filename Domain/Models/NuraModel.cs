@@ -163,11 +163,20 @@ namespace Domain.Models
         public int Id { get; set; }
         public string ImagePath { get; set; }
         public string IngredientName { get; set; }
+        public int IngredientCategoryId { get; set; }
         public string? ScientificName { get; set; }
         public string? Benefits { get; set; }    
         public string? Evidence { get; set; } 
         public DateTime CreatedAt { get; set; } = DateTime.Now;
         public bool IsActive { get; set; } = true;
     }
+    public class IngredientCategory
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public bool IsActive { get; set; } = true;
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    }
+
 
 }
