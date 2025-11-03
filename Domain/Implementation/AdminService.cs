@@ -204,6 +204,59 @@ namespace Domain.Implementation
             return IdentityResult.Success;
         }
 
+        //Incredients
+        public async Task<List<Ingredient>> GetIngredientsAsync()
+        {
+            return await _db.Ingredients.OrderByDescending(i => i.CreatedAt).ToListAsync();
+        }
+
+        public async Task<Ingredient> GetIngredientByIdAsync(int id)
+        {
+            return await _db.Ingredients.FindAsync(id);
+        }
+
+        public async Task<IdentityResult> AddOrUpdateIngredientAsync(Ingredient ingredient)
+        {
+            if (ingredient == null)
+                return IdentityResult.Failed(new IdentityError { Description = "Ingredient cannot be null" });
+
+            if (ingredient.Id > 0)
+            {
+                var existing = await _db.Ingredients.FindAsync(ingredient.Id);
+                if (existing == null)
+                    return IdentityResult.Failed(new IdentityError { Description = "Ingredient not found" });
+
+                existing.IngredientName = ingredient.IngredientName;
+                existing.ScientificName = ingredient.ScientificName;
+                existing.Benefits = ingredient.Benefits;
+                existing.Evidence = ingredient.Evidence;
+                existing.ImagePath = ingredient.ImagePath;
+                existing.IsActive = ingredient.IsActive;
+
+                _db.Ingredients.Update(existing);
+            }
+            else
+            {
+                ingredient.CreatedAt = DateTime.UtcNow;
+                await _db.Ingredients.AddAsync(ingredient);
+            }
+
+            await _db.SaveChangesAsync();
+            return IdentityResult.Success;
+        }
+
+        public async Task<IdentityResult> DeleteIngredientAsync(int id)
+        {
+            var existing = await _db.Ingredients.FindAsync(id);
+            if (existing == null)
+                return IdentityResult.Failed(new IdentityError { Description = "Ingredient not found" });
+
+            _db.Ingredients.Remove(existing);
+            await _db.SaveChangesAsync();
+
+            return IdentityResult.Success;
+        }
+
 
     }
 

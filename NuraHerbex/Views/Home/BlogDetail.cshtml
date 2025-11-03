@@ -1,5 +1,11 @@
-﻿@{
+﻿@model Domain.ViewModel.BlogViewModel
+
+@{
     ViewData["Title"] = "Blog Details";
+    var blog = Model.NewBlog;
+    var categories = Model.Categories;
+    var blogCategoryIds = blog.BlogCategoryIds?.Split(',', System.StringSplitOptions.RemoveEmptyEntries) ?? new string[0];
+    var categoryNames = categories.Where(c => blogCategoryIds.Contains(c.Id.ToString())).Select(c => c.Name);
 }
 
 <style>
@@ -94,33 +100,27 @@
 
 <article>
     <header class="article-header">
-        <h1 class="article-title">5 Morning Habits That Boost Energy and Focus All Day</h1>
+        <h1 class="article-title">@blog.Title</h1>
         <div class="meta-date-readtime">
-            <span>Dr.Marcus Chen</span>
-            <span>15 Dec, 2024</span>
-            <span>5 min Read</span>
+            <span>@blog.WrittenBy</span>
+            <span>@blog.CreatedAt.ToString("dd MMM, yyyy")</span>
+            <span>@blog.ReadTime</span>
         </div>
     </header>
 
-    <img src="/image/blog/man-meditating-lotus-pose.png" alt="Blog Cover" class="blog-main-image" />
+    <img src="@blog.ImagePath" alt="Blog Cover" class="blog-main-image" />
 
     <div class="meta-section">
         <div>
             <span class="meta-label">Category</span>
-            <span class="meta-value">Lifestyle</span>
-            <span class="meta-value">Wellness</span>
+            @foreach (var catName in categoryNames)
+            {
+                <span class="meta-value">@catName</span>
+            }
         </div>
     </div>
 
     <section class="article-content">
-        <p>
-            Simple, science-backed routines that successful men use to optimize their daily performance and mental clarity.
-        </p>
-        <p>
-            Discover actionable tips including hydration, mindful movement, strategic nutrition, and the power of setting intentions for a high-energy day.
-        </p>
-        <p>
-            These routines help support vitality, focus, and holistic wellness, aligning with top advice from experienced experts like Dr. Marcus Chen.
-        </p>
+        @Html.Raw(blog.Description)
     </section>
 </article>

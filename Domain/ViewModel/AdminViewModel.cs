@@ -55,4 +55,11 @@ namespace Domain.ViewModel
         public IFormFile ImageFile { get; set; }
         public List<int> SelectedCategoryIds { get; set; } = new List<int>();
     }
+    public class IngredientViewModel
+    {
+        public List<Ingredient> IngredientList { get; set; } = new List<Ingredient>();
+        public Ingredient NewIngredient { get; set; } = new Ingredient();
+        public IFormFile ImageFile { get; set; }
+    }
+
 }

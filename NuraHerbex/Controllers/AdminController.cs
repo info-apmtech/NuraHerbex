@@ -237,11 +237,93 @@ namespace NuraHerbex.Controllers
         }
 
 
-        public IActionResult AdminIncredient()
-		{
-			return View();
-		}
-		public IActionResult Product()
+        //Incredients
+        [HttpGet]
+        public async Task<IActionResult> AdminIngredient(int id = 0)
+        {
+            var response = await AuthorizedClient.GetAsync("AdminAPI/ingredients");
+            var ingredients = response.IsSuccessStatusCode
+                ? JsonConvert.DeserializeObject<List<Ingredient>>(await response.Content.ReadAsStringAsync())
+                : new List<Ingredient>();
+
+            var vm = new IngredientViewModel
+            {
+                IngredientList = ingredients,
+                NewIngredient = new Ingredient()
+            };
+
+            if (id > 0)
+            {
+                var ingResponse = await AuthorizedClient.GetAsync($"AdminAPI/ingredient/{id}");
+                if (ingResponse.IsSuccessStatusCode)
+                {
+                    var ingredient = JsonConvert.DeserializeObject<Ingredient>(await ingResponse.Content.ReadAsStringAsync());
+                    if (ingredient != null)
+                        vm.NewIngredient = ingredient;
+                }
+            }
+
+            return View(vm);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AdminIngredient(IngredientViewModel model, IFormFile ImageFile)
+        {
+            if (ImageFile != null && ImageFile.Length > 0)
+            {
+                var uploadsFolder = Path.Combine(_environment.WebRootPath, "uploads/ingredients");
+                if (!Directory.Exists(uploadsFolder))
+                    Directory.CreateDirectory(uploadsFolder);
+
+                var uniqueFileName = Guid.NewGuid() + Path.GetExtension(ImageFile.FileName);
+                var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await ImageFile.CopyToAsync(stream);
+                }
+
+                model.NewIngredient.ImagePath = "/uploads/ingredients/" + uniqueFileName;
+            }
+
+            var json = JsonConvert.SerializeObject(model.NewIngredient);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+            var response = await AuthorizedClient.PostAsync("AdminAPI/ingredient", content);
+
+            if (response.IsSuccessStatusCode)
+            {
+                TempData["Success"] = model.NewIngredient.Id != 0
+                    ? "Ingredient updated successfully!"
+                    : "Ingredient added successfully!";
+                return RedirectToAction("AdminIngredient", "Admin", new { id = 0 });
+            }
+
+            var errorMsg = await response.Content.ReadAsStringAsync();
+            ModelState.AddModelError(string.Empty, errorMsg);
+
+            var ingredientResponse = await AuthorizedClient.GetAsync("AdminAPI/ingredients");
+            model.IngredientList = ingredientResponse.IsSuccessStatusCode
+                ? JsonConvert.DeserializeObject<List<Ingredient>>(await ingredientResponse.Content.ReadAsStringAsync())
+                : new List<Ingredient>();
+
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteIngredient(int id)
+        {
+            var response = await AuthorizedClient.DeleteAsync($"AdminAPI/ingredient/{id}");
+            if (response.IsSuccessStatusCode)
+                TempData["Success"] = "Ingredient deleted successfully!";
+            else
+                TempData["Error"] = $"Delete failed: {await response.Content.ReadAsStringAsync()}";
+
+            return RedirectToAction(nameof(AdminIngredient));
+        }
+
+        public IActionResult Product()
 		{
 			return View();
 		}

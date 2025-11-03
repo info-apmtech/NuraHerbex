@@ -144,6 +144,73 @@ namespace APIs.Controllers
 
             return BadRequest(result.Errors);
         }
+        [AllowAnonymous]
+        [HttpPost("blog/incrementreadcount/{id}")]
+        public async Task<IActionResult> IncrementReadCount(int id)
+        {
+            var blog = await _adminservice.GetBlogByIdAsync(id);
+            if (blog == null)
+                return NotFound();
+
+            blog.ReadCount++;
+            var result = await _adminservice.AddOrUpdateBlogAsync(blog);
+
+            if (result.Succeeded)
+                return Ok(new { success = true });
+
+            return BadRequest(result.Errors);
+        }
+
+        //Incredients
+        // GET: api/adminapi/ingredients
+        [AllowAnonymous]
+        [HttpGet("ingredients")]
+        public async Task<IActionResult> GetIngredients()
+        {
+            var ingredients = await _adminservice.GetIngredientsAsync();
+            return Ok(ingredients);
+        }
+
+        // GET: api/adminapi/ingredient/{id}
+        [AllowAnonymous]
+        [HttpGet("ingredient/{id}")]
+        public async Task<IActionResult> GetIngredient(int id)
+        {
+            var ingredient = await _adminservice.GetIngredientByIdAsync(id);
+            if (ingredient == null)
+                return NotFound();
+
+            return Ok(ingredient);
+        }
+
+        // POST: api/adminapi/ingredient
+        [AllowAnonymous]
+        [HttpPost("ingredient")]
+        public async Task<IActionResult> AddOrUpdateIngredient([FromBody] Ingredient ingredient)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var result = await _adminservice.AddOrUpdateIngredientAsync(ingredient);
+
+            if (result.Succeeded)
+                return Ok(new { success = true, message = "Ingredient saved successfully" });
+
+            return BadRequest(result.Errors);
+        }
+
+        // DELETE: api/adminapi/ingredient/{id}
+        [AllowAnonymous]
+        [HttpDelete("ingredient/{id}")]
+        public async Task<IActionResult> DeleteIngredient(int id)
+        {
+            var result = await _adminservice.DeleteIngredientAsync(id);
+            if (result.Succeeded)
+                return Ok(new { success = true, message = "Ingredient deleted successfully" });
+
+            return BadRequest(result.Errors);
+        }
+
 
 
     }
