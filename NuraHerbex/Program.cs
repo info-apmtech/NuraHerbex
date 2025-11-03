@@ -17,7 +17,7 @@ var builder = WebApplication.CreateBuilder(args);
 //    options.UseSqlServer(connectionString));
 //builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 //builder.Services.ConfigureApplicationCookie(options =>
-//{
+//{ 
 //	options.LoginPath = "/Authentication/Login";
 //	options.LogoutPath = "/Authentication/Logout";
 //	options.AccessDeniedPath = "/Authentication/AccessDenied";
