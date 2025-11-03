@@ -71,7 +71,7 @@
                         <a href="@Url.Action("Product", "Admin")" class="nav-link "><span class="pcoded-micon"><i class="feather icon-home"></i></span><span class="pcoded-mtext">Product</span></a>
                     </li>
                     <li class="nav-item">
-                        <a href="@Url.Action("AdminIncredient", "Admin")" class="nav-link "><span class="pcoded-micon"><i class="feather icon-home"></i></span><span class="pcoded-mtext">Incredient</span></a>
+                        <a href="@Url.Action("AdminIngredient", "Admin")" class="nav-link "><span class="pcoded-micon"><i class="feather icon-home"></i></span><span class="pcoded-mtext">Incredient</span></a>
                     </li>
                     <li class="nav-item">
                         <a href="@Url.Action("DoctorConsultation", "Admin")" class="nav-link "><span class="pcoded-micon"><i class="feather icon-home"></i></span><span class="pcoded-mtext">Doctor Consultation</span></a>
@@ -366,6 +366,16 @@
 
     <!-- custom-chart js -->
     <script src="~/assets/js/pages/dashboard-main.js"></script>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-select@1.14.0-beta2/dist/css/bootstrap-select.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap-select@1.14.0-beta2/dist/js/bootstrap-select.min.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            $('.selectpicker').selectpicker();
+        });
+    </script>
+
 
 </body>
 

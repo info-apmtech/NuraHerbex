@@ -1,5 +1,7 @@
-﻿@{
-    ViewData["Title"] = "Blog ";
+﻿@model Domain.ViewModel.BlogViewModel
+
+@{
+    ViewData["Title"] = "Blog";
 }
 
 <!-- Blog Hero Section -->
@@ -28,47 +30,27 @@
         </div>
 
         <div class="articles-grid">
-            <!-- Article Card 1 -->
-            <article onclick="location.href='@Url.Action("BlogDetail", "Home")'" class="article-card">
-                <div class="article-image">
-                    <img src="~/image/blog/man-training-with-dumbbells-smoke 1.png" alt="Performance article" />
-                    <span class="article-category">Performance</span>
-                </div>
-                <div class="article-content">
-                    <h3 class="article-title">The Science Behind Peak Male Performance: What your Body Really Needs</h3>
-                    <p class="article-excerpt">
-                        Discover the latest research on testosterone optimization, energy metabolism, and the natural compounds that can unlock your body's full potential.
-                    </p>
-                    <div class="article-meta">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <circle cx="12" cy="12" r="10"></circle>
-                            <path d="M12 6v6l4 2"></path>
-                        </svg>
-                        <span class="read-time">8 min Read</span>
+            @foreach (var blog in Model.BlogList.Where(b => b.IsFeatured))
+            {
+                <article onclick="location.href='@Url.Action("BlogDetail", "Home", new { id = blog.Id })'" class="article-card">
+                    <div class="article-image">
+                        <img src="@blog.ImagePath" alt="@blog.Title" />
+                        <span class="article-category">
+                            @string.Join(", ", Model.Categories.Where(c => blog.BlogCategoryIds
+                                     .Split(',', System.StringSplitOptions.RemoveEmptyEntries)
+                                     .Contains(c.Id.ToString()))
+                                     .Select(c => c.Name))
+                        </span>
                     </div>
-                </div>
-            </article>
-
-            <!-- Article Card 2 -->
-            <article onclick="location.href='@Url.Action("BlogDetail", "Home")'" class="article-card">
-                <div class="article-image">
-                    <img src="~/image/blog/man-training-with-dumbbells-smoke 1.png" alt="Performance article" />
-                    <span class="article-category">Performance</span>
-                </div>
-                <div class="article-content">
-                    <h3 class="article-title">Natural vs. Synthetic: Why Premium Ingredients Make All the Difference</h3>
-                    <p class="article-excerpt">
-                        Not all supplements are created equal. Learn why Sourcing, processing, and Bioavailability matter more than you think
-                    </p>
-                    <div class="article-meta">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <circle cx="12" cy="12" r="10"></circle>
-                            <path d="M12 6v6l4 2"></path>
-                        </svg>
-                        <span class="read-time">6 min Read</span>
+                    <div class="article-content">
+                        <h3 class="article-title">@blog.Title</h3>
+                        <p class="article-excerpt">@blog.Description</p>
+                        <div class="article-meta">
+                            <span class="read-time">@blog.ReadTime</span>
+                        </div>
                     </div>
-                </div>
-            </article>
+                </article>
+            }
         </div>
     </div>
 </section>
@@ -76,11 +58,10 @@
 <!-- Latest Articles Section -->
 <section class="latest-articles-section">
     <div class="latest-articles-container">
-        <!-- Top Row: Header + Search -->
         <div class="top-row">
             <div class="latest-header">
                 <h2 class="latest-title">Latest <span class="highlight-orange">Articles</span></h2>
-                <p class="latest-subtitle">Explore Our comprehensive library of men's wellness insights</p>
+                <p class="latest-subtitle">Explore our comprehensive library of men's wellness insights</p>
             </div>
 
             <div class="sidebar-widget search-widget">
@@ -90,139 +71,43 @@
                         <circle cx="11" cy="11" r="8"></circle>
                         <path d="m21 21-4.35-4.35"></path>
                     </svg>
-                    <input type="text" placeholder="Search here" class="search-input" />
+                    <input id="searchInput" type="text" placeholder="Search here" class="search-input" />
                 </div>
             </div>
         </div>
 
-        <!-- Bottom Row: Articles Grid + Sidebar Widgets -->
         <div class="bottom-row">
-            <!-- Articles Grid -->
             <div class="latest-grid">
-                <!-- Article Card 1 -->
-                <article onclick="location.href='@Url.Action("BlogDetail", "Home")'" class="latest-card">
-                    <div class="latest-image">
-                        <img src="~/image/blog/man-meditating-lotus-pose.png" alt="Morning habits" />
-                        <span class="latest-category">Lifestyle</span>
-                    </div>
-                    <div class="latest-content">
-                        <h3 class="latest-card-title">5 Morning Habits That Boost Energy and Focus All Day</h3>
-                        <p class="latest-excerpt">Simple, science-backed routines that successful men use to optimize their daily Performance and Mental clarity.</p>
-                        <div class="latest-meta">
-                            <span class="author">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                                    <circle cx="12" cy="7" r="4"></circle>
-                                </svg>
-                                Dr.Marcus Chen
-                            </span>
-                            <span class="date">Dec 15,2024</span>
-                            <span class="read-time">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <circle cx="12" cy="12" r="10"></circle>
-                                    <path d="M12 6v6l4 2"></path>
-                                </svg>
-                                5 min Read
+                @foreach (var blog in Model.BlogList.OrderByDescending(b => b.CreatedAt).Take(4))
+                {
+                    <article onclick="location.href='@Url.Action("BlogDetail", "Home", new { id = blog.Id })'" class="latest-card">
+                        <div class="latest-image">
+                            <img src="@blog.ImagePath" alt="@blog.Title" />
+                            <span class="latest-category">
+                                @string.Join(", ", Model.Categories.Where(c => blog.BlogCategoryIds
+                                         .Split(',', System.StringSplitOptions.RemoveEmptyEntries)
+                                         .Contains(c.Id.ToString()))
+                                         .Select(c => c.Name))
                             </span>
                         </div>
-                    </div>
-                </article>
-
-                <!-- Article Card 2 -->
-                <article onclick="location.href='@Url.Action("BlogDetail", "Home")'" class="latest-card">
-                    <div class="latest-image">
-                        <img src="~/image/blog/man-meditating-lotus-pose.png" alt="Morning habits" />
-                        <span class="latest-category">Lifestyle</span>
-                    </div>
-                    <div class="latest-content">
-                        <h3 class="latest-card-title">5 Morning Habits That Boost Energy and Focus All Day</h3>
-                        <p class="latest-excerpt">Simple, science-backed routines that successful men use to optimize their daily Performance and Mental clarity.</p>
-                        <div class="latest-meta">
-                            <span class="author">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                                    <circle cx="12" cy="7" r="4"></circle>
-                                </svg>
-                                Dr.Marcus Chen
-                            </span>
-                            <span class="date">Dec 15,2024</span>
-                            <span class="read-time">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <circle cx="12" cy="12" r="10"></circle>
-                                    <path d="M12 6v6l4 2"></path>
-                                </svg>
-                                5 min Read
-                            </span>
+                        <div class="latest-content">
+                            <h3 class="latest-card-title">@blog.Title</h3>
+                            <p class="latest-excerpt">@blog.Description</p>
+                            <div class="latest-meta">
+                                <span class="author">@blog.WrittenBy</span>
+                                <span class="date">@blog.CreatedAt.ToString("MMM dd, yyyy")</span>
+                                <span class="read-time">@blog.ReadTime</span>
+                            </div>
                         </div>
-                    </div>
-                </article>
-
-                <!-- Article Card 3 -->
-                <article onclick="location.href='@Url.Action("BlogDetail", "Home")'" class="latest-card">
-                    <div class="latest-image">
-                        <img src="~/image/blog/man-meditating-lotus-pose.png" alt="Morning habits" />
-                        <span class="latest-category">Lifestyle</span>
-                    </div>
-                    <div class="latest-content">
-                        <h3 class="latest-card-title">5 Morning Habits That Boost Energy and Focus All Day</h3>
-                        <p class="latest-excerpt">Simple, science-backed routines that successful men use to optimize their daily Performance and Mental clarity.</p>
-                        <div class="latest-meta">
-                            <span class="author">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                                    <circle cx="12" cy="7" r="4"></circle>
-                                </svg>
-                                Dr.Marcus Chen
-                            </span>
-                            <span class="date">Dec 15,2024</span>
-                            <span class="read-time">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <circle cx="12" cy="12" r="10"></circle>
-                                    <path d="M12 6v6l4 2"></path>
-                                </svg>
-                                5 min Read
-                            </span>
-                        </div>
-                    </div>
-                </article>
-
-                <!-- Article Card 4 -->
-                <article onclick="location.href='@Url.Action("BlogDetail", "Home")'" class="latest-card">
-                    <div class="latest-image">
-                        <img src="~/image/blog/man-meditating-lotus-pose.png" alt="Morning habits" />
-                        <span class="latest-category">Lifestyle</span>
-                    </div>
-                    <div class="latest-content">
-                        <h3 class="latest-card-title">5 Morning Habits That Boost Energy and Focus All Day</h3>
-                        <p class="latest-excerpt">Simple, science-backed routines that successful men use to optimize their daily Performance and Mental clarity.</p>
-                        <div class="latest-meta">
-                            <span class="author">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                                    <circle cx="12" cy="7" r="4"></circle>
-                                </svg>
-                                Dr.Marcus Chen
-                            </span>
-                            <span class="date">Dec 15,2024</span>
-                            <span class="read-time">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <circle cx="12" cy="12" r="10"></circle>
-                                    <path d="M12 6v6l4 2"></path>
-                                </svg>
-                                5 min Read
-                            </span>
-                        </div>
-                    </div>
-                </article>
+                    </article>
+                }
             </div>
 
-            <!-- Sidebar Widgets -->
             <aside class="articles-sidebar">
                 <!-- Categories -->
                 <div class="sidebar-widget categories-widget">
                     <h3 class="widget-title">
                         Categories
-                        <!-- Mobile Search Input -->
                         <div class="mobile-search-input">
                             <div class="search-box">
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -234,24 +119,21 @@
                         </div>
                     </h3>
                     <ul class="categories-list">
-                        <li><a href="#">Performance <span>(18)</span></a></li>
-                        <li><a href="#">Wellness <span>(8)</span></a></li>
-                        <li><a href="#">Nutrition <span>(15)</span></a></li>
-                        <li><a href="#">Lifestyle <span>(10)</span></a></li>
-                        <li><a href="#">Mental Health <span>(10)</span></a></li>
-                        <li><a href="#">Vitality <span>(10)</span></a></li>
+                        @foreach (var cat in Model.Categories)
+                        {
+                            <li><a href="#">@cat.Name <span>(@Model.BlogList.Count(b => b.BlogCategoryIds.Split(',', System.StringSplitOptions.RemoveEmptyEntries).Contains(cat.Id.ToString())))</span></a></li>
+                        }
                     </ul>
                 </div>
-
 
                 <!-- Popular Reads -->
                 <div class="sidebar-widget popular-widget">
                     <h3 class="widget-title">Popular Reads</h3>
                     <ol class="popular-list">
-                        <li><a href="#">Science Behind Peak Male Performance</a></li>
-                        <li><a href="#">5 Morning Habits that Boosts Energy</a></li>
-                        <li><a href="#">Understanding Stress & Male Vitality</a></li>
-                        <li><a href="#">Natural Vs Synthetic Supplements</a></li>
+                        @foreach (var blog in Model.BlogList.OrderByDescending(b => b.ReadCount).Take(4))
+                        {
+                            <li><a href="@Url.Action("BlogDetail", "Home", new { id = blog.Id })">@blog.Title</a></li>
+                        }
                     </ol>
                 </div>
 
@@ -273,38 +155,18 @@
         <h2 class="expert-panel-title">All articles are Curated and reviewed by Our Expert Panel</h2>
 
         <div class="experts-grid">
-            <!-- Expert 1 -->
-            <div class="expert-card">
-                <div class="expert-image">
-                    <img src="~/image/blog/doctor-with-his-arms-crossed-white-background.png" alt="Dr.Marcus Chen" />
+            @for (int i = 0; i < 3; i++)
+            {
+                <div class="expert-card">
+                    <div class="expert-image">
+                        <img src="~/image/blog/doctor-with-his-arms-crossed-white-background.png" alt="Dr.Marcus Chen" />
+                    </div>
+                    <div class="expert-info">
+                        <h3 class="expert-name">Dr.Marcus Chen</h3>
+                        <p class="expert-title">Sports Medicine Specialist</p>
+                    </div>
                 </div>
-                <div class="expert-info">
-                    <h3 class="expert-name">Dr.Marcus Chen</h3>
-                    <p class="expert-title">Sports Medicine Specialist</p>
-                </div>
-            </div>
-
-            <!-- Expert 2 -->
-            <div class="expert-card">
-                <div class="expert-image">
-                    <img src="~/image/blog/doctor-with-his-arms-crossed-white-background.png" alt="Dr.Marcus Chen" />
-                </div>
-                <div class="expert-info">
-                    <h3 class="expert-name">Dr.Marcus Chen</h3>
-                    <p class="expert-title">Sports Medicine Specialist</p>
-                </div>
-            </div>
-
-            <!-- Expert 3 -->
-            <div class="expert-card">
-                <div class="expert-image">
-                    <img src="~/image/blog/doctor-with-his-arms-crossed-white-background.png" alt="Dr.Marcus Chen" />
-                </div>
-                <div class="expert-info">
-                    <h3 class="expert-name">Dr.Marcus Chen</h3>
-                    <p class="expert-title">Sports Medicine Specialist</p>
-                </div>
-            </div>
+            }
         </div>
     </div>
 </section>
@@ -318,77 +180,32 @@
         </div>
 
         <div class="recommended-grid">
-            <!-- Article 1 -->
-            <article class="recommended-card">
-                <div class="recommended-image">
-                    <img src="~/image/blog/man-meditating-lotus-pose.png" alt="Morning habits" />
-                </div>
-                <div class="recommended-content">
-                    <span class="recommended-category">Life style</span>
-                    <h3 class="recommended-card-title">5 Morning Habits That Boost Energy and Focus All Day</h3>
-                    <p class="recommended-excerpt">Simple, science-backed routines that successful men use to optimize their daily Performance and Mental clarity.........</p>
-                    <div class="recommended-footer">
-                        <div class="recommended-meta">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <circle cx="12" cy="12" r="10"></circle>
-                                <path d="M12 6v6l4 2"></path>
-                            </svg>
-                            <span>5 min Read</span>
-                        </div>
-                        <svg onclick="location.href='@Url.Action("BlogDetail", "Home")'" class="recommended-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <polyline points="9 18 15 12 9 6"></polyline>
-                        </svg>
+            @foreach (var blog in Model.BlogList.OrderByDescending(b => b.ReadCount).Take(3))
+            {
+                <article class="recommended-card">
+                    <div class="recommended-image">
+                        <img src="@blog.ImagePath" alt="@blog.Title" />
                     </div>
-                </div>
-            </article>
-
-            <!-- Article 2 -->
-            <article class="recommended-card">
-                <div class="recommended-image">
-                    <img src="~/image/blog/man-meditating-lotus-pose.png" alt="Morning habits" />
-                </div>
-                <div class="recommended-content">
-                    <span class="recommended-category">Life style</span>
-                    <h3 class="recommended-card-title">5 Morning Habits That Boost Energy and Focus All Day</h3>
-                    <p class="recommended-excerpt">Simple, science-backed routines that successful men use to optimize their daily Performance and Mental clarity.........</p>
-                    <div class="recommended-footer">
-                        <div class="recommended-meta">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <circle cx="12" cy="12" r="10"></circle>
-                                <path d="M12 6v6l4 2"></path>
+                    <div class="recommended-content">
+                        <span class="recommended-category">
+                            @string.Join(", ", Model.Categories.Where(c => blog.BlogCategoryIds
+                                     .Split(',', System.StringSplitOptions.RemoveEmptyEntries)
+                                     .Contains(c.Id.ToString()))
+                                     .Select(c => c.Name))
+                        </span>
+                        <h3 class="recommended-card-title">@blog.Title</h3>
+                        <p class="recommended-excerpt">@blog.Description</p>
+                        <div class="recommended-footer">
+                            <div class="recommended-meta">
+                                <span>@blog.ReadTime</span>
+                            </div>
+                            <svg onclick="location.href='@Url.Action("BlogDetail", "Home", new { id = blog.Id })'" class="recommended-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="9 18 15 12 9 6"></polyline>
                             </svg>
-                            <span>5 min Read</span>
                         </div>
-                        <svg onclick="location.href='@Url.Action("BlogDetail", "Home")'" class="recommended-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <polyline points="9 18 15 12 9 6"></polyline>
-                        </svg>
                     </div>
-                </div>
-            </article>
-
-            <!-- Article 3 -->
-            <article class="recommended-card">
-                <div class="recommended-image">
-                    <img src="~/image/blog/man-meditating-lotus-pose.png" alt="Morning habits" />
-                </div>
-                <div class="recommended-content">
-                    <span class="recommended-category">Life style</span>
-                    <h3 class="recommended-card-title">5 Morning Habits That Boost Energy and Focus All Day</h3>
-                    <p class="recommended-excerpt">Simple, science-backed routines that successful men use to optimize their daily Performance and Mental clarity.........</p>
-                    <div class="recommended-footer">
-                        <div class="recommended-meta">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <circle cx="12" cy="12" r="10"></circle>
-                                <path d="M12 6v6l4 2"></path>
-                            </svg>
-                            <span>5 min Read</span>
-                        </div>
-                        <svg onclick="location.href='@Url.Action("BlogDetail", "Home")'" class="recommended-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <polyline points="9 18 15 12 9 6"></polyline>
-                        </svg>
-                    </div>
-                </div>
-            </article>
+                </article>
+            }
         </div>
     </div>
 </section>
@@ -412,8 +229,39 @@
             <a href="@Url.Action("Quiz", "Home")"
                class="blog-cta-btn blog-cta-btn-secondary"
                style="text-decoration:none;">
-               Take the Quiz
-           </a>
+                Take the Quiz
+            </a>
         </div>
     </div>
 </section>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const searchInput = document.getElementById('searchInput');
+        if (!searchInput) return;
+
+        searchInput.addEventListener('input', function () {
+            const query = this.value.toLowerCase();
+
+            // Latest articles cards
+            const latestArticles = document.querySelectorAll('.latest-articles-section article.latest-card');
+            latestArticles.forEach(article => {
+                const text = article.textContent.toLowerCase();
+                article.style.display = text.includes(query) ? '' : 'none';
+            });
+
+            // Categories list items
+            const categoryItems = document.querySelectorAll('.categories-list li');
+            categoryItems.forEach(li => {
+                const text = li.textContent.toLowerCase();
+                li.style.display = text.includes(query) ? '' : 'none';
+            });
+
+            // Popular reads list items
+            const popularItems = document.querySelectorAll('.popular-list li');
+            popularItems.forEach(li => {
+                const text = li.textContent.toLowerCase();
+                li.style.display = text.includes(query) ? '' : 'none';
+            });
+        });
+    });
+</script>

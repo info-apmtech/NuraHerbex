@@ -1,4 +1,5 @@
 ﻿using Domain.Models;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System;
 using System.Collections.Generic;
@@ -93,4 +94,24 @@ namespace Domain.ViewModel
 	//	public string ConfirmPassword { get; set; } = string.Empty;
 
 	//}
+    public class BlogCategoryViewModel
+    {
+        public List<BlogCategory> CategoryList { get; set; } = new();
+        public BlogCategory NewCategory { get; set; } = new();
+    }
+    public class BlogViewModel
+    {
+        public Blog NewBlog { get; set; } = new Blog();
+        public List<Blog> BlogList { get; set; } = new List<Blog>();
+        public List<BlogCategory> Categories { get; set; } = new List<BlogCategory>();
+        public IFormFile ImageFile { get; set; }
+        public List<int> SelectedCategoryIds { get; set; } = new List<int>();
+    }
+    public class IngredientViewModel
+    {
+        public List<Ingredient> IngredientList { get; set; } = new List<Ingredient>();
+        public Ingredient NewIngredient { get; set; } = new Ingredient();
+        public IFormFile ImageFile { get; set; }
+    }
+
 }

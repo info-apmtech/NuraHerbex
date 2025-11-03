@@ -14,6 +14,27 @@ namespace Domain.Interface
 		Task<List<RegisterUser>> GetUsersByRoleAsync(UserRole role);
 		Task<RegisterUser?> GetUserByIdAsync(string id);
 		Task<IdentityResult> AddOrUpdateUserAsync(RegisterUser user);
+        //Task<LoginResponse?> SignInAsync(LoginModel model);
+
+        //BlogCategory
+        Task<BlogCategory> GetBlogCategoryByIdAsync(int id);
+        Task<List<BlogCategory>> GetBlogCategoriesAsync();
+        Task<IdentityResult> AddOrUpdateBlogCategoryAsync(BlogCategory category);
+        Task<IdentityResult> DeleteBlogCategoryAsync(int id);
+
+        //Blog
+        Task<List<Blog>> GetBlogsAsync();
+        Task<Blog> GetBlogByIdAsync(int id);
+        Task<IdentityResult> AddOrUpdateBlogAsync(Blog blog);
+        Task<IdentityResult> DeleteBlogAsync(int id);
+
+        //Incredients
+        Task<List<Ingredient>> GetIngredientsAsync();
+        Task<Ingredient> GetIngredientByIdAsync(int id);
+        Task<IdentityResult> AddOrUpdateIngredientAsync(Ingredient ingredient);
+        Task<IdentityResult> DeleteIngredientAsync(int id);
+
+    }
 		Task<LoginResponseModel?> SignInAsync(RegisterUserViewModel model);
 		Task<bool> SendOtpAsync(string email);
 		Task<bool> VerifyOtpAsync(string email, string otp);

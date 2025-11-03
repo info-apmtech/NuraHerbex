@@ -169,8 +169,170 @@ namespace Domain.Implementation
 				return $"Password reset failed: {errors}";
 			}
 
+        //	return new LoginResponse
+        //	{
+        //		Token = tokenString,
+        //		Expiration = token.ValidTo,
+        //		Username = user.UserName,
+        //		Roles = roles.FirstOrDefault() ?? "User"
+        //	};
+        //}
+
+        //BlogCategory
+        public async Task<BlogCategory> GetBlogCategoryByIdAsync(int id)
+        {
+            return await _db.BlogCategoryDetails.FindAsync(id);
+        }
+        public async Task<List<BlogCategory>> GetBlogCategoriesAsync()
+        {
+            return await _db.BlogCategoryDetails
+                            .OrderByDescending(c => c.CreatedAt)
+                            .ToListAsync();
+        }
+        public async Task<IdentityResult> AddOrUpdateBlogCategoryAsync(BlogCategory category)
+        {
+            if (category == null) return IdentityResult.Failed(new IdentityError { Description = "Category cannot be null" });
+
+            if (category.Id > 0)
+            {
+                var existing = await _db.BlogCategoryDetails.FindAsync(category.Id);
+                if (existing == null)
+                    return IdentityResult.Failed(new IdentityError { Description = "Category not found" });
+
+                existing.Name = category.Name;
+                existing.IsActive = category.IsActive;
+                _db.BlogCategoryDetails.Update(existing);
+            }
+            else
+            {
+                category.CreatedAt = DateTime.UtcNow;
+                await _db.BlogCategoryDetails.AddAsync(category);
+            }
+
+            await _db.SaveChangesAsync();
+            return IdentityResult.Success;
+        }
+        public async Task<IdentityResult> DeleteBlogCategoryAsync(int id)
+        {
+            var existing = await _db.BlogCategoryDetails.FindAsync(id);
+            if (existing == null) return IdentityResult.Failed(new IdentityError { Description = "Category not found" });
+
+            _db.BlogCategoryDetails.Remove(existing);
+            await _db.SaveChangesAsync();
+
+            return IdentityResult.Success;
+        }
+
+        //Blogs
+        public async Task<List<Blog>> GetBlogsAsync()
+        {
+            return await _db.BlogDetails.OrderByDescending(b => b.CreatedAt).ToListAsync();
+        }
+
+        public async Task<Blog> GetBlogByIdAsync(int id)
+        {
+            return await _db.BlogDetails.FindAsync(id);
+        }
+
+        public async Task<IdentityResult> AddOrUpdateBlogAsync(Blog blog)
+        {
+            if (blog == null)
+                return IdentityResult.Failed(new IdentityError { Description = "Blog cannot be null" });
+
+            if (blog.Id > 0)
+            {
+                var existing = await _db.BlogDetails.FindAsync(blog.Id);
+                if (existing == null)
+                    return IdentityResult.Failed(new IdentityError { Description = "Blog not found" });
+
+                existing.Title = blog.Title;
+                existing.Description = blog.Description;
+                existing.ReadTime = blog.ReadTime;
+                existing.WrittenBy = blog.WrittenBy;
+                existing.BlogCategoryIds = blog.BlogCategoryIds;
+                existing.ImagePath = blog.ImagePath;
+                existing.IsFeatured = blog.IsFeatured;
+                _db.BlogDetails.Update(existing);
+            }
+            else
+            {
+                blog.CreatedAt = DateTime.UtcNow;
+                await _db.BlogDetails.AddAsync(blog);
+            }
+
+            await _db.SaveChangesAsync();
+            return IdentityResult.Success;
+        }
+
+        public async Task<IdentityResult> DeleteBlogAsync(int id)
+        {
+            var existing = await _db.BlogDetails.FindAsync(id);
+            if (existing == null)
+                return IdentityResult.Failed(new IdentityError { Description = "Blog not found" });
+
+            _db.BlogDetails.Remove(existing);
+            await _db.SaveChangesAsync();
+
+            return IdentityResult.Success;
+        }
+
+        //Incredients
+        public async Task<List<Ingredient>> GetIngredientsAsync()
+        {
+            return await _db.Ingredients.OrderByDescending(i => i.CreatedAt).ToListAsync();
+        }
+
+        public async Task<Ingredient> GetIngredientByIdAsync(int id)
+        {
+            return await _db.Ingredients.FindAsync(id);
+        }
 			return "Password has been reset successfully.";
 		}
 
-	}
+        public async Task<IdentityResult> AddOrUpdateIngredientAsync(Ingredient ingredient)
+        {
+            if (ingredient == null)
+                return IdentityResult.Failed(new IdentityError { Description = "Ingredient cannot be null" });
+
+            if (ingredient.Id > 0)
+            {
+                var existing = await _db.Ingredients.FindAsync(ingredient.Id);
+                if (existing == null)
+                    return IdentityResult.Failed(new IdentityError { Description = "Ingredient not found" });
+
+                existing.IngredientName = ingredient.IngredientName;
+                existing.ScientificName = ingredient.ScientificName;
+                existing.Benefits = ingredient.Benefits;
+                existing.Evidence = ingredient.Evidence;
+                existing.ImagePath = ingredient.ImagePath;
+                existing.IsActive = ingredient.IsActive;
+
+                _db.Ingredients.Update(existing);
+            }
+            else
+            {
+                ingredient.CreatedAt = DateTime.UtcNow;
+                await _db.Ingredients.AddAsync(ingredient);
+            }
+
+            await _db.SaveChangesAsync();
+            return IdentityResult.Success;
+        }
+
+        public async Task<IdentityResult> DeleteIngredientAsync(int id)
+        {
+            var existing = await _db.Ingredients.FindAsync(id);
+            if (existing == null)
+                return IdentityResult.Failed(new IdentityError { Description = "Ingredient not found" });
+
+            _db.Ingredients.Remove(existing);
+            await _db.SaveChangesAsync();
+
+            return IdentityResult.Success;
+        }
+
+
+    }
+
+
 }
