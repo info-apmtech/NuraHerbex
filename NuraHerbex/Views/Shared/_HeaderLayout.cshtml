@@ -1097,7 +1097,7 @@
                     <a asp-controller="Home" asp-action="Shop" class="nav-item @(ViewContext.RouteData.Values["action"]?.ToString() == "Shop" && ViewContext.RouteData.Values["controller"]?.ToString() == "Home" ? "active" : "")">Shop</a>
                 </li>
                 <li>
-                    <a href="#" class="nav-item">Ingredients</a>
+                    <a asp-controller="Home" asp-action="Ingredients" class="nav-item @(ViewContext.RouteData.Values["action"]?.ToString() == "Ingredients" && ViewContext.RouteData.Values["controller"]?.ToString() == "Home" ? "active" : "")">Ingredients</a>
                 </li>
                 <li>
                     <a asp-controller="Home" asp-action="About" class="nav-item @(ViewContext.RouteData.Values["action"]?.ToString() == "About" && ViewContext.RouteData.Values["controller"]?.ToString() == "Home" ? "active" : "")">About</a>

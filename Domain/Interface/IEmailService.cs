@@ -4,10 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Domain.ServiceAPI
+namespace Domain.Interface
 {
-    public interface ICommonAPI
-    {
-		Task<bool> SendPasswordResetLinkAsync(string email);
+	public interface IEmailService
+	{
+		Task SendAsync(string toEmail, string subject, string body);
 	}
 }

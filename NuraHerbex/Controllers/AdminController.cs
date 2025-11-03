@@ -364,7 +364,8 @@ namespace NuraHerbex.Controllers
 		[HttpPost]
 		public async Task<IActionResult> UserRegistration(RegisterUserViewModel model)
 		{
-			if (!ModelState.IsValid)
+			//if (!ModelState.IsValid)
+			if (model == null)
 				return View(model);
 
 			var response = await AuthorizedClient.PostAsJsonAsync("AdminAPI/register", model.RegisteredUser);

@@ -2,10 +2,11 @@
 using Domain.ViewModel;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System.Security.Claims;
-
+using System.Text;
 namespace NuraHerbex.Controllers
 {
     public class AuthenticationController : Controller
@@ -43,41 +44,29 @@ namespace NuraHerbex.Controllers
 			}
 
 			var result = await response.Content.ReadFromJsonAsync<LoginResponseModel>();
-
-			if (string.IsNullOrEmpty(result?.Token))
+			if (result == null || string.IsNullOrEmpty(result.Token))
 			{
-				ModelState.AddModelError("", "Login failed. No token received.");
+				ModelState.AddModelError("", "Login failed. Token missing.");
 				return View(model);
 			}
-			Console.WriteLine(result);
-			// Save token & user info in session
+
+			// Save token
 			HttpContext.Session.SetString("JwtToken", result.Token);
-			HttpContext.Session.SetString("TokenExpiration", result.Expiration.ToString("o"));
-			HttpContext.Session.SetString("UserId", result.User.Id);
-			HttpContext.Session.SetString("UserName", result.User.UserName ?? "");
-			if (result.Roles != null && result.Roles.Any())
-			{
-				HttpContext.Session.SetString("UserRoles", string.Join(",", result.Roles));
-				TempData["UserRoles"] = string.Join(",", result.Roles);
-			}
+
 			var claims = new List<Claim>
-	        {
-		        new Claim(ClaimTypes.NameIdentifier, result.User.Id),
-		        new Claim(ClaimTypes.Name, result.User.UserName ?? ""),
-	        };
-			if (result.Roles != null)
 			{
-				foreach (var role in result.Roles)
-				{
-					claims.Add(new Claim(ClaimTypes.Role, role));
-				}
-			}
-			var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-			// Sign in user with cookie authentication
-			await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme,new ClaimsPrincipal(claimsIdentity), new AuthenticationProperties { IsPersistent = true });
+				new Claim(ClaimTypes.NameIdentifier, result.User.Id),
+				new Claim(ClaimTypes.Name, result.User.UserName ?? "")
+			};
+			foreach (var role in result.Roles)
+				claims.Add(new Claim(ClaimTypes.Role, role));
+
+			var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+			await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(identity), new AuthenticationProperties { IsPersistent = true });
 			if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
 				return Redirect(returnUrl);
-			return RedirectToAction("Index", "Home");
+
+			return RedirectToAction("UserCreation", "Admin");
 		}
 		public async Task<IActionResult> LogOut()
 		{
@@ -95,13 +84,73 @@ namespace NuraHerbex.Controllers
 			// Handle API failure
 			return RedirectToAction("Index", "Home");
 		}
-		public IActionResult ForgetPassword()
+		[HttpGet]
+		public IActionResult ForgotPassword()
         {
             return View();
         }
-        public IActionResult CreatePassword()
-        {
-            return View();
-        }
-    }
+		[HttpPost]
+		public async Task<IActionResult> ForgotPassword(ForgotPasswordViewModel model)
+		{
+			//if (!ModelState.IsValid)
+			if (model == null)
+				return View(model);
+			var client = _httpClientFactory.CreateClient("NuraHerbexApi");
+			var response = await AuthorizedClient.PostAsJsonAsync("AuthenticationAPI/SendOtp", model);
+			if (response.IsSuccessStatusCode)
+				return RedirectToAction("ForgotPassword", new { email = model.Email });
+
+			ModelState.AddModelError("", "Failed to send OTP. Try again.");
+			return View(model);
+		}
+
+		[HttpGet]
+		public IActionResult VerifyOtp(string email) => View(new ForgotPasswordViewModel { Email = email });
+
+		[HttpPost]
+		public async Task<IActionResult> VerifyOtp(ForgotPasswordViewModel model)
+		{
+			var response = await AuthorizedClient.PostAsJsonAsync("AuthenticationAPI/VerifyOtp", model);
+			if (response.IsSuccessStatusCode)
+				return RedirectToAction("CreatePassword", new { email = model.Email });
+
+			ModelState.AddModelError("", "Invalid OTP. Please try again.");
+			return View(model);
+		}
+
+		[HttpGet]
+		public IActionResult CreatePassword(string email)
+		{
+			return View(new ResetPasswordViewModel { Email = email });
+		}
+
+		[HttpPost("ResetPassword")]
+		public async Task<IActionResult> CreatePassword(ResetPasswordViewModel model)
+		{
+			var json = JsonConvert.SerializeObject(model);
+			var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+			var response = await AuthorizedClient.PostAsync("AuthenticationAPI/ResetPasswordWithOtp", content);
+			ViewBag.Message = await response.Content.ReadAsStringAsync();
+
+			return View();
+		}
+
+		//[HttpPost("ResetPassword")]
+		//public async Task<IActionResult> CreatePassword(ResetPasswordViewModel model)
+		//{
+		//	if (!ModelState.IsValid)
+		//		return View(model);
+
+		//	var json = JsonConvert.SerializeObject(model);
+		//	var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+		//	var response = await AuthorizedClient.PostAsync("AuthenticationAPI/ResetPassword", content);
+		//	var result = await response.Content.ReadAsStringAsync();
+
+		//	ViewBag.Message = result;
+		//	return View();
+		//}
+
+	}
 }

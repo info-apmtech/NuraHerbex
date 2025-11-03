@@ -93,6 +93,7 @@ builder.Services.AddControllers()
 // Register the Message Service
 builder.Services.AddScoped<IAdmin, AdminService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<IEmailService, EmailService>();
 // Configure Swagger
 builder.Services.AddSwaggerGen(c =>
 {

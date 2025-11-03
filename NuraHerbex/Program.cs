@@ -29,18 +29,18 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
 //builder.Services.AddScoped<IAdmin, AdminService>();
 
-//builder.Services.AddAuthentication(options =>
-//{
-//	options.DefaultAuthenticateScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-//	options.DefaultChallengeScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-//})
-//.AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, options =>
-//{
-//	options.LoginPath = "/Authentication/Login";
-//	options.LogoutPath = "/Authentication/Logout";
-//	options.ExpireTimeSpan = TimeSpan.FromHours(8);
-//	options.SlidingExpiration = true;
-//})
+builder.Services.AddAuthentication(options =>
+{
+	options.DefaultAuthenticateScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+	options.DefaultChallengeScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+})
+.AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, options =>
+{
+	options.LoginPath = "/Authentication/Login";
+	options.LogoutPath = "/Authentication/Logout";
+	options.ExpireTimeSpan = TimeSpan.FromHours(8);
+	options.SlidingExpiration = true;
+});
 //.AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
 //{
 //	options.RequireHttpsMetadata = false;
@@ -58,7 +58,7 @@ builder.Services.AddControllersWithViews();
 //	};
 //});
 
-//builder.Services.AddAuthorization();
+builder.Services.AddAuthorization();
 //builder.Services.AddIdentity<RegisterUser, IdentityRole>(options => options.SignIn.RequireConfirmedAccount = false)
 //    .AddRoles<IdentityRole>()
 //    .AddDefaultTokenProviders()

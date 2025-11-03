@@ -84,7 +84,7 @@
                     <form id="signinForm" class="auth-form" autocomplete="on" asp-action="SignIn" asp-controller="Authentication">
                         <!-- Email -->
                         <div class="input-wrapper">
-                            <label class="form-label">Email Address</label>
+                            <label class="form-label">UserName</label>
                             <div class="position-relative">
                                 <img src="../image/signin/material-symbols_mail-outline.png" alt="Email" class="input-icon">
                                 <input type="text" class="form-input" placeholder="your.email@example.com"asp-for="Username" required>
@@ -106,7 +106,7 @@
                                 <input type="checkbox" class="custom-checkbox" asp-for="IsActive" checked>
                                 <span>Remember me</span>
                             </label>
-                            <a asp-action="forgetpassword" asp-controller="Authentication" class="forgot-link">Forgot password?</a>
+                            <a asp-action="ForgotPassword" asp-controller="Authentication" class="forgot-link">Forgot password?</a>
                         </div>
 
                         <button type="submit" class="signin-button">

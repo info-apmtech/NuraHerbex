@@ -14,10 +14,12 @@ namespace Domain.Interface
 		Task<List<RegisterUser>> GetUsersByRoleAsync(UserRole role);
 		Task<RegisterUser?> GetUserByIdAsync(string id);
 		Task<IdentityResult> AddOrUpdateUserAsync(RegisterUser user);
-        //Task<LoginResponse?> SignInAsync(LoginModel model);
-
-        //BlogCategory
-        Task<BlogCategory> GetBlogCategoryByIdAsync(int id);
+		Task<LoginResponseModel?> SignInAsync(RegisterUserViewModel model);
+		Task<bool> SendOtpAsync(string email);
+		Task<bool> VerifyOtpAsync(string email, string otp);
+		Task<string> ResetPasswordWithOtpAsync(ResetPasswordViewModel model);
+		//BlogCategory
+		Task<BlogCategory> GetBlogCategoryByIdAsync(int id);
         Task<List<BlogCategory>> GetBlogCategoriesAsync();
         Task<IdentityResult> AddOrUpdateBlogCategoryAsync(BlogCategory category);
         Task<IdentityResult> DeleteBlogCategoryAsync(int id);
@@ -33,6 +35,5 @@ namespace Domain.Interface
         Task<Ingredient> GetIngredientByIdAsync(int id);
         Task<IdentityResult> AddOrUpdateIngredientAsync(Ingredient ingredient);
         Task<IdentityResult> DeleteIngredientAsync(int id);
-
-    }
+	}
 }

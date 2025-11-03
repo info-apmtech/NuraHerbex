@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -67,72 +68,14 @@ namespace APIs.Controllers
 		[HttpPost("SignIn")]
 		public async Task<IActionResult> SignIn([FromBody] RegisterUserViewModel model)
 		{
-			if (!ModelState.IsValid)
-				return BadRequest(ModelState);
+			var result = await _adminService.SignInAsync(model);
+			if (result == null)
+				return Unauthorized("Invalid username or password.");
 
-			var user = await _userManager.FindByNameAsync(model.Username);
-			if (user == null || !await _userManager.CheckPasswordAsync(user, model.Password))
-				return Unauthorized("Invalid email or password.");
-			var roles = (await _userManager.GetRolesAsync(user)).ToList();
-			//var findDesignationId = _dbContext.MappingEmployeeDesignations.FirstOrDefaultAsync(e => e.EmployeeId == user.Id)?.Result?.DesignationId;
-
-			//var designation = await _dbContext.Designations
-				//.FirstOrDefaultAsync(d => d.Id == findDesignationId);
-
-			//if (designation != null && !string.IsNullOrEmpty(designation.RoleAccess))
-			//{
-			//	var designationRoles = designation.RoleAccess
-			//		.Split(",", StringSplitOptions.RemoveEmptyEntries)
-			//		.Select(r => r.Trim());
-
-			//	foreach (var dr in designationRoles)
-			//	{
-			//		if (!roles.Contains(dr))
-			//			roles.Add(dr);
-			//	}
-			//}
-
-			// Build JWT claims
-			var authClaims = new List<Claim>
-	        {
-		        new Claim(JwtRegisteredClaimNames.Sub, user.UserName),
-		        new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-		        new Claim(ClaimTypes.NameIdentifier, user.Id),
-		        new Claim(ClaimTypes.Name, user.UserName)
-	        };
-
-			foreach (var role in roles)
-			{
-				authClaims.Add(new Claim(ClaimTypes.Role, role));
-			}
-			var jwtSecret = "this_is_a_super_secure_key_12345678";
-			var jwtIssuer = "https://nura.apmtechnologies.in";
-			var jwtAudience = "https://nura.apmtechnologies.in";
-			var expiryMinutes = 60;
-
-			var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret));
-
-			var token = new JwtSecurityToken(
-				issuer: jwtIssuer,
-				audience: jwtAudience,
-				expires: DateTime.Now.AddMinutes(expiryMinutes),
-				claims: authClaims,
-				signingCredentials: new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256)
-			);
-
-			var responseData = new LoginResponseModel
-			{
-				BaseUrl = _configuration["ApiBaseUrl"],
-				Token = new JwtSecurityTokenHandler().WriteToken(token),
-				User = user,
-				Roles = roles,
-				Expiration = token.ValidTo
-			};
-
-			return Ok(responseData);
+			return Ok(result);
 		}
 		[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-		[HttpPost("logout")]
+		[HttpPost("Logout")]
 		public IActionResult Logout()
 		{
 			return Ok(new
@@ -140,6 +83,33 @@ namespace APIs.Controllers
 				Success = true,
 				Message = "Logged out successfully. Please remove token on client side."
 			});
+		}
+		[HttpPost("SendOtp")]
+		public async Task<IActionResult> SendOtp([FromBody] ForgotPasswordViewModel model)
+		{
+			var success = await _adminService.SendOtpAsync(model.Email);
+			if (!success)
+				return BadRequest("Email not found.");
+			return Ok(new { Message = "OTP sent to your email." });
+		}
+
+		[HttpPost("VerifyOtp")]
+		public async Task<IActionResult> VerifyOtp([FromBody] ForgotPasswordViewModel model)
+		{
+			var verified = await _adminService.VerifyOtpAsync(model.Email, model.Otp);
+			if (!verified)
+				return BadRequest("Invalid or expired OTP.");
+			return Ok(new { Message = "OTP verified successfully." });
+		}
+
+		[HttpPost("ResetPasswordWithOtp")]
+		public async Task<IActionResult> ResetPasswordWithOtp([FromBody] ResetPasswordViewModel model)
+		{
+			var result = await _adminService.ResetPasswordWithOtpAsync(model);
+			if (result.StartsWith("Password reset failed") || result.Contains("Invalid"))
+				return BadRequest(result);
+
+			return Ok(result);
 		}
 	}
 }
