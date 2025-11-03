@@ -6,9 +6,14 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Net.Http.Json;
+using System.Net.Mail;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
@@ -18,13 +23,22 @@ namespace Domain.Implementation
 	public class AdminService : IAdmin
 	{
 		private readonly UserManager<RegisterUser> _usermanager;
-		//private readonly IAdmin _adminService;
 		private readonly IConfiguration _config;
-		public AdminService(UserManager<RegisterUser> userManager,IConfiguration config)
+		private readonly IHttpClientFactory _httpClientFactory;
+		private readonly NuraDbContext _dbContext;
+		private readonly IEmailService _emailService;
+
+		// In-memory OTP store (You can store this in DB/Redis for production)
+		private static readonly ConcurrentDictionary<string, (string Otp, DateTime Expiry)> _otpStore = new();
+
+
+		public AdminService(UserManager<RegisterUser> userManager,IConfiguration config,IHttpClientFactory httpClientFactory, NuraDbContext dbContext, IEmailService emailService)
 		{
-			//_adminService = adminservice;
 			_usermanager = userManager;
 			_config = config;
+			_httpClientFactory = httpClientFactory;
+			_dbContext = dbContext;
+			_emailService = emailService;
 		}
 
 		public async Task<List<RegisterUser>> GetUsersByRoleAsync(UserRole role)
@@ -59,50 +73,104 @@ namespace Domain.Implementation
 			//	return IdentityResult.Success;
 			//}
 		}
-		//public async Task<LoginResponse?> SignInAsync(LoginModel model)
-		//{
-		//	var user = await _usermanager.FindByNameAsync(model.Username);
-		//	if (user == null)
-		//		return null;
+		public async Task<LoginResponseModel?> SignInAsync(RegisterUserViewModel model)
+		{
+			var user = await _usermanager.FindByNameAsync(model.Username);
+			if (user == null || !await _usermanager.CheckPasswordAsync(user, model.Password))
+				return null;
 
-		//	var validPassword = await _usermanager.CheckPasswordAsync(user, model.Password);
-		//	if (!validPassword)
-		//		return null;
+			var roles = (await _usermanager.GetRolesAsync(user)).ToList();
 
-		//	var roles = await _usermanager.GetRolesAsync(user);
+			var authClaims = new List<Claim>
+			{
+				new Claim(JwtRegisteredClaimNames.Sub, user.UserName),
+				new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+				new Claim(ClaimTypes.NameIdentifier, user.Id),
+				new Claim(ClaimTypes.Name, user.UserName)
+			};
 
-		//	// Create claims
-		//	var claims = new List<Claim>
-		//{
-		//	new Claim(ClaimTypes.NameIdentifier, user.Id),
-		//	new Claim(ClaimTypes.Name, user.UserName)
-		//};
+			foreach (var role in roles)
+				authClaims.Add(new Claim(ClaimTypes.Role, role));
 
-		//	foreach (var role in roles)
-		//		claims.Add(new Claim(ClaimTypes.Role, role));
+			var secretKey = _config["JWT:Secret"] ?? "this_is_a_super_secure_key_12345678";
+			var issuer = _config["JWT:ValidIssuer"] ?? "https://nura.apmtechnologies.in";
+			var audience = _config["JWT:ValidAudience"] ?? "https://nura.apmtechnologies.in";
 
-		//	// Generate JWT
-		//	var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
-		//	var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+			var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
 
-		//	var token = new JwtSecurityToken(
-		//		issuer: _config["Jwt:Issuer"],
-		//		audience: _config["Jwt:Audience"],
-		//		claims: claims,
-		//		expires: DateTime.Now.AddHours(1),
-		//		signingCredentials: creds
-		//	);
+			var token = new JwtSecurityToken(
+				issuer: issuer,
+				audience: audience,
+				expires: DateTime.Now.AddMinutes(60),
+				claims: authClaims,
+				signingCredentials: new SigningCredentials(signingKey, SecurityAlgorithms.HmacSha256)
+			);
 
-		//	var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
+			return new LoginResponseModel
+			{
+				Token = new JwtSecurityTokenHandler().WriteToken(token),
+				User = user,
+				Roles = roles,
+				Expiration = token.ValidTo
+			};
+		}
+		// ✅ Step 1: Send OTP
+		public async Task<bool> SendOtpAsync(string email)
+		{
+			var user = await _usermanager.Users.FirstOrDefaultAsync(u => u.Email == email);
+			if (user == null) return false;
 
-		//	return new LoginResponse
-		//	{
-		//		Token = tokenString,
-		//		Expiration = token.ValidTo,
-		//		Username = user.UserName,
-		//		Roles = roles.FirstOrDefault() ?? "User"
-		//	};
-		//}
+			var otp = new Random().Next(100000, 999999).ToString();
+			_otpStore[email] = (otp, DateTime.UtcNow.AddMinutes(5));
+
+			var body = $@"
+                <p>Hi {user.UserName},</p>
+                <p>Your password reset OTP is: <strong>{otp}</strong></p>
+                <p>This OTP is valid for 5 minutes.</p>";
+
+			await _emailService.SendAsync(email, "Password Reset OTP", body);
+
+			return true;
+		}
+
+		// ✅ Step 2: Verify OTP
+		public async Task<bool> VerifyOtpAsync(string email, string otp)
+		{
+			if (_otpStore.TryGetValue(email, out var entry))
+			{
+				if (entry.Expiry < DateTime.UtcNow)
+				{
+					_otpStore.TryRemove(email, out _);
+					return false;
+				}
+
+				if (entry.Otp == otp)
+				{
+					_otpStore.TryRemove(email, out _);
+					return true;
+				}
+			}
+			return false;
+		}
+
+		// ✅ Step 3: Reset Password (after OTP verified)
+		public async Task<string> ResetPasswordWithOtpAsync(ResetPasswordViewModel model)
+		{
+			var user = await _usermanager.FindByEmailAsync(model.Email);
+			if (user == null)
+				return "Invalid email address.";
+
+			var resetToken = await _usermanager.GeneratePasswordResetTokenAsync(user);
+			var result = await _usermanager.ResetPasswordAsync(user, resetToken, model.NewPassword);
+
+			if (!result.Succeeded)
+			{
+				var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+				return $"Password reset failed: {errors}";
+			}
+
+			return "Password has been reset successfully.";
+		}
+
 	}
-
 }
