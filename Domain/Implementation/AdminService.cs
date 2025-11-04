@@ -377,6 +377,66 @@ namespace Domain.Implementation
             return IdentityResult.Success;
         }
 
+        //GST
+        public async Task<List<GST>> GetGSTEntriesAsync()
+        {
+            return await _db.GSTDetails.OrderByDescending(g => g.UpdateDate).ToListAsync();
+        }
+
+        public async Task<GST> GetGSTEntryByIdAsync(int id)
+        {
+            return await _db.GSTDetails.FindAsync(id);
+        }
+
+        public async Task<IdentityResult> AddOrUpdateGSTEntryAsync(GST gst)
+        {
+            if (gst == null)
+                return IdentityResult.Failed(new IdentityError { Description = "GST entry cannot be null" });
+
+            gst.SGSTPercentage = gst.TaxPercentage / 2;
+            gst.CGSTPercentage = gst.TaxPercentage / 2;
+            gst.IGSTPercentage = gst.TaxPercentage;
+            gst.UpdateDate = DateTime.UtcNow;
+
+            gst.UpdatedBy ??= "System"; 
+
+            if (gst.Id > 0)
+            {
+                var existing = await _db.GSTDetails.FindAsync(gst.Id);
+                if (existing == null)
+                    return IdentityResult.Failed(new IdentityError { Description = "GST entry not found" });
+
+                existing.TaxName = gst.TaxName;
+                existing.TaxPercentage = gst.TaxPercentage;
+                existing.SGSTPercentage = gst.SGSTPercentage;
+                existing.CGSTPercentage = gst.CGSTPercentage;
+                existing.IGSTPercentage = gst.IGSTPercentage;
+                existing.UpdatedBy = gst.UpdatedBy;
+                existing.UpdateDate = gst.UpdateDate;
+                existing.Remarks = gst.Remarks;
+
+                _db.GSTDetails.Update(existing);
+            }
+            else
+            {
+                await _db.GSTDetails.AddAsync(gst);
+            }
+
+            await _db.SaveChangesAsync();
+            return IdentityResult.Success;
+        }
+
+        public async Task<IdentityResult> DeleteGSTEntryAsync(int id)
+        {
+            var existing = await _db.GSTDetails.FindAsync(id);
+            if (existing == null)
+                return IdentityResult.Failed(new IdentityError { Description = "GST entry not found" });
+
+            _db.GSTDetails.Remove(existing);
+            await _db.SaveChangesAsync();
+            return IdentityResult.Success;
+        }
+
 
     }
 

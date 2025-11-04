@@ -394,6 +394,71 @@ namespace NuraHerbex.Controllers
 
             return RedirectToAction(nameof(AdminIngredientCategory));
         }
+        [HttpGet]
+        public async Task<IActionResult> AdminGSTEntry(int id = 0)
+        {
+            var response = await AuthorizedClient.GetAsync("AdminAPI/gstentries");
+            var gstList = response.IsSuccessStatusCode
+                ? JsonConvert.DeserializeObject<List<GST>>(await response.Content.ReadAsStringAsync()) ?? new List<GST>()
+                : new List<GST>();
+
+            var vm = new GSTViewModel
+            {
+                GSTList = gstList,
+                NewGST = new GST()
+            };
+
+            if (id > 0)
+            {
+                var gstResp = await AuthorizedClient.GetAsync($"AdminAPI/gstentry/{id}");
+                if (gstResp.IsSuccessStatusCode)
+                {
+                    var gst = JsonConvert.DeserializeObject<GST>(await gstResp.Content.ReadAsStringAsync());
+                    if (gst != null)
+                        vm.NewGST = gst;
+                }
+            }
+
+            return View(vm);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AdminGSTEntry(GSTViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
+                TempData["Error"] = "Validation failed: " + string.Join("; ", errors);
+                return View(model);
+            }
+
+            var response = await AuthorizedClient.PostAsJsonAsync("AdminAPI/gstentry", model.NewGST);
+
+            if (response.IsSuccessStatusCode)
+            {
+                TempData["Success"] = model.NewGST.Id > 0 ? "GST entry updated successfully" : "GST entry added successfully";
+                return RedirectToAction(nameof(AdminGSTEntry), new { id = 0 });
+            }
+
+            var error = await response.Content.ReadAsStringAsync();
+            TempData["Error"] = $"Error: {error}";
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteGSTEntry(int id)
+        {
+            var response = await AuthorizedClient.DeleteAsync($"AdminAPI/gstentry/{id}");
+            if (response.IsSuccessStatusCode)
+                TempData["Success"] = "GST entry deleted successfully!";
+            else
+                TempData["Error"] = $"Delete failed: {await response.Content.ReadAsStringAsync()}";
+
+            return RedirectToAction(nameof(AdminGSTEntry));
+        }
+
 
         public IActionResult Product()
 		{

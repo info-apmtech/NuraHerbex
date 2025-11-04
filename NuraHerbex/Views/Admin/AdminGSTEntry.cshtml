@@ -1,0 +1,161 @@
+﻿@model Domain.ViewModel.GSTViewModel
+
+@{
+    var isEdit = Model.NewGST.Id > 0;
+    ViewData["Title"] = "GST Management";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="pcoded-main-container">
+    <div class="pcoded-content">
+
+        <div class="row heading-bg mb-3">
+            <div class="col-12">
+                <h4>GST Entries</h4>
+            </div>
+        </div>
+
+        <ul class="nav nav-tabs mb-3" id="gstTab" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link text-uppercase @(isEdit ? "" : "active")" id="gst-list-tab" data-toggle="tab" href="#gst-list" role="tab" aria-controls="gst-list" aria-selected="@(isEdit ? "false" : "true")">List</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-uppercase @(isEdit ? "active" : "")" id="add-gst-tab" data-toggle="tab" href="#add-gst" role="tab" aria-controls="add-gst" aria-selected="@(isEdit ? "true" : "false")">
+                    @(!isEdit ? "Add GST" : "Edit GST")
+                </a>
+            </li>
+        </ul>
+
+        <div class="tab-content" id="gstTabContent">
+
+            <!-- GST List -->
+            <div class="tab-pane fade @(isEdit ? "" : "show active")" id="gst-list" role="tabpanel" aria-labelledby="gst-list-tab">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-white border-bottom-0">
+                        <h5 class="mb-0">GST List</h5>
+                    </div>
+                    <div class="card-body p-3">
+                        <table class="table table-bordered table-striped mb-0 w-100">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>#</th>
+                                    <th>Tax Name</th>
+                                    <th>Tax %</th>
+                                    <th>SGST %</th>
+                                    <th>CGST %</th>
+                                    <th>IGST %</th>
+                                    <th>Updated By</th>
+                                    <th>Updated On</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model.GSTList.Any())
+                                {
+                                    int sno = 1;
+                                    foreach (var gst in Model.GSTList)
+                                    {
+                                        <tr>
+                                            <td>@sno</td>
+                                            <td>@gst.TaxName</td>
+                                            <td>@gst.TaxPercentage</td>
+                                            <td>@gst.SGSTPercentage</td>
+                                            <td>@gst.CGSTPercentage</td>
+                                            <td>@gst.IGSTPercentage</td>
+                                            <td>@gst.UpdatedBy</td>
+                                            <td>@gst.UpdateDate.ToString("dd MMM yyyy")</td>
+                                            <td>
+                                                <form method="get" asp-action="AdminGSTEntry" asp-route-id="@gst.Id" style="display:inline;">
+                                                    <button type="submit" class="btn btn-sm btn-warning">Edit</button>
+                                                </form>
+                                                <form method="post" asp-action="DeleteGSTEntry" asp-route-id="@gst.Id" style="display:inline" onsubmit="return confirm('Are you sure you want to delete this GST entry?');">
+                                                    @Html.AntiForgeryToken()
+                                                    <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                        sno++;
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="9" class="text-center">No GST entries found</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Add / Edit GST Form -->
+            <div class="tab-pane fade @(isEdit ? "show active" : "")" id="add-gst" role="tabpanel" aria-labelledby="add-gst-tab">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-white border-bottom-0">
+                        <h5 class="mb-0">@(!isEdit ? "Add New GST" : "Edit GST")</h5>
+                    </div>
+                    <div class="card-body">
+                        <form asp-action="AdminGSTEntry" asp-controller="Admin" method="post">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" asp-for="NewGST.Id" />
+
+                            <div class="mb-3">
+                                <label asp-for="NewGST.TaxName" class="form-label"></label>
+                                <input asp-for="NewGST.TaxName" class="form-control" required />
+                                <span asp-validation-for="NewGST.TaxName" class="text-danger"></span>
+                            </div>
+
+                            <div class="mb-3">
+                                <label asp-for="NewGST.TaxPercentage" class="form-label"></label>
+                                <input asp-for="NewGST.TaxPercentage" class="form-control" type="number" step="0.01" min="0" required id="TaxPercentageInput" />
+                                <span asp-validation-for="NewGST.TaxPercentage" class="text-danger"></span>
+                            </div>
+
+                            <div class="mb-3">
+                                <label>SGST Percentage</label>
+                                <input asp-for="NewGST.SGSTPercentage" class="form-control" readonly id="SGSTPercentageInput" />
+                            </div>
+
+                            <div class="mb-3">
+                                <label>CGST Percentage</label>
+                                <input asp-for="NewGST.CGSTPercentage" class="form-control" readonly id="CGSTPercentageInput" />
+                            </div>
+
+                            <div class="mb-3">
+                                <label>IGST Percentage</label>
+                                <input asp-for="NewGST.IGSTPercentage" class="form-control" readonly id="IGSTPercentageInput" />
+                            </div>
+
+                            <div class="mb-3">
+                                <label asp-for="NewGST.Remarks" class="form-label"></label>
+                                <textarea asp-for="NewGST.Remarks" class="form-control"></textarea>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary">@(!isEdit ? "Add GST" : "Update GST")</button>
+                            <a asp-action="AdminGSTEntry" asp-route-id="0" class="btn btn-secondary ms-2">Clear</a>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+</div>
+
+    <script>
+        function calculateGSTs() {
+            const taxPerc = parseFloat(document.getElementById('TaxPercentageInput').value) || 0;
+            const half = (taxPerc / 2).toFixed(2);
+            document.getElementById('SGSTPercentageInput').value = half;
+            document.getElementById('CGSTPercentageInput').value = half;
+            document.getElementById('IGSTPercentageInput').value = taxPerc.toFixed(2);
+        }
+
+        document.getElementById('TaxPercentageInput').addEventListener('input', calculateGSTs);
+
+        // Trigger calculation on page load if editing
+        window.onload = calculateGSTs;
+    </script>
+
