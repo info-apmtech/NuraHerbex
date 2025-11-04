@@ -397,9 +397,6 @@ namespace Domain.Implementation
             gst.CGSTPercentage = gst.TaxPercentage / 2;
             gst.IGSTPercentage = gst.TaxPercentage;
             gst.UpdateDate = DateTime.UtcNow;
-
-            gst.UpdatedBy ??= "System"; 
-
             if (gst.Id > 0)
             {
                 var existing = await _db.GSTDetails.FindAsync(gst.Id);

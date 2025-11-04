@@ -291,16 +291,21 @@ namespace APIs.Controllers
             return Ok(gst);
         }
 
-        [AllowAnonymous]
+        //[AllowAnonymous]
+        [Authorize]
         [HttpPost("gstentry")]
         public async Task<IActionResult> AddOrUpdateGSTEntry([FromBody] GST gst)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
+            // ✅ Extract the logged-in username or user ID from claims
+            var updatedBy = User?.Identity?.Name ?? "System";
+            gst.UpdatedBy = updatedBy;
+
             var result = await _adminservice.AddOrUpdateGSTEntryAsync(gst);
             if (result.Succeeded)
-                return Ok(new { success = true, message = "GST entry saved successfully" });
+                return Ok(new { success = true, message = "GST entry saved successfully", updatedBy });
 
             return BadRequest(result.Errors);
         }

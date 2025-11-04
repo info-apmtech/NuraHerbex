@@ -486,7 +486,7 @@ namespace NuraHerbex.Controllers
                 model.UserList = new List<RegisterUser>();
             }
 
-            if (!string.IsNullOrEmpty(id)) // If editing, fetch user details
+            if (!string.IsNullOrEmpty(id)) 
             {
                 var userResponse = await AuthorizedClient.GetAsync($"AdminAPI/user/{id}");
                 if (userResponse.IsSuccessStatusCode)

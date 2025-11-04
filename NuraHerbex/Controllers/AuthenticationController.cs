@@ -66,7 +66,7 @@ namespace NuraHerbex.Controllers
 			if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
 				return Redirect(returnUrl);
 
-			return RedirectToAction("UserCreation", "Admin");
+			return RedirectToAction("Index", "Admin");
 		}
 		public async Task<IActionResult> LogOut()
 		{
@@ -135,22 +135,6 @@ namespace NuraHerbex.Controllers
 
 			return View();
 		}
-
-		//[HttpPost("ResetPassword")]
-		//public async Task<IActionResult> CreatePassword(ResetPasswordViewModel model)
-		//{
-		//	if (!ModelState.IsValid)
-		//		return View(model);
-
-		//	var json = JsonConvert.SerializeObject(model);
-		//	var content = new StringContent(json, Encoding.UTF8, "application/json");
-
-		//	var response = await AuthorizedClient.PostAsync("AuthenticationAPI/ResetPassword", content);
-		//	var result = await response.Content.ReadAsStringAsync();
-
-		//	ViewBag.Message = result;
-		//	return View();
-		//}
 
 	}
 }
