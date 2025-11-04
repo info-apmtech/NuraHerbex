@@ -11,10 +11,12 @@ namespace Domain.Interface
 {
 	public interface IAdmin
 	{
-		Task<List<RegisterUser>> GetUsersByRoleAsync(UserRole role);
+        Task<List<RegisterUser>> GetAllUsersAsync();
+        Task<List<RegisterUser>> GetUsersByRoleAsync(UserRole role);
 		Task<RegisterUser?> GetUserByIdAsync(string id);
 		Task<IdentityResult> AddOrUpdateUserAsync(RegisterUser user);
-		Task<LoginResponseModel?> SignInAsync(RegisterUserViewModel model);
+        //Task<IdentityResult> DeleteUserAsync(string userId);
+        Task<LoginResponseModel?> SignInAsync(RegisterUserViewModel model);
 		Task<bool> SendOtpAsync(string email);
 		Task<bool> VerifyOtpAsync(string email, string otp);
 		Task<string> ResetPasswordWithOtpAsync(ResetPasswordViewModel model);

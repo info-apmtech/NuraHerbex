@@ -40,8 +40,13 @@ namespace Domain.Implementation
 			_db = db;
 			_emailService = emailService;
 		}
+        public async Task<List<RegisterUser>> GetAllUsersAsync()
+        {
+            var users = await _usermanager.Users.OrderByDescending(u => u.CreatedAt).ToListAsync();
+            return users;
+        }
 
-		public async Task<List<RegisterUser>> GetUsersByRoleAsync(UserRole role)
+        public async Task<List<RegisterUser>> GetUsersByRoleAsync(UserRole role)
 		{
 			var users = await _usermanager.Users.Where(u => u.Role == role).OrderByDescending(u => u.CreatedAt).ToListAsync();
 			return users;

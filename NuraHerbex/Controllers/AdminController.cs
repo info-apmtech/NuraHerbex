@@ -4,7 +4,9 @@ using Domain.Models;
 using Domain.ViewModel;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
+using System.Net.Http.Headers;
 using System.Text;
+using static ServiceStack.Diagnostics.Events;
 
 namespace NuraHerbex.Controllers
 {
@@ -22,9 +24,9 @@ namespace NuraHerbex.Controllers
             _environment = environment;
             //_tokenService = tokenService;
         }
-		private HttpClient AuthorizedClient => _httpClientFactory.CreateAuthorizedClient(_httpContextAccessor);
-		//private string GetUserId() => _httpContextAccessor.GetUserId(_tokenService);
-		public IActionResult Index()
+        private System.Net.Http.HttpClient AuthorizedClient => _httpClientFactory.CreateAuthorizedClient(_httpContextAccessor);
+        //private string GetUserId() => _httpContextAccessor.GetUserId(_tokenService);
+        public IActionResult Index()
 		{
 			return View();
 		}
@@ -402,57 +404,66 @@ namespace NuraHerbex.Controllers
 			return View();
 		}
 
-		[HttpGet]
-		public async Task<IActionResult> UserRegistration(RegisterUserViewModel model, string? id = null)
-		{
-			if (model == null)
-				model = new RegisterUserViewModel();
+        [HttpGet]
+        public async Task<IActionResult> UserCreation(string? id = null)
+        {
+            var model = new RegisterUserViewModel();
 
-			model.RegisteredUser = new RegisterUser
-			{
-				Role = model.role
-			};
+            var response = await AuthorizedClient.GetAsync("AdminAPI/users");
 
-			// Call API to get user list
-			var response = await AuthorizedClient.GetAsync($"AdminAPI/users/{model.role}");
-			model.UserList = response.IsSuccessStatusCode ? JsonConvert.DeserializeObject<List<RegisterUser>>(await response.Content.ReadAsStringAsync()) ?? new() : new List<RegisterUser>();
-			// If ID provided, load selected user
-			if (!string.IsNullOrEmpty(id))
-			{
-				model.RegisteredUser = model.UserList.FirstOrDefault(u => u.Id == id);
-				if (model.RegisteredUser != null)
-					model.role = model.RegisteredUser.Role;
-			}
-			// Example dropdown loading
-			await LoadDropdownsAsync(model, model.role);
-			// Date filtering
-			if (model.FromDate != null && model.ToDate != null)
-				model.UserList = model.UserList.Where(u => u.CreatedAt.Date >= model.FromDate.Value.Date && u.CreatedAt.Date <= model.ToDate.Value.Date).ToList();
-			return View(model);
-		}
+            if (response.IsSuccessStatusCode)
+            {
+                var jsonData = await response.Content.ReadAsStringAsync();
+                model.UserList = JsonConvert.DeserializeObject<List<RegisterUser>>(jsonData);
+            }
+            else
+            {
+                model.UserList = new List<RegisterUser>();
+            }
 
-		[HttpPost]
-		public async Task<IActionResult> UserRegistration(RegisterUserViewModel model)
-		{
-			//if (!ModelState.IsValid)
-			if (model == null)
-				return View(model);
+            if (!string.IsNullOrEmpty(id)) // If editing, fetch user details
+            {
+                var userResponse = await AuthorizedClient.GetAsync($"AdminAPI/user/{id}");
+                if (userResponse.IsSuccessStatusCode)
+                {
+                    var userData = await userResponse.Content.ReadAsStringAsync();
+                    model.RegisteredUser = JsonConvert.DeserializeObject<RegisterUser>(userData);
+                }
+            }
 
-			var response = await AuthorizedClient.PostAsJsonAsync("AdminAPI/register", model.RegisteredUser);
+            return View(model);
+        }
 
-			if (response.IsSuccessStatusCode)
-			{
-				TempData["Success"] = "User Registered Successfully!";
-				//return RedirectToAction("Authentication","SignIn", new { role = model.RegisteredUser.Role });
-				return RedirectToAction("SignIn", "Authentication");
-			}
 
-			var errorMsg = await response.Content.ReadAsStringAsync();
-			ModelState.AddModelError("", $"Error: {errorMsg}");
-			return View(model);
-		}
+        [HttpPost]
+        public async Task<IActionResult> UserCreation(RegisterUserViewModel model)
+        {
+            var response = await AuthorizedClient.PostAsJsonAsync("AdminAPI/register", model.RegisteredUser);
+            if (response.IsSuccessStatusCode)
+            {
+                TempData["Success"] = "User Registered Successfully!";
+                return RedirectToAction("UserCreation", new { role = model.RegisteredUser.Role });
+            }
+            var errorMsg = await response.Content.ReadAsStringAsync();
+            ModelState.AddModelError(string.Empty, errorMsg);
+            return View(model);
+        }
+        [HttpPost]
+        public async Task<IActionResult> DeleteUser(string id)
+        {
 
-		private async Task LoadDropdownsAsync(RegisterUserViewModel model, UserRole role)
+            var response = await AuthorizedClient.DeleteAsync($"AdminAPI/delete/{id}");
+            if (response.IsSuccessStatusCode)
+            {
+                TempData["Success"] = "User deleted successfully!";
+                return RedirectToAction(nameof(UserCreation));
+            }
+
+            TempData["Error"] = "Failed to delete user.";
+            return RedirectToAction(nameof(UserCreation));
+        }
+
+        private async Task LoadDropdownsAsync(RegisterUserViewModel model, UserRole role)
 		{
 			// Example: load countries/states/specialties
 			await Task.CompletedTask;

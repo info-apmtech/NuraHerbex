@@ -17,8 +17,14 @@ namespace APIs.Controllers
 		{
 			_adminservice = adminservice;
 		}
-
-		[HttpGet("users/{role}")]
+        [AllowAnonymous]
+        [HttpGet("users")]
+        public async Task<IActionResult> GetUsers()
+        {
+            var users = await _adminservice.GetAllUsersAsync();
+            return Ok(users);
+        }
+        [HttpGet("users/{role}")]
 		public async Task<IActionResult> GetUsers(UserRole role)
 		{
 			var users = await _adminservice.GetUsersByRoleAsync(role);
@@ -49,6 +55,16 @@ namespace APIs.Controllers
 
 			return BadRequest(result.Errors);
 		}
+        //[AllowAnonymous]
+        //[HttpDelete("delete/{id}")]
+        //public async Task<IActionResult> DeleteUser(string id)
+        //{
+        //    var result = await _adminservice.DeleteUserAsync(id);
+        //    if (result.Succeeded)
+        //        return Ok(new { success = true, message = "User deleted successfully" });
+
+        //    return BadRequest(result.Errors);
+        //}
 
 
         //BlogCategory
