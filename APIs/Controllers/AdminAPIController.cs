@@ -273,6 +273,79 @@ namespace APIs.Controllers
 
             return BadRequest(result.Errors);
         }
+        // Products
+        // GET: api/adminapi/products
+        [AllowAnonymous]
+        [HttpGet("products")]
+        public async Task<IActionResult> GetProducts()
+        {
+            var products = await _adminservice.GetProductsAsync();
+            return Ok(products);
+        }
+
+        // GET: api/adminapi/product/{id}
+        [AllowAnonymous]
+        [HttpGet("product/{id}")]
+        public async Task<IActionResult> GetProduct(int id)
+        {
+            var product = await _adminservice.GetProductByIdAsync(id);
+            if (product == null)
+                return NotFound();
+
+            return Ok(product);
+        }
+
+        // -------------------------------------------
+        // OPTION A: JSON body (no file uploads)
+        // POST: api/adminapi/product
+        [AllowAnonymous]
+        [HttpPost("product")]
+        public async Task<IActionResult> AddOrUpdateProduct([FromBody] Product product)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var result = await _adminservice.AddOrUpdateProductAsync(product);
+
+            if (result.Succeeded)
+                return Ok(new { success = true, message = "Product saved successfully" });
+
+            return BadRequest(result.Errors);
+        }
+        // -------------------------------------------
+
+        // -------------------------------------------
+        // OPTION B: multipart/form-data with files
+        // (Remove OPTION A if you use this.)
+        // POST: api/adminapi/product-form
+        [AllowAnonymous]
+        [HttpPost("product-form")]
+        [RequestSizeLimit(50_000_000)] // optional: 50 MB
+        public async Task<IActionResult> AddOrUpdateProductForm([FromForm] Product product)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var result = await _adminservice.AddOrUpdateProductAsync(product);
+
+            if (result.Succeeded)
+                return Ok(new { success = true, message = "Product saved successfully" });
+
+            return BadRequest(result.Errors);
+        }
+        // -------------------------------------------
+
+        // DELETE: api/adminapi/product/{id}
+        [AllowAnonymous]
+        [HttpDelete("product/{id}")]
+        public async Task<IActionResult> DeleteProduct(int id)
+        {
+            var result = await _adminservice.DeleteProductAsync(id);
+            if (result.Succeeded)
+                return Ok(new { success = true, message = "Product deleted successfully" });
+
+            return BadRequest(result.Errors);
+        }
 
         [AllowAnonymous]
         [HttpGet("gstentries")]
