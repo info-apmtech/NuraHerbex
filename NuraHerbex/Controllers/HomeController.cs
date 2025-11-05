@@ -6,6 +6,7 @@ using NuraHerbex.Models;
 using System.Diagnostics;
 using System.Net;
 using System.Net.Mail;
+//using static ServiceStack.Diagnostics.Events;
 
 namespace NuraHerbex.Controllers
 {
@@ -20,10 +21,49 @@ namespace NuraHerbex.Controllers
             _httpClient = httpClientFactory.CreateClient("NuraHerbexApi");
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            return View();
+            var blogs = new List<Blog>();
+            var ingredients = new List<Ingredient>();
+
+            // ? Get Blogs
+            var blogResponse = await _httpClient.GetAsync("AdminAPI/blogs");
+            if (blogResponse.IsSuccessStatusCode)
+            {
+                var json = await blogResponse.Content.ReadAsStringAsync();
+                blogs = JsonConvert.DeserializeObject<List<Blog>>(json) ?? new List<Blog>();
+            }
+
+            // ? Get Ingredients
+            var ingredientResponse = await _httpClient.GetAsync("AdminAPI/ingredients");
+            if (ingredientResponse.IsSuccessStatusCode)
+            {
+                var json = await ingredientResponse.Content.ReadAsStringAsync();
+                ingredients = JsonConvert.DeserializeObject<List<Ingredient>>(json) ?? new List<Ingredient>();
+            }
+
+            // ? Filter only active ingredients for homepage
+            var homeIngredients = ingredients
+                .Where(i => i.IsActive && i.ShowHome)
+                .OrderByDescending(i => i.CreatedAt)
+                .Take(6) // optional: show first 6 for layout balance
+                .ToList();
+
+            // ? Get top 10 blogs
+            var latestBlogs = blogs
+                .OrderByDescending(b => b.CreatedAt)
+                .Take(10)
+                .ToList();
+
+            var vm = new HomeViewModel
+            {
+                BlogList = latestBlogs,
+                Ingredients = homeIngredients
+            };
+
+            return View(vm);
         }
+
         public IActionResult About()
         {
             return View();

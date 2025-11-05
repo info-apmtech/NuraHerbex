@@ -330,6 +330,7 @@ namespace Domain.Implementation
                 existing.ImagePath = ingredient.ImagePath;
                 existing.IsActive = ingredient.IsActive;
                 existing.ShowHome = ingredient.ShowHome;
+                existing.KnownFor = ingredient.KnownFor;
 
                 _db.Ingredients.Update(existing);
             }
