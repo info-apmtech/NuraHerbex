@@ -109,13 +109,13 @@
 
 /* Floating Action Buttons - Vertical Stack at Bottom Right */
 .floating-actions {
-    position: absolute;
+    position: fixed;
     right: 30px;
     bottom: 30px;
     display: flex;
     flex-direction: column;
     gap: 0.85rem;
-    z-index: 10;
+    z-index: 10000;
 }
 
 .floating-btn {

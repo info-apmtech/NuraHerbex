@@ -361,7 +361,7 @@
         window.onload = generateCaptcha;
     </script>
   
-
+    @await Html.PartialAsync("_FloatingActions")
     @await Component.InvokeAsync("Notyf")
 </body>
 </html>
