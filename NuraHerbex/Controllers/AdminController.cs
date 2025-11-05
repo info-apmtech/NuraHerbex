@@ -2,25 +2,27 @@
 using Domain.Interface;
 using Domain.Models;
 using Domain.ViewModel;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System.Net.Http.Headers;
+using System.Security.Claims;
 using System.Text;
 using static ServiceStack.Diagnostics.Events;
 
 namespace NuraHerbex.Controllers
 {
-	public class AdminController : Controller
-	{
-		private readonly IHttpClientFactory _httpClientFactory;
-		private readonly IHttpContextAccessor _httpContextAccessor;
-        private readonly IWebHostEnvironment _environment;  
+    public class AdminController : Controller
+    {
+        private readonly IHttpClientFactory _httpClientFactory;
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IWebHostEnvironment _environment;
 
         //private readonly ITokenService _tokenService;
         public AdminController(IHttpClientFactory httpClientFactory, IHttpContextAccessor httpContextAccessor, IWebHostEnvironment environment/*, ITokenService tokenService*/)
-		{
-			_httpClientFactory = httpClientFactory;
-			_httpContextAccessor = httpContextAccessor;
+        {
+            _httpClientFactory = httpClientFactory;
+            _httpContextAccessor = httpContextAccessor;
             _environment = environment;
             //_tokenService = tokenService;
         }
@@ -392,15 +394,80 @@ namespace NuraHerbex.Controllers
 
             return RedirectToAction(nameof(AdminIngredientCategory));
         }
+        [HttpGet]
+        public async Task<IActionResult> AdminGSTEntry(int id = 0)
+        {
+            var response = await AuthorizedClient.GetAsync("AdminAPI/gstentries");
+            var gstList = response.IsSuccessStatusCode
+                ? JsonConvert.DeserializeObject<List<GST>>(await response.Content.ReadAsStringAsync()) ?? new List<GST>()
+                : new List<GST>();
 
-        public IActionResult Product()
-		{
-			return View();
-		}
-		public IActionResult DoctorConsultation()
-		{
-			return View();
-		}
+            var vm = new GSTViewModel
+            {
+                GSTList = gstList,
+                NewGST = new GST()
+            };
+
+            if (id > 0)
+            {
+                var gstResp = await AuthorizedClient.GetAsync($"AdminAPI/gstentry/{id}");
+                if (gstResp.IsSuccessStatusCode)
+                {
+                    var gst = JsonConvert.DeserializeObject<GST>(await gstResp.Content.ReadAsStringAsync());
+                    if (gst != null)
+                        vm.NewGST = gst;
+                }
+            }
+
+            return View(vm);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AdminGSTEntry(GSTViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
+                TempData["Error"] = "Validation failed: " + string.Join("; ", errors);
+                return View(model);
+            }
+
+            var response = await AuthorizedClient.PostAsJsonAsync("AdminAPI/gstentry", model.NewGST);
+
+            if (response.IsSuccessStatusCode)
+            {
+                TempData["Success"] = model.NewGST.Id > 0 ? "GST entry updated successfully" : "GST entry added successfully";
+                return RedirectToAction(nameof(AdminGSTEntry), new { id = 0 });
+            }
+
+            var error = await response.Content.ReadAsStringAsync();
+            TempData["Error"] = $"Error: {error}";
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteGSTEntry(int id)
+        {
+            var response = await AuthorizedClient.DeleteAsync($"AdminAPI/gstentry/{id}");
+            if (response.IsSuccessStatusCode)
+                TempData["Success"] = "GST entry deleted successfully!";
+            else
+                TempData["Error"] = $"Delete failed: {await response.Content.ReadAsStringAsync()}";
+
+            return RedirectToAction(nameof(AdminGSTEntry));
+        }
+
+
+        //public IActionResult Product()
+        //{
+        //    return View();
+        //}
+        public IActionResult DoctorConsultation()
+        {
+            return View();
+        }
 
         [HttpGet]
         public async Task<IActionResult> UserCreation(string? id = null)
@@ -419,7 +486,7 @@ namespace NuraHerbex.Controllers
                 model.UserList = new List<RegisterUser>();
             }
 
-            if (!string.IsNullOrEmpty(id)) // If editing, fetch user details
+            if (!string.IsNullOrEmpty(id)) 
             {
                 var userResponse = await AuthorizedClient.GetAsync($"AdminAPI/user/{id}");
                 if (userResponse.IsSuccessStatusCode)
@@ -464,11 +531,140 @@ namespace NuraHerbex.Controllers
             return RedirectToAction(nameof(UserCreation));
         }
 
-  //      private async Task LoadDropdownsAsync(RegisterUserViewModel model, UserRole role)
-		//{
-		//	// Example: load countries/states/specialties
-		//	await Task.CompletedTask;
-		//}
+        private async Task LoadDropdownsAsync(RegisterUserViewModel model, UserRole role)
+        {
+            // Example: load countries/states/specialties
+            await Task.CompletedTask;
+        }
 
-	}
+        //public async Task<IActionResult> Product(int id = 0)
+        //{
+        //    // Get all products
+        //    var response = await AuthorizedClient.GetAsync("AdminAPI/products");
+        //    var products = response.IsSuccessStatusCode
+        //        ? JsonConvert.DeserializeObject<List<Product>>(await response.Content.ReadAsStringAsync())
+        //        : new List<Product>();
+
+        //    var vm = new ProductViewModel
+        //    {
+        //        ProductList = products,
+        //        NewProduct = new Product()
+        //    };
+        //    if (id > 0)
+        //    {
+        //        var prodResponse = await AuthorizedClient.GetAsync($"AdminAPI/product/{id}");
+        //        if (prodResponse.IsSuccessStatusCode)
+        //        {
+        //            var product = JsonConvert.DeserializeObject<Product>(await prodResponse.Content.ReadAsStringAsync());
+        //            if (product != null)
+        //                vm.NewProduct = product;
+        //        }
+        //    }
+
+        //    return View(vm);
+
+        //}
+        public async Task<IActionResult> Product(int id = 0)
+        {
+            var vm = new ProductViewModel();
+
+            var listRes = await AuthorizedClient.GetAsync("AdminAPI/products");
+            if (listRes.IsSuccessStatusCode)
+            {
+                var json = await listRes.Content.ReadAsStringAsync();
+                vm.ProductList = JsonConvert.DeserializeObject<List<Product>>(json) ?? new List<Product>();
+            }
+            else
+            {
+                vm.ProductList = new List<Product>();
+            }
+
+            if (id > 0)
+            {
+                var prodRes = await AuthorizedClient.GetAsync($"AdminAPI/product/{id}");
+                if (prodRes.IsSuccessStatusCode)
+                {
+                    vm.NewProduct = JsonConvert.DeserializeObject<Product>(await prodRes.Content.ReadAsStringAsync()) ?? new Product();
+                }
+            }
+
+            return View(vm);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Product(ProductViewModel model)
+        {
+            var currentUser =User.Identity?.Name?? User.FindFirstValue(ClaimTypes.Email) ?? User.FindFirstValue(ClaimTypes.NameIdentifier)?? "system";
+            if (model.NewProduct.Id == 0)
+                model.NewProduct.CreatedBy = currentUser;
+
+            model.NewProduct.UpdatedBy = currentUser;
+            var ProductFiles = model.ProductFiles;
+            if (ProductFiles != null && ProductFiles.Count > 0)
+            {
+                var uploadsFolder = Path.Combine(_environment.WebRootPath, "uploads/products");
+                if (!Directory.Exists(uploadsFolder))
+                    Directory.CreateDirectory(uploadsFolder);
+
+                var relativePaths = new List<string>();
+
+                foreach (var file in ProductFiles)
+                {
+                    if (file?.Length > 0)
+                    {
+                        var uniqueFile = Guid.NewGuid() + Path.GetExtension(file.FileName);
+                        var filePath = Path.Combine(uploadsFolder, uniqueFile);
+
+                        using (var stream = new FileStream(filePath, FileMode.Create))
+                        {
+                            await file.CopyToAsync(stream);
+                        }
+
+                        relativePaths.Add("/uploads/products/" + uniqueFile);
+                    }
+                }
+
+                if (relativePaths.Count > 0)
+                    model.NewProduct.ProductImages = string.Join(";", relativePaths);
+            }
+
+            // Send JSON to AdminAPI/product (same pattern as Ingredients)
+            var json = JsonConvert.SerializeObject(model.NewProduct);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+            var response = await AuthorizedClient.PostAsync("AdminAPI/product", content);
+
+            if (response.IsSuccessStatusCode)
+            {
+                TempData["Success"] = model.NewProduct.Id != 0
+                    ? "Product updated successfully!"
+                    : "Product added successfully!";
+                return RedirectToAction(nameof(Product), new { id = 0 });
+            }
+
+            var errorMsg = await response.Content.ReadAsStringAsync();
+            ModelState.AddModelError(string.Empty, errorMsg);
+
+            // Refill list on error
+            var productResponse = await AuthorizedClient.GetAsync("AdminAPI/products");
+            model.ProductList = productResponse.IsSuccessStatusCode
+                ? JsonConvert.DeserializeObject<List<Product>>(await productResponse.Content.ReadAsStringAsync())
+                : new List<Product>();
+
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteProduct(int id)
+        {
+            var response = await AuthorizedClient.DeleteAsync($"AdminAPI/product/{id}");
+            if (response.IsSuccessStatusCode)
+                TempData["Success"] = "Product deleted successfully!";
+            else
+                TempData["Error"] = $"Delete failed: {await response.Content.ReadAsStringAsync()}";
+
+            return RedirectToAction(nameof(Product));
+        }
+    }
 }

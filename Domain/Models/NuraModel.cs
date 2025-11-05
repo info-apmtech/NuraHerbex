@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -61,12 +62,10 @@ namespace Domain.Models
         public decimal SGSTPercentage { get; set; }
         public decimal CGSTPercentage { get; set; }
         public decimal IGSTPercentage { get; set; }
-        public string UpdatedBy { get; set; }
+        [BindNever] 
+        public string UpdatedBy { get; set; } = "System";
         public DateTime UpdateDate { get; set; } = DateTime.UtcNow;
-        public bool isIndianGST { get; set; } = true;
         public string? Remarks { get; set; }
-        [NotMapped]
-        public string? NMUpdatedBy { get; set; }
     }
     public class Product
     {

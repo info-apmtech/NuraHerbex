@@ -43,5 +43,16 @@ namespace Domain.Interface
         Task<IngredientCategory> GetIngredientCategoryByIdAsync(int id);
         Task<IdentityResult> AddOrUpdateIngredientCategoryAsync(IngredientCategory category);
         Task<IdentityResult> DeleteIngredientCategoryAsync(int id);
+        //Products
+        Task<List<Product>> GetProductsAsync();
+        Task<Product> GetProductByIdAsync(int id);
+        Task<IdentityResult> AddOrUpdateProductAsync(Product product, string? actingUser = null);
+        Task<IdentityResult> DeleteProductAsync(int id);
+
+        //Gst
+        Task<List<GST>> GetGSTEntriesAsync();
+        Task<GST> GetGSTEntryByIdAsync(int id);
+        Task<IdentityResult> AddOrUpdateGSTEntryAsync(GST gst);
+        Task<IdentityResult> DeleteGSTEntryAsync(int id);
     }
 }
