@@ -1,4 +1,5 @@
-﻿@{
+﻿@model Domain.ViewModel.HomeViewModel
+@{
     ViewData["Title"] = "Home";
 }
 @* <style>
@@ -36,7 +37,8 @@
 
         <!-- Floating Action Buttons - Desktop Only -->
         <div class="floating-actions">
-            <button class="floating-btn" aria-label="Wishlist">
+            <button class="floating-btn" aria-label="Wishlist"
+                    onclick="location.href='@Url.Action("Wishlist", "Home")'">
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
                 </svg>
@@ -307,59 +309,30 @@
         </div>
 
         <div class="ingredients-grid">
-            <!-- Row 1 -->
-            <div class="ingredient-card">
-                <div class="ingredient-icon">
-                    <img src="~/image/HomePage/Ashwagandha.png" alt="Ashwagandha" />
-                </div>
-                <h3 class="ingredient-name">Ashwagandha</h3>
-                <p class="ingredient-benefit">Stress Relief</p>
-            </div>
-
-            <div class="ingredient-card">
-                <div class="ingredient-icon">
-                    <img src="~/image/HomePage/Shatavari.png" alt="Shatavari" />
-                </div>
-                <h3 class="ingredient-name">Shatavari</h3>
-                <p class="ingredient-benefit">Female reproductive tonic</p>
-            </div>
-
-            <div class="ingredient-card">
-                <div class="ingredient-icon">
-                    <img src="~/image/HomePage/Licorice.png" alt="Licorice" />
-                </div>
-                <h3 class="ingredient-name">Licorice</h3>
-                <p class="ingredient-benefit">supports adrenal health</p>
-            </div>
-
-            <!-- Row 2 -->
-            <div class="ingredient-card">
-                <div class="ingredient-icon">
-                    <img src="~/image/HomePage/Ashwagandha.png" alt="Ginseng" />
-                </div>
-                <h3 class="ingredient-name">Ginseng</h3>
-                <p class="ingredient-benefit">Mental Clarity</p>
-            </div>
-
-            <div class="ingredient-card">
-                <div class="ingredient-icon">
-                    <img src="~/image/HomePage/Shatavari.png" alt="Cordyceps" />
-                </div>
-                <h3 class="ingredient-name">Cordyceps</h3>
-                <p class="ingredient-benefit">Athletic Performance</p>
-            </div>
-
-            <div class="ingredient-card">
-                <div class="ingredient-icon">
-                    <img src="~/image/HomePage/Licorice.png" alt="Zinc" />
-                </div>
-                <h3 class="ingredient-name">Zinc</h3>
-                <p class="ingredient-benefit">Immune Support</p>
-            </div>
+            @if (Model.Ingredients != null && Model.Ingredients.Any())
+            {
+                foreach (var ing in Model.Ingredients)
+                {
+                    <div class="ingredient-card">
+                        <div class="ingredient-icon">
+                            <img src="@(string.IsNullOrEmpty(ing.ImagePath) ? Url.Content("~/image/HomePage/default-ingredient.png") : Url.Content(ing.ImagePath))"
+                                 alt="@ing.IngredientName" />
+                        </div>
+                        <h3 class="ingredient-name">@ing.IngredientName</h3>
+                        <p class="ingredient-benefit">@ing.KnownFor</p>
+                    </div>
+                }
+            }
+            else
+            {
+                <p class="text-center">No ingredients to display.</p>
+            }
         </div>
 
         <div class="ingredients-cta">
-            <button onclick="location.href='@Url.Action("Ingredients", "Home")'" class="btn-see-all">See All 27 Ingredients</button>
+            <button onclick="location.href='@Url.Action("Ingredients", "Home")'" class="btn-see-all">
+                See All 27 Ingredients
+            </button>
         </div>
     </div>
 </section>
@@ -372,124 +345,7 @@
             <h2 class="pricing-title">Choose Your <span class="highlight-text">Performance Plan</span></h2>
             <p class="pricing-subtitle">Flexible plans designed to fit your lifestyle and goals</p>
         </div>
-
-        <div class="pricing-grid">
-            <!-- Essential Plan -->
-            <div class="pricing-card">
-                <h3 class="plan-name">Essential</h3>
-                <div class="plan-price">₹49</div>
-                <p class="plan-duration">4 Weeks</p>
-                <ul class="plan-features">
-                    <li>
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                            <polyline points="20 6 9 17 4 12"></polyline>
-                        </svg>
-                        Basic supplement stack
-                    </li>
-                    <li>
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                            <polyline points="20 6 9 17 4 12"></polyline>
-                        </svg>
-                        Monthly delivery
-                    </li>
-                    <li>
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                            <polyline points="20 6 9 17 4 12"></polyline>
-                        </svg>
-                        Email support
-                    </li>
-                    <li>
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                            <polyline points="20 6 9 17 4 12"></polyline>
-                        </svg>
-                        Progress tracking app
-                    </li>
-                </ul>
-                <button onclick="location.href='@Url.Action("Plan", "Home")'" class="btn-plan">Get Started</button>
-            </div>
-
-            <!-- Performance Plan (Featured) -->
-            <div class="pricing-card pricing-featured">
-                <span class="popular-badge">Most Popular</span>
-                <h3 class="plan-name">Performance</h3>
-                <div class="plan-price">₹79</div>
-                <p class="plan-duration">8 Weeks</p>
-                <ul class="plan-features">
-                    <li>
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                            <polyline points="20 6 9 17 4 12"></polyline>
-                        </svg>
-                        Complete supplement stack
-                    </li>
-                    <li>
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                            <polyline points="20 6 9 17 4 12"></polyline>
-                        </svg>
-                        Bi-weekly delivery
-                    </li>
-                    <li>
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                            <polyline points="20 6 9 17 4 12"></polyline>
-                        </svg>
-                        Priority support
-                    </li>
-                    <li>
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                            <polyline points="20 6 9 17 4 12"></polyline>
-                        </svg>
-                        Personalized coaching
-                    </li>
-                    <li>
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                            <polyline points="20 6 9 17 4 12"></polyline>
-                        </svg>
-                        Workout plans
-                    </li>
-                </ul>
-                <button onclick="location.href='@Url.Action("Plan", "Home")'" class="btn-plan btn-plan-featured">Learn More</button>
-            </div>
-
-            <!-- Elite Plan -->
-            <div class="pricing-card">
-                <h3 class="plan-name">Elite</h3>
-                <div class="plan-price">₹149</div>
-                <p class="plan-duration">12 Weeks</p>
-                <ul class="plan-features">
-                    <li>
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                            <polyline points="20 6 9 17 4 12"></polyline>
-                        </svg>
-                        Premium supplement stack
-                    </li>
-                    <li>
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                            <polyline points="20 6 9 17 4 12"></polyline>
-                        </svg>
-                        Weekly delivery
-                    </li>
-                    <li>
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                            <polyline points="20 6 9 17 4 12"></polyline>
-                        </svg>
-                        24/7 Priority support
-                    </li>
-                    <li>
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                            <polyline points="20 6 9 17 4 12"></polyline>
-                        </svg>
-                        1-on-1 Coaching sessions
-                    </li>
-                    <li>
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                            <polyline points="20 6 9 17 4 12"></polyline>
-                        </svg>
-                        Custom nutrition & workout plans
-                    </li>
-                </ul>
-                <button onclick="location.href='@Url.Action("Plan", "Home")'" class="btn-plan">Get Started</button>
-            </div>
-        </div>
-
+        @Html.Partial("_PlanPartial")
         <div class="pricing-cta">
             <button class="btn-view-all"
                     onclick="location.href='@Url.Action("Plan", "Home")'">
@@ -657,113 +513,54 @@
 
         <div class="blog-scroll-wrapper">
             <div class="blog-grid">
-                <!-- Blog Card 1 -->
-                <div class="blog-card" style="cursor:pointer;" onclick="location.href='@Url.Action("Blog", "Home")'">
-                    <div class="blog-image">
-                        <img src="~/image/HomePage/tablet.png" alt="Natural Testosterone Boosters" />
-                    </div>
-                    <div class="blog-content">
-                        <div class="blog-meta">
-                            <span class="blog-category">Science</span>
-                            <span class="blog-time">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <circle cx="12" cy="12" r="10"></circle>
-                                    <polyline points="12 6 12 12 16 14"></polyline>
-                                </svg>
-                                5 min read
-                            </span>
-                        </div>
-                        <h3 class="blog-title-text">The Science Behind Natural Testosterone Boosters</h3>
-                        <p class="blog-excerpt">Discover how natural ingredients can optimize your hormone levels safely and effectively.</p>
-                        <a href="#" class="blog-link">
-                            Read More
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M5 12h14M12 5l7 7-7 7" />
-                            </svg>
-                        </a>
-                    </div>
-                </div>
+                @if (Model.BlogList != null && Model.BlogList.Any())
+                {
+                    foreach (var blog in Model.BlogList)
+                    {
+                        <div class="blog-card" style="cursor:pointer;"
+                             onclick="location.href='@Url.Action("BlogDetail", "Home", new { id = blog.Id })'">
+                            <div class="blog-image">
+                                <img src="@(string.IsNullOrEmpty(blog.ImagePath) ? Url.Content("~/image/HomePage/default-blog.png") : Url.Content(blog.ImagePath))"
+                                     alt="@blog.Title" />
+                            </div>
 
-                <!-- Blog Card 2 -->
-                <div class="blog-card" style="cursor:pointer;" onclick="location.href='@Url.Action("Blog", "Home")'">
-                    <div class="blog-image">
-                        <img src="~/image/HomePage/mountain.png" alt="Natural Testosterone Boosters" />
-                    </div>
-                    <div class="blog-content">
-                        <div class="blog-meta">
-                            <span class="blog-category">Science</span>
-                            <span class="blog-time">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <circle cx="12" cy="12" r="10"></circle>
-                                    <polyline points="12 6 12 12 16 14"></polyline>
-                                </svg>
-                                5 min read
-                            </span>
-                        </div>
-                        <h3 class="blog-title-text">The Science Behind Natural Testosterone Boosters</h3>
-                        <p class="blog-excerpt">Discover how natural ingredients can optimize your hormone levels safely and effectively.</p>
-                        <a href="#" class="blog-link">
-                            Read More
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M5 12h14M12 5l7 7-7 7" />
-                            </svg>
-                        </a>
-                    </div>
-                </div>
+                            <div class="blog-content">
+                                <div class="blog-meta">
+                                    <span class="blog-category">
+                                        @(string.IsNullOrEmpty(blog.WrittenBy) ? "Wellness" : blog.WrittenBy)
+                                    </span>
+                                    <span class="blog-time">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <circle cx="12" cy="12" r="10"></circle>
+                                            <polyline points="12 6 12 12 16 14"></polyline>
+                                        </svg>
+                                        @(string.IsNullOrEmpty(blog.ReadTime) ? "5 min read" : blog.ReadTime)
+                                    </span>
+                                </div>
 
-                <!-- Blog Card 3 -->
-                <div class="blog-card" style="cursor:pointer;" onclick="location.href='@Url.Action("Blog", "Home")'">
-                    <div class="blog-image">
-                        <img src="~/image/HomePage/girl-workout.png" alt="Natural Testosterone Boosters" />
-                    </div>
-                    <div class="blog-content">
-                        <div class="blog-meta">
-                            <span class="blog-category">Science</span>
-                            <span class="blog-time">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <circle cx="12" cy="12" r="10"></circle>
-                                    <polyline points="12 6 12 12 16 14"></polyline>
-                                </svg>
-                                5 min read
-                            </span>
-                        </div>
-                        <h3 class="blog-title-text">The Science Behind Natural Testosterone Boosters</h3>
-                        <p class="blog-excerpt">Discover how natural ingredients can optimize your hormone levels safely and effectively.</p>
-                        <a href="#" class="blog-link">
-                            Read More
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M5 12h14M12 5l7 7-7 7" />
-                            </svg>
-                        </a>
-                    </div>
-                </div>
+                                <h3 class="blog-title-text">@blog.Title</h3>
 
-                <!-- Blog Card 4 (Additional) -->
-                <div class="blog-card" style="cursor:pointer;" onclick="location.href='@Url.Action("Blog", "Home")'">
-                    <div class="blog-image">
-                        <img src="~/image/HomePage/tablet.png" alt="Natural Testosterone Boosters" />
-                    </div>
-                    <div class="blog-content">
-                        <div class="blog-meta">
-                            <span class="blog-category">Science</span>
-                            <span class="blog-time">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <circle cx="12" cy="12" r="10"></circle>
-                                    <polyline points="12 6 12 12 16 14"></polyline>
-                                </svg>
-                                5 min read
-                            </span>
+                                <p class="blog-excerpt">
+                                    @(blog.Description?.Length > 100
+                                        ? blog.Description.Substring(0, 100) + "..."
+                                        : blog.Description)
+                                </p>
+
+                                <a href="@Url.Action("BlogDetail", "Home", new { id = blog.Id })" class="blog-link">
+                                    Read More
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                         stroke="currentColor" stroke-width="2">
+                                        <path d="M5 12h14M12 5l7 7-7 7" />
+                                    </svg>
+                                </a>
+                            </div>
                         </div>
-                        <h3 class="blog-title-text">The Science Behind Natural Testosterone Boosters</h3>
-                        <p class="blog-excerpt">Discover how natural ingredients can optimize your hormone levels safely and effectively.</p>
-                        <a href="#" class="blog-link">
-                            Read More
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M5 12h14M12 5l7 7-7 7" />
-                            </svg>
-                        </a>
-                    </div>
-                </div>
+                    }
+                }
+                else
+                {
+                    <p class="text-center">No blogs available at the moment.</p>
+                }
             </div>
         </div>
 

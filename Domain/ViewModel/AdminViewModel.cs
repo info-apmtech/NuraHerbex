@@ -81,49 +81,55 @@ namespace Domain.ViewModel
 	}
 
 
-	//public class VerifyOtpViewModel
-	//{
-	//	[Required, EmailAddress]
-	//	public string Email { get; set; }
+    //public class VerifyOtpViewModel
+    //{
+    //	[Required, EmailAddress]
+    //	public string Email { get; set; }
 
-	//	[Required, StringLength(6, MinimumLength = 6)]
-	//	public string Otp { get; set; }
-	//}
+    //	[Required, StringLength(6, MinimumLength = 6)]
+    //	public string Otp { get; set; }
+    //}
 
-	//public class ResetPasswordViewModel
-	//{
-	//	//[Required, EmailAddress]
-	//	public string Email { get; set; }
-	//	public string Otp { get; set; } = string.Empty; // Used to validate before reset
+    //public class ResetPasswordViewModel
+    //{
+    //	//[Required, EmailAddress]
+    //	public string Email { get; set; }
+    //	public string Otp { get; set; } = string.Empty; // Used to validate before reset
 
-	//	//[Required]
-	//	[StringLength(100, MinimumLength = 6)]
-	//	public string NewPassword { get; set; }
+    //	//[Required]
+    //	[StringLength(100, MinimumLength = 6)]
+    //	public string NewPassword { get; set; }
 
-	//	//[Required]
-	//	[Compare("NewPassword", ErrorMessage = "Passwords do not match.")]
-	//	public string ConfirmPassword { get; set; }
-	//}
-	//public class ForgotPasswordViewModel
-	//{
-	//	// Step 1: Request OTP
-	//	[Required(ErrorMessage = "Email is required.")]
-	//	[EmailAddress(ErrorMessage = "Invalid email address.")]
-	//	public string Email { get; set; } = string.Empty;
+    //	//[Required]
+    //	[Compare("NewPassword", ErrorMessage = "Passwords do not match.")]
+    //	public string ConfirmPassword { get; set; }
+    //}
+    //public class ForgotPasswordViewModel
+    //{
+    //	// Step 1: Request OTP
+    //	[Required(ErrorMessage = "Email is required.")]
+    //	[EmailAddress(ErrorMessage = "Invalid email address.")]
+    //	public string Email { get; set; } = string.Empty;
 
-	//	// Step 2: Verify OTP
-	//	[StringLength(6, MinimumLength = 6, ErrorMessage = "OTP must be 6 digits.")]
-	//	public string Otp { get; set; } = string.Empty;
+    //	// Step 2: Verify OTP
+    //	[StringLength(6, MinimumLength = 6, ErrorMessage = "OTP must be 6 digits.")]
+    //	public string Otp { get; set; } = string.Empty;
 
-	//	// Step 3: Reset Password
-	//	[StringLength(100, MinimumLength = 6, ErrorMessage = "Password must be at least 6 characters.")]
-	//	public string NewPassword { get; set; } = string.Empty;
+    //	// Step 3: Reset Password
+    //	[StringLength(100, MinimumLength = 6, ErrorMessage = "Password must be at least 6 characters.")]
+    //	public string NewPassword { get; set; } = string.Empty;
 
-	//	[Compare("NewPassword", ErrorMessage = "Passwords do not match.")]
-	//	public string ConfirmPassword { get; set; } = string.Empty;
+    //	[Compare("NewPassword", ErrorMessage = "Passwords do not match.")]
+    //	public string ConfirmPassword { get; set; } = string.Empty;
 
-	//}
-	public class BlogCategoryViewModel
+    //}
+    public class HomeViewModel
+    {
+        public List<Blog> BlogList { get; set; } = new List<Blog>();
+        public List<Ingredient> Ingredients { get; set; } = new();
+
+    }
+    public class BlogCategoryViewModel
     {
         public List<BlogCategory> CategoryList { get; set; } = new();
         public BlogCategory NewCategory { get; set; } = new();

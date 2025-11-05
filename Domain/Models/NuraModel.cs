@@ -151,6 +151,7 @@ namespace Domain.Models
         public string? ScientificName { get; set; }
         public string? Benefits { get; set; }
         public string? Evidence { get; set; }
+        public string? KnownFor { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.Now;
         public bool IsActive { get; set; } = true;
         public bool ShowHome { get; set; } = true;
