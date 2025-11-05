@@ -29,15 +29,13 @@ namespace NuraHerbex.Controllers
         private System.Net.Http.HttpClient AuthorizedClient => _httpClientFactory.CreateAuthorizedClient(_httpContextAccessor);
         //private string GetUserId() => _httpContextAccessor.GetUserId(_tokenService);
         public IActionResult Index()
-        {
-            return View();
-        }
-        public IActionResult UserCreation()
-        {
-            return View();
-        }
-
-
+		{
+			return View();
+		}
+		//public IActionResult UserCreation()
+		//{
+		//	return View();
+		//}
         //Blog
         [HttpGet]
         public async Task<IActionResult> AdminBlog(int id = 0)
@@ -509,8 +507,11 @@ namespace NuraHerbex.Controllers
             if (response.IsSuccessStatusCode)
             {
                 TempData["Success"] = "User Registered Successfully!";
-                return RedirectToAction("UserCreation", new { role = model.RegisteredUser.Role });
-            }
+				if (User.Identity.IsAuthenticated) 
+					return RedirectToAction("UserCreation", new { role = model.RegisteredUser.Role });
+				else
+					return RedirectToAction("SignIn", "Authentication");
+			}
             var errorMsg = await response.Content.ReadAsStringAsync();
             ModelState.AddModelError(string.Empty, errorMsg);
             return View(model);
