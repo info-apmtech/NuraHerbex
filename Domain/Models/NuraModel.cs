@@ -78,12 +78,21 @@ namespace Domain.Models
         public int GSTId { get; set; }
         public decimal DiscountPercentage { get; set; } = 0;
         public string? ProductImages { get; set; }
+        public string? KeyBenefits1 { get; set; }
+        public string? KeyBenefits2 { get; set; }
+        public string? KeyBenefits3 { get; set; }
+        public string? KeyBenefits4 { get; set; }
+        public string? ForThis1 { get; set; }
+        public string? ForThis2 { get; set; }
+        public string? ForThis3 { get; set; }
+        public string? ForThis4 { get; set; }
         [NotMapped]
         public ICollection<IFormFile>? ProductFiles { get; set; }
         public string? UpdatedBy { get; set; }
         public DateTime? UpdatedAt { get; set; } = DateTime.Now;
         public DateTime? CreatedAt { get; set; } = DateTime.Now;
         public string CreatedBy { get; set; }
+        public bool ForIndex { get; set; } = false;
 
     }
     public class Blog

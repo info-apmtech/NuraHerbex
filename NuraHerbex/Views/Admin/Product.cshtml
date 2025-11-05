@@ -61,6 +61,8 @@
                                                 <th>Description</th>
                                                 <th>Amount</th>
                                                 <th>GST</th>
+                                                <th>Key Benfit</th>
+                                                <th>For What</th>
                                                 <th>Created At</th>
                                                 <th>Discount %</th>
                                                 <th style="min-width:120px;">Actions</th>
@@ -82,10 +84,13 @@
                                                         <td>
                                                             @Model.GSTDetails.FirstOrDefault(c => c.Id == Product.GSTId)?.TaxName
                                                         </td>
+                                                        <td>@Product.KeyBenefits1,@Product.KeyBenefits2,@Product.KeyBenefits3,@Product.KeyBenefits4</td>
+                                                        <td>@Product.ForThis1,@Product.ForThis2,@Product.ForThis3,@Product.ForThis4</td>
+                                                       
                                                         <td>@Product.CreatedAt?.ToString("dd MMM yyyy")</td>
                                                         <td>@Product.DiscountPercentage</td>
                                                         <td>
-                                                            <form method="get" asp-action="AdminProduct" asp-route-id="@Product.Id" style="display:inline;">
+                                                            <form method="get" asp-action="Product" asp-route-id="@Product.Id" style="display:inline;">
                                                                 <button type="submit" class="btn btn-sm btn-warning">Edit</button>
                                                             </form>
 
@@ -167,6 +172,54 @@
                                             }
 
                                             <span asp-validation-for="NewProduct.ProductImages" class="text-danger"></span>
+                                        </div>
+                                    </div>
+                                    <h5 class="mt-5"><i class="feather icon-align-justify"></i>&nbsp;&nbsp; Key Benefits</h5>
+                                    <hr>
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <label asp-for="NewProduct.KeyBenefits1" class="form-label">Benefit 1</label>
+                                            <input asp-for="NewProduct.KeyBenefits1" class="form-control" required />
+                                            <span class="form-text">Format: Heading | Description</span>
+                                            <span asp-validation-for="NewProduct.KeyBenefits1" class="text-danger"></span>
+                                        </div>
+
+                                        <!-- copy for 2..4 as needed -->
+                                        <div class="col-md-6">
+                                            <label asp-for="NewProduct.KeyBenefits2" class="form-label">Benefit 2</label>
+                                            <input asp-for="NewProduct.KeyBenefits2" class="form-control"/>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label asp-for="NewProduct.KeyBenefits3" class="form-label">Benefit 3</label>
+                                            <input asp-for="NewProduct.KeyBenefits3" class="form-control"/>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label asp-for="NewProduct.KeyBenefits4" class="form-label">Benefit 4</label>
+                                            <input asp-for="NewProduct.KeyBenefits4" class="form-control" />
+                                        </div>
+                                    </div>
+                                    <h5 class="mt-5"><i class="feather icon-file-text"></i> &nbsp;&nbsp;Who is this For </h5>
+                                    <hr>
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <label asp-for="NewProduct.ForThis1" class="form-label"></label>
+                                            <input asp-for="NewProduct.ForThis1" class="form-control" required />
+                                            <span class="form-text">Format: Heading | Description</span>
+                                            <span asp-validation-for="NewProduct.ForThis1" class="text-danger"></span>
+                                        </div>
+
+                                        <!-- copy for 2..4 as needed -->
+                                        <div class="col-md-6">
+                                            <label asp-for="NewProduct.ForThis2" class="form-label"></label>
+                                            <input asp-for="NewProduct.ForThis2" class="form-control" />
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label asp-for="NewProduct.ForThis3" class="form-label"></label>
+                                            <input asp-for="NewProduct.ForThis3" class="form-control" />
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label asp-for="NewProduct.ForThis4" class="form-label"></label>
+                                            <input asp-for="NewProduct.ForThis4" class="form-control"/>
                                         </div>
                                     </div>
 

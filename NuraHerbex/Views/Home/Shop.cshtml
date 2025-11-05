@@ -11,7 +11,7 @@
             <p class="shop-hero-subtitle">Choose Your Level of Transformation</p>
         </div>
         @{
-            var product = Model?.ProductList?.FirstOrDefault(); 
+            var product = Model?.ProductList?.FirstOrDefault();
             var images = (product?.ProductImages ?? "")
             .Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
             .ToList();
@@ -21,80 +21,96 @@
             var amount = product?.Amount ?? 0m;
             var discountPct = product?.DiscountPercentage ?? 0m;
             var finalAmt = amount - (amount * (discountPct / 100m));
+            var rawBenefits = new[] {
+                product?.KeyBenefits1,
+                product?.KeyBenefits2,
+                product?.KeyBenefits3,
+                product?.KeyBenefits4
+                }
+            .Where(s => !string.IsNullOrWhiteSpace(s))
+            .ToList();
+            var forThisList = new[] {
+                product?.ForThis1,
+                product?.ForThis2,
+                product?.ForThis3,
+                product?.ForThis4
+                }
+            .Where(s => !string.IsNullOrWhiteSpace(s))
+            .ToList();
         }
 
-       <div class="shop-main-content">
-    @if (Model?.ProductList?.Any() == true && product is not null)
-    {
-        <div class="shop-product-image">
-            <img src="@primaryImg" alt="@product.ProductName" />
-        </div>
-        <div class="shop-product-content">
-            <div class="shop-product-details-row">
-                <div class="shop-product-details">
-                    <span class="shop-badge">FEATURED</span>
-                    <h1 class="shop-level-title">@product.ProductName</h1>
-                    <div class="shop-mobile-title-row">
-                        <span class="shop-mobile-title">@product.ProductName</span>
-                        <span class="shop-mobile-badge">FEATURED</span>
-                    </div>
-                    <p class="shop-level-description">
-                        @(!string.IsNullOrWhiteSpace(product.Description) ? product.Description : product.SubTitle)
-                    </p>
+        <div class="shop-main-content">
+            @if (Model?.ProductList?.Any() == true && product is not null)
+            {
+                <div class="shop-product-image">
+                    <img src="@primaryImg" alt="@product.ProductName" />
+                </div>
+                <div class="shop-product-content">
+                    <div class="shop-product-details-row">
+                        <div class="shop-product-details">
+                            <span class="shop-badge">FEATURED</span>
+                            <h1 class="shop-level-title">@product.ProductName</h1>
+                            <div class="shop-mobile-title-row">
+                                <span class="shop-mobile-title">@product.ProductName</span>
+                                <span class="shop-mobile-badge">FEATURED</span>
+                            </div>
+                            <p class="shop-level-description">
+                                @(!string.IsNullOrWhiteSpace(product.Description) ? product.Description : product.SubTitle)
+                            </p>
 
-                    <div class="shop-price-row">
-                        @if (discountPct > 0)
-                        {
-                            <span class="shop-price">
-                                ₹ @finalAmt.ToString("N0", inr) <span class="unit-tag">/per box</span>
-                            </span>
-                            <span class="shop-price-compare">
-                                <s>₹ @amount.ToString("N0", inr)</s> <span class="shop-discount">(@discountPct%)</span>
-                            </span>
-                        }
-                        else
-                        {
-                            <span class="shop-price">
-                                ₹ @amount.ToString("N0", inr) <span class="unit-tag">/per box</span>
-                            </span>
-                        }
-                    </div>
+                            <div class="shop-price-row">
+                                @if (discountPct > 0)
+                                {
+                                    <span class="shop-price">
+                                        ₹ @finalAmt.ToString("N0", inr) <span class="unit-tag">/per box</span>
+                                    </span>
+                                    <span class="shop-price-compare">
+                                        <s>₹ @amount.ToString("N0", inr)</s> <span class="shop-discount">(@discountPct%)</span>
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="shop-price">
+                                        ₹ @amount.ToString("N0", inr) <span class="unit-tag">/per box</span>
+                                    </span>
+                                }
+                            </div>
 
-                    <div class="shop-action-row">
-                        <div class="shop-action-buttons">
-                            <button class="shop-buy-btn"
-                                    onclick="location.href='@Url.Action("Checkout","Shop", new { id = product.Id })'">
-                                Buy Now
-                            </button>
-                            <button onclick="location.href='@Url.Action("Quiz","Home")'" class="shop-quiz-btn">Take Quiz</button>
+                            <div class="shop-action-row">
+                                <div class="shop-action-buttons">
+                                    <button class="shop-buy-btn"
+                                            onclick="location.href='@Url.Action("Checkout", "Shop", new { id = product.Id })'">
+                                        Buy Now
+                                    </button>
+                                    <button onclick="location.href='@Url.Action("Quiz", "Home")'" class="shop-quiz-btn">Take Quiz</button>
+                                </div>
+                                <span class="shop-choose-help">Confused to Choose Your Level?</span>
+                            </div>
                         </div>
-                        <span class="shop-choose-help">Confused to Choose Your Level?</span>
+
+                        <div class="shop-product-thumbs">
+                            @if (images.Any())
+                            {
+                                foreach (var img in images)
+                                {
+                                    <img src="@img" alt="@product.ProductName" class="@(img == primaryImg ? "active" : "")" />
+                                }
+                            }
+                            else
+                            {
+                                <img src="~/image/shop/Stamix1.png" alt="fallback 1" class="active" />
+                                <img src="~/image/shop/Stamix2.png" alt="fallback 2" />
+                                <img src="~/image/shop/Stamix3.png" alt="fallback 3" />
+                            }
+                        </div>
                     </div>
                 </div>
-
-                <div class="shop-product-thumbs">
-                    @if (images.Any())
-                    {
-                        foreach (var img in images)
-                        {
-                            <img src="@img" alt="@product.ProductName" class="@(img == primaryImg ? "active" : "")" />
-                        }
-                    }
-                    else
-                    {
-                        <img src="~/image/shop/Stamix1.png" alt="fallback 1" class="active" />
-                        <img src="~/image/shop/Stamix2.png" alt="fallback 2" />
-                        <img src="~/image/shop/Stamix3.png" alt="fallback 3" />
-                    }
-                </div>
-            </div>
+            }
+            else
+            {
+                <div class="alert alert-info">No products available.</div>
+            }
         </div>
-    }
-    else
-    {
-        <div class="alert alert-info">No products available.</div>
-    }
-</div>
     </div>
 </section>
 
@@ -184,53 +200,75 @@
     <h2 class="benefits-title">
         Key <span class="highlight">Benefits</span>
     </h2>
-    <div class="benefits-grid">
-        <div class="benefit-card">
-            <div class="benefit-icon">
-                <!-- SVG for Focus (Target/Bullseye) -->
-                <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-                    <circle cx="16" cy="16" r="10" stroke="#ff8800" stroke-width="2" />
-                    <circle cx="16" cy="16" r="4" stroke="#ff8800" stroke-width="2" />
-                    <circle cx="16" cy="16" r="1.5" fill="#ff8800" />
-                </svg>
-            </div>
-            <div class="benefit-title">Improved Focus</div>
-            <div class="benefit-desc">Mental clarity for better Performance</div>
+    @if (rawBenefits.Any())
+    {
+
+        <div class="benefits-grid">
+            @foreach (var raw in rawBenefits)
+            {
+
+                // Split "Heading | Description"
+                var text = raw ?? "";
+                var bar = text.IndexOf('|');
+                var heading = bar >= 0 ? text[..bar].Trim() : text.Trim();
+                var desc = bar >= 0 ? text[(bar + 1)..].Trim() : "";
+                var t = heading.ToLowerInvariant();
+
+
+                <div class="benefit-card">
+                    <div class="benefit-icon">
+                        @if (t.Contains("focus") || t.Contains("clarity") || t.Contains("concentr"))
+                        {
+                            <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                                <circle cx="16" cy="16" r="10" stroke="#ff8800" stroke-width="2" />
+                                <circle cx="16" cy="16" r="4" stroke="#ff8800" stroke-width="2" />
+                                <circle cx="16" cy="16" r="1.5" fill="#ff8800" />
+                            </svg>
+                        }
+                        else if (t.Contains("energy") || t.Contains("boost") || t.Contains("power"))
+                        {
+                            <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                                <polyline points="14,3 5,17 15,17 12,29 27,13 17,13 18,3"
+                                          fill="none" stroke="#ff8800" stroke-width="2"
+                                          stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+                        }
+                        else if (t.Contains("antioxid") || t.Contains("immune") || t.Contains("protect"))
+                        {
+                            <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                                <path d="M16 4 L26 8 V16c0 7-6 11-10 12C8 27 6 23 6 16V8Z"
+                                      stroke="#ff8800" stroke-width="2" fill="none" />
+                            </svg>
+                        }
+                        else if (t.Contains("stamina") || t.Contains("endurance") || t.Contains("all-day") || t.Contains("all day"))
+                        {
+                            <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                                <circle cx="16" cy="16" r="12" stroke="#ff8800" stroke-width="2" />
+                                <line x1="16" y1="16" x2="22" y2="16" stroke="#ff8800" stroke-width="2" stroke-linecap="round" />
+                                <line x1="16" y1="10" x2="16" y2="16" stroke="#ff8800" stroke-width="2" stroke-linecap="round" />
+                            </svg>
+                        }
+                        else
+                        {
+                            <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                                <circle cx="16" cy="16" r="12" stroke="#ff8800" stroke-width="2" />
+                                <line x1="16" y1="16" x2="22" y2="16" stroke="#ff8800" stroke-width="2" stroke-linecap="round" />
+                                <line x1="16" y1="10" x2="16" y2="16" stroke="#ff8800" stroke-width="2" stroke-linecap="round" />
+                            </svg>
+                        }
+                    </div>
+
+                    <div class="benefit-title">@heading</div>
+                    <div class="benefit-desc">@desc</div>
+                </div>
+            }
         </div>
-        <div class="benefit-card">
-            <div class="benefit-icon">
-                <!-- SVG for Energy (Lightning Bolt) -->
-                <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-                    <polyline points="14,3 5,17 15,17 12,29 27,13 17,13 18,3"
-                              fill="none" stroke="#ff8800" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                </svg>
-            </div>
-            <div class="benefit-title">Enhanced Energy</div>
-            <div class="benefit-desc">Natural caffeine boost without the crash</div>
-        </div>
-        <div class="benefit-card">
-            <div class="benefit-icon">
-                <!-- SVG for Antioxidant (Shield) -->
-                <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-                    <path d="M16 4 L26 8 V16c0 7-6 11-10 12C8 27 6 23 6 16V8Z" stroke="#ff8800" stroke-width="2" fill="none" />
-                </svg>
-            </div>
-            <div class="benefit-title">Antioxidant Support</div>
-            <div class="benefit-desc">Cellular protection and recovery</div>
-        </div>
-        <div class="benefit-card">
-            <div class="benefit-icon">
-                <!-- SVG for Stamina (Clock) -->
-                <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-                    <circle cx="16" cy="16" r="12" stroke="#ff8800" stroke-width="2" />
-                    <line x1="16" y1="16" x2="22" y2="16" stroke="#ff8800" stroke-width="2" stroke-linecap="round" />
-                    <line x1="16" y1="10" x2="16" y2="16" stroke="#ff8800" stroke-width="2" stroke-linecap="round" />
-                </svg>
-            </div>
-            <div class="benefit-title">All-Day Stamina</div>
-            <div class="benefit-desc">Sustained energy throughout the day</div>
-        </div>
-    </div>
+    }
+    else
+    {
+        <p class="text-muted">No benefits found for this product.</p>
+    }
+
 </section>
 
 <section class="ingredients-section">
@@ -274,51 +312,72 @@
 </section>
 <section class="who-section">
     <h2 class="who-title">Who This is For</h2>
-    <div class="who-grid">
-        <div class="who-card">
-            <div class="who-icon">
-                <!-- User/person SVG for "Busy Professionals" -->
-                <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-                    <circle cx="16" cy="13" r="6" stroke="#ff8800" stroke-width="2" />
-                    <path d="M7 27c0-5 6-6 9-6s9 1 9 6" stroke="#ff8800" stroke-width="2" fill="none" />
-                </svg>
-            </div>
-            <div class="who-head">Busy Professionals</div>
-            <div class="who-desc">
-                Starting their wellness journey<br>
-                who need consistent energy throughout the day
-            </div>
+    @if (forThisList.Any())
+    {
+
+        <div class="who-grid">
+            @foreach (var item in forThisList)
+            {
+
+                // Split "Heading | Description"
+                var text = item ?? "";
+                var bar = text.IndexOf('|');
+                var heading = bar >= 0 ? text[..bar].Trim() : text.Trim();
+                var desc = bar >= 0 ? text[(bar + 1)..].Trim() : "";
+                var t = heading.ToLowerInvariant();
+
+
+                <div class="who-card">
+                    <div class="who-icon">
+                        @* Choose icon automatically based on keywords *@
+                        @if (t.Contains("professional") || t.Contains("busy") || t.Contains("executive"))
+                        {
+                            <!-- User/person SVG -->
+                            <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                                <circle cx="16" cy="13" r="6" stroke="#ff8800" stroke-width="2" />
+                                <path d="M7 27c0-5 6-6 9-6s9 1 9 6" stroke="#ff8800" stroke-width="2" fill="none" />
+                            </svg>
+                        }
+                        else if (t.Contains("health") || t.Contains("beginner") || t.Contains("conscious"))
+                        {
+                            <!-- Target/bullseye SVG -->
+                            <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                                <circle cx="16" cy="16" r="10" stroke="#ff8800" stroke-width="2" />
+                                <circle cx="16" cy="16" r="4" stroke="#ff8800" stroke-width="2" />
+                                <circle cx="16" cy="16" r="1.5" fill="#ff8800" />
+                            </svg>
+                        }
+                        else if (t.Contains("daily") || t.Contains("energy") || t.Contains("active"))
+                        {
+                            <!-- Trophy/Award SVG -->
+                            <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                                <rect x="11" y="8" width="10" height="8" rx="2" stroke="#ff8800" stroke-width="2" />
+                                <path d="M14 16v3a2 2 0 1 0 4 0v-3" stroke="#ff8800" stroke-width="2" />
+                                <path d="M11 13.5c-1.7-.3-3.2-1.3-3.2-2.8V9" stroke="#ff8800" stroke-width="2" fill="none" />
+                                <path d="M21 13.5c1.7-.3 3.2-1.3 3.2-2.8V9" stroke="#ff8800" stroke-width="2" fill="none" />
+                            </svg>
+                        }
+                        else
+                        {
+                            <!-- Default person icon -->
+                            <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                                <circle cx="16" cy="13" r="6" stroke="#ff8800" stroke-width="2" />
+                                <path d="M7 27c0-5 6-6 9-6s9 1 9 6" stroke="#ff8800" stroke-width="2" fill="none" />
+                            </svg>
+                        }
+                    </div>
+
+                    <div class="who-head">@heading</div>
+                    <div class="who-desc">@Html.Raw(desc.Replace("\n", "<br>"))</div>
+                </div>
+            }
         </div>
-        <div class="who-card">
-            <div class="who-icon">
-                <!-- Target/bullseye SVG for "Health-Conscious Beginners" -->
-                <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-                    <circle cx="16" cy="16" r="10" stroke="#ff8800" stroke-width="2" />
-                    <circle cx="16" cy="16" r="4" stroke="#ff8800" stroke-width="2" />
-                    <circle cx="16" cy="16" r="1.5" fill="#ff8800" />
-                </svg>
-            </div>
-            <div class="who-head">Health-Conscious Beginners</div>
-            <div class="who-desc">
-                Taking their first step into supplementation with natural ingredients
-            </div>
-        </div>
-        <div class="who-card">
-            <div class="who-icon">
-                <!-- Trophy/award SVG for "Daily Energy Seekers" -->
-                <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-                    <rect x="11" y="8" width="10" height="8" rx="2" stroke="#ff8800" stroke-width="2" />
-                    <path d="M14 16v3a2 2 0 1 0 4 0v-3" stroke="#ff8800" stroke-width="2" />
-                    <path d="M11 13.5c-1.7-.3-3.2-1.3-3.2-2.8V9" stroke="#ff8800" stroke-width="2" fill="none" />
-                    <path d="M21 13.5c1.7-.3 3.2-1.3 3.2-2.8V9" stroke="#ff8800" stroke-width="2" fill="none" />
-                </svg>
-            </div>
-            <div class="who-head">Daily Energy Seekers</div>
-            <div class="who-desc">
-                Looking to replace coffee with sustained, clean energy
-            </div>
-        </div>
-    </div>
+    }
+    else
+    {
+        <p class="text-muted">No audience information available for this product.</p>
+    }
+
 </section>
 
 <section class="testimonials-section">

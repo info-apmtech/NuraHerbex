@@ -155,7 +155,6 @@ namespace Domain.ViewModel
         public Product NewProduct { get; set; } = new Product();
         public List<IFormFile> ProductFiles { get; set; } = new();
         public List<GST> GSTDetails { get; set; } = new List<GST>();
-
     }
     public class GSTViewModel
     {

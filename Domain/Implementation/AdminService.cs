@@ -454,6 +454,13 @@ namespace Domain.Implementation
                 existing.Amount = product.Amount;
                 existing.GSTId = product.GSTId;
                 existing.DiscountPercentage = product.DiscountPercentage;
+                existing.KeyBenefits1 = product.KeyBenefits1;
+                existing.KeyBenefits2 = product.KeyBenefits2;
+                existing.KeyBenefits3 = product.KeyBenefits3;
+                existing.KeyBenefits4 = product.KeyBenefits4;
+                existing.ForThis1 = product.ForThis1;
+                existing.ForThis2 = product.ForThis2;
+                existing.ForThis3 = product.ForThis3;
 
                 // Only replace images if new ones were uploaded or explicit value provided
                 if (!string.IsNullOrWhiteSpace(product.ProductImages))

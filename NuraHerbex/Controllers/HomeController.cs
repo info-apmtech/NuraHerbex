@@ -143,15 +143,39 @@ namespace NuraHerbex.Controllers
                 products = JsonConvert.DeserializeObject<List<Product>>(json) ?? new List<Product>();
             }
 
-            // Optional: if you want to pre-select a specific product (for details pane, etc.)
+            // Optional: pre-select a specific product
             Product? selected = null;
             if (id > 0)
             {
                 var oneResponse = await _httpClient.GetAsync($"AdminAPI/product/{id}");
                 if (oneResponse.IsSuccessStatusCode)
                 {
-                    selected = JsonConvert.DeserializeObject<Product>(await oneResponse.Content.ReadAsStringAsync());
+                    selected = JsonConvert.DeserializeObject<Product>(
+                        await oneResponse.Content.ReadAsStringAsync()
+                    );
                 }
+            }
+
+            // ---- helpers to unpack "Heading | Description" ----
+            static (string Heading, string Desc) Unpack(string? s)
+            {
+                if (string.IsNullOrWhiteSpace(s)) return ("", "");
+                var parts = s.Split('|', 2);
+                return (parts[0].Trim(), parts.Length > 1 ? parts[1].Trim() : "");
+            }
+
+            static List<KeyValuePair<string, string>> Extract(Product? p)
+            {
+                var list = new List<KeyValuePair<string, string>>();
+                if (p == null) return list;
+
+                foreach (var raw in new[] { p.KeyBenefits1, p.KeyBenefits2, p.KeyBenefits3, p.KeyBenefits4 })
+                {
+                    var (h, d) = Unpack(raw);
+                    if (!string.IsNullOrWhiteSpace(h) || !string.IsNullOrWhiteSpace(d))
+                        list.Add(new KeyValuePair<string, string>(h, d));
+                }
+                return list;
             }
 
             var vm = new ProductViewModel
@@ -159,6 +183,14 @@ namespace NuraHerbex.Controllers
                 ProductList = products,
                 NewProduct = selected ?? new Product()
             };
+
+            // For the selected product
+            ViewBag.SelectedBenefits = Extract(vm.NewProduct); // List<KeyValuePair<string,string>>
+
+            // For product cards list — handle duplicate IDs safely
+            ViewBag.BenefitsByProduct = products
+                .GroupBy(p => p.Id)
+                .ToDictionary(g => g.Key, g => Extract(g.First()));
 
             return View(vm);
         }
