@@ -11,7 +11,7 @@
             <p class="shop-hero-subtitle">Choose Your Level of Transformation</p>
         </div>
         @{
-            var product = Model?.ProductList?.FirstOrDefault(); // <-- simpler
+            var product = Model?.ProductList?.FirstOrDefault(); 
             var images = (product?.ProductImages ?? "")
             .Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
             .ToList();

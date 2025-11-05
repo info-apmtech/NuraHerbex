@@ -1,9 +1,11 @@
-using System.Diagnostics;
 using Domain.Models;
 using Domain.ViewModel;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using NuraHerbex.Models;
+using System.Diagnostics;
+using System.Net;
+using System.Net.Mail;
 
 namespace NuraHerbex.Controllers
 {
@@ -234,6 +236,45 @@ namespace NuraHerbex.Controllers
         public IActionResult MyConsultation()
         {
             return View();
+        }
+        [HttpPost]
+        public async Task<IActionResult> Subscribe(string Email)
+        {
+            if (string.IsNullOrEmpty(Email))
+                return BadRequest("Email is required.");
+
+            try
+            {
+                // Configure mail message
+                var mail = new MailMessage();
+                mail.From = new MailAddress("yourcompanyemail@example.com", "Nura Herbex");
+                mail.To.Add(Email);
+                mail.Subject = "Thanks for Subscribing!";
+                mail.Body = "Thank you for subscribing to Nura Herbex! Our team will contact you soon.";
+                mail.IsBodyHtml = false;
+
+                // Configure SMTP client
+                using (var smtp = new SmtpClient("smtp.gmail.com", 587))
+                {
+                    smtp.Credentials = new NetworkCredential("yourcompanyemail@example.com", "your-app-password");
+                    smtp.EnableSsl = true;
+                    await smtp.SendMailAsync(mail);
+                }
+
+                // Optionally send internal notification
+                // e.g., send to your admin email also
+                // mail.To.Clear();
+                // mail.To.Add("support@nuraherbex.com");
+
+                TempData["Message"] = "Subscription successful! Please check your email.";
+                return RedirectToAction("Index");
+            }
+            catch (Exception ex)
+            {
+                // Log error here
+                TempData["Message"] = "Error: " + ex.Message;
+                return RedirectToAction("Index");
+            }
         }
         public ActionResult _ShoppingCartPartial()
         {
