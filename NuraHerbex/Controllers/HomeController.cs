@@ -130,10 +130,37 @@ namespace NuraHerbex.Controllers
         {
             return View();
         }
-        public IActionResult Shop()
+        public async Task<IActionResult> Shop(int id = 0)
         {
-            return View();
+            var products = new List<Product>();
+
+            var productsResponse = await _httpClient.GetAsync("AdminAPI/products");
+            if (productsResponse.IsSuccessStatusCode)
+            {
+                var json = await productsResponse.Content.ReadAsStringAsync();
+                products = JsonConvert.DeserializeObject<List<Product>>(json) ?? new List<Product>();
+            }
+
+            // Optional: if you want to pre-select a specific product (for details pane, etc.)
+            Product? selected = null;
+            if (id > 0)
+            {
+                var oneResponse = await _httpClient.GetAsync($"AdminAPI/product/{id}");
+                if (oneResponse.IsSuccessStatusCode)
+                {
+                    selected = JsonConvert.DeserializeObject<Product>(await oneResponse.Content.ReadAsStringAsync());
+                }
+            }
+
+            var vm = new ProductViewModel
+            {
+                ProductList = products,
+                NewProduct = selected ?? new Product()
+            };
+
+            return View(vm);
         }
+
         public IActionResult Quiz()
         {
             return View();

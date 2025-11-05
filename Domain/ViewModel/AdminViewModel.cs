@@ -120,5 +120,13 @@ namespace Domain.ViewModel
         public List<IngredientCategory> CategoryList { get; set; } = new List<IngredientCategory>();
         public IngredientCategory NewCategory { get; set; } = new IngredientCategory();
     }
+	public class ProductViewModel
+	{
+        public List<Product> ProductList { get; set; } = new List<Product>();
+        public Product NewProduct { get; set; } = new Product();
+        public List<IFormFile> ProductFiles { get; set; } = new();
+        public List<GST> GSTDetails { get; set; } = new List<GST>();
+
+    }
 
 }

@@ -1,6 +1,8 @@
 ﻿using Domain.Interface;
 using Domain.Models;
 using Domain.ViewModel;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -27,19 +29,21 @@ namespace Domain.Implementation
 		private readonly IHttpClientFactory _httpClientFactory;
 		private readonly NuraDbContext _db;
 		private readonly IEmailService _emailService;
+        private readonly IWebHostEnvironment _env;
 
-		// In-memory OTP store (You can store this in DB/Redis for production)
-		private static readonly ConcurrentDictionary<string, (string Otp, DateTime Expiry)> _otpStore = new();
+        // In-memory OTP store (You can store this in DB/Redis for production)
+        private static readonly ConcurrentDictionary<string, (string Otp, DateTime Expiry)> _otpStore = new();
 
 
-		public AdminService(UserManager<RegisterUser> userManager,IConfiguration config,IHttpClientFactory httpClientFactory, NuraDbContext db, IEmailService emailService)
+		public AdminService(UserManager<RegisterUser> userManager,IConfiguration config,IHttpClientFactory httpClientFactory, NuraDbContext db, IEmailService emailService, IWebHostEnvironment env)
 		{
 			_usermanager = userManager;
 			_config = config;
 			_httpClientFactory = httpClientFactory;
 			_db = db;
 			_emailService = emailService;
-		}
+            _env = env;
+        }
         public async Task<List<RegisterUser>> GetAllUsersAsync()
         {
             var users = await _usermanager.Users.OrderByDescending(u => u.CreatedAt).ToListAsync();
@@ -377,8 +381,124 @@ namespace Domain.Implementation
             return IdentityResult.Success;
         }
 
+        //product
+        public async Task<List<Product>> GetProductsAsync()
+        {
+            return await _db.ProductDetails
+                .OrderByDescending(p => p.CreatedAt)
+                .ToListAsync();
+        }
 
+        // GET BY ID
+        public async Task<Product?> GetProductByIdAsync(int id)
+        {
+            return await _db.ProductDetails.FindAsync(id);
+        }
+
+        // CREATE OR UPDATE
+        public async Task<IdentityResult> AddOrUpdateProductAsync(Product product, string? actingUser = null)
+        {
+            if (product == null)
+                return IdentityResult.Failed(new IdentityError { Description = "Product cannot be null" });
+
+            // Basic validation
+            if (string.IsNullOrWhiteSpace(product.ProductName))
+                return IdentityResult.Failed(new IdentityError { Description = "ProductName is required" });
+
+            if (product.Amount < 0)
+                return IdentityResult.Failed(new IdentityError { Description = "Amount cannot be negative" });
+
+            if (product.DiscountPercentage < 0 || product.DiscountPercentage > 100)
+                return IdentityResult.Failed(new IdentityError { Description = "DiscountPercentage must be between 0 and 100" });
+
+            // Handle file uploads, if provided (overwrite ProductImages with new uploads)
+            if (product.ProductFiles?.Any() == true)
+            {
+                var storedPaths = await SaveFilesAsync(product.ProductFiles);
+                product.ProductImages = string.Join(";", storedPaths);
+            }
+
+            if (product.Id > 0)
+            {
+                var existing = await _db.ProductDetails.FindAsync(product.Id);
+                if (existing == null)
+                    return IdentityResult.Failed(new IdentityError { Description = "Product not found" });
+
+                // Update fields
+                existing.ProductName = product.ProductName;
+                existing.SubTitle = product.SubTitle;
+                existing.Description = product.Description;
+                existing.Amount = product.Amount;
+                existing.GSTId = product.GSTId;
+                existing.DiscountPercentage = product.DiscountPercentage;
+
+                // Only replace images if new ones were uploaded or explicit value provided
+                if (!string.IsNullOrWhiteSpace(product.ProductImages))
+                    existing.ProductImages = product.ProductImages;
+
+                existing.UpdatedAt = DateTime.UtcNow;
+                existing.UpdatedBy = actingUser ?? product.UpdatedBy;
+
+                _db.ProductDetails.Update(existing);
+            }
+            else
+            {
+                // New product
+                product.CreatedAt = DateTime.UtcNow;
+                product.UpdatedAt = DateTime.UtcNow;
+
+                if (!string.IsNullOrWhiteSpace(actingUser))
+                    product.CreatedBy = actingUser;
+
+                await _db.ProductDetails.AddAsync(product);
+            }
+
+            await _db.SaveChangesAsync();
+            return IdentityResult.Success;
+        }
+
+        // DELETE
+        public async Task<IdentityResult> DeleteProductAsync(int id)
+        {
+            var existing = await _db.ProductDetails.FindAsync(id);
+            if (existing == null)
+                return IdentityResult.Failed(new IdentityError { Description = "Product not found" });
+
+            _db.ProductDetails.Remove(existing);
+            await _db.SaveChangesAsync();
+
+            return IdentityResult.Success;
+        }
+
+        // Optional helper: save uploaded files under wwwroot/uploads/products and return relative paths
+        private async Task<List<string>> SaveFilesAsync(ICollection<IFormFile> files)
+        {
+            var saved = new List<string>();
+            var root = _env.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
+            var folder = Path.Combine(root, "uploads", "products");
+            Directory.CreateDirectory(folder);
+
+            foreach (var file in files)
+            {
+                if (file.Length <= 0) continue;
+
+                var ext = Path.GetExtension(file.FileName);
+                var name = $"{Guid.NewGuid():N}{ext}";
+                var physicalPath = Path.Combine(folder, name);
+                using (var stream = new FileStream(physicalPath, FileMode.Create))
+                {
+                    await file.CopyToAsync(stream);
+                }
+
+                // store as web-relative path
+                var relativePath = $"/uploads/products/{name}";
+                saved.Add(relativePath);
+            }
+
+            return saved;
+        }
     }
-
-
 }
+
+
+

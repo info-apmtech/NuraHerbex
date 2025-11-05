@@ -1,4 +1,6 @@
-﻿@{
+﻿@using System.Globalization
+@model Domain.ViewModel.ProductViewModel
+@{
     ViewData["Title"] = "Shop";
 }
 
@@ -8,52 +10,91 @@
             <h2 class="shop-hero-title">STAMIX Shop</h2>
             <p class="shop-hero-subtitle">Choose Your Level of Transformation</p>
         </div>
-        <div class="shop-main-content">
-            <div class="shop-product-image">
-                <img src="~/image/shop/Stamix1.png" alt="STAMIX Level 1" />
-            </div>
-            <div class="shop-product-content">
-                <div class="shop-product-details-row">
-                    <div class="shop-product-details">
-                        <!-- Desktop structure, badge above title -->
-                        <span class="shop-badge">ACTIVATE</span>
-                        <h1 class="shop-level-title">STAMIX Level 1</h1>
-                        <!-- Mobile structure, badge and title in a line -->
-                        <div class="shop-mobile-title-row">
-                            <span class="shop-mobile-title">STAMIX Level 1</span>
-                            <span class="shop-mobile-badge">ACTIVATE</span>
-                        </div>
-                        <p class="shop-level-description">
-                            Begin your transformation with foundational energy and focus
-                        </p>
-                        <div class="shop-rating-row">
-                            <div class="shop-stars">
-                                <span>★</span><span>★</span><span>★</span><span>★</span><span>★</span>
-                            </div>
-                            <span class="rating-text">(4.8/5 from 247 reviews)</span>
-                        </div>
-                        <div class="shop-price-row">
+        @{
+            var product = Model?.ProductList?.FirstOrDefault(); // <-- simpler
+            var images = (product?.ProductImages ?? "")
+            .Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .ToList();
+
+            var primaryImg = images.FirstOrDefault() ?? Url.Content("~/image/shop/Stamix1.png");
+            var inr = new CultureInfo("en-IN");
+            var amount = product?.Amount ?? 0m;
+            var discountPct = product?.DiscountPercentage ?? 0m;
+            var finalAmt = amount - (amount * (discountPct / 100m));
+        }
+
+       <div class="shop-main-content">
+    @if (Model?.ProductList?.Any() == true && product is not null)
+    {
+        <div class="shop-product-image">
+            <img src="@primaryImg" alt="@product.ProductName" />
+        </div>
+        <div class="shop-product-content">
+            <div class="shop-product-details-row">
+                <div class="shop-product-details">
+                    <span class="shop-badge">FEATURED</span>
+                    <h1 class="shop-level-title">@product.ProductName</h1>
+                    <div class="shop-mobile-title-row">
+                        <span class="shop-mobile-title">@product.ProductName</span>
+                        <span class="shop-mobile-badge">FEATURED</span>
+                    </div>
+                    <p class="shop-level-description">
+                        @(!string.IsNullOrWhiteSpace(product.Description) ? product.Description : product.SubTitle)
+                    </p>
+
+                    <div class="shop-price-row">
+                        @if (discountPct > 0)
+                        {
                             <span class="shop-price">
-                                ₹ 2,499 <span class="unit-tag">/per box</span>
+                                ₹ @finalAmt.ToString("N0", inr) <span class="unit-tag">/per box</span>
                             </span>
-                        </div>
-                        <!-- Action row split for better wrapping on mobile -->
-                        <div class="shop-action-row">
-                            <div class="shop-action-buttons">
-                                <button class="shop-buy-btn">Buy Now</button>
-                                <button onclick="location.href='@Url.Action("Quiz", "Home")'" class="shop-quiz-btn">Take Quiz</button>
-                            </div>
-                            <span class="shop-choose-help">Confused to Choose Your Level?</span>
-                        </div>
+                            <span class="shop-price-compare">
+                                <s>₹ @amount.ToString("N0", inr)</s> <span class="shop-discount">(@discountPct%)</span>
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="shop-price">
+                                ₹ @amount.ToString("N0", inr) <span class="unit-tag">/per box</span>
+                            </span>
+                        }
                     </div>
-                    <div class="shop-product-thumbs">
-                        <img src="~/image/shop/Stamix1.png" alt="level 1" class="active" />
-                        <img src="~/image/shop/Stamix2.png" alt="level 2" />
-                        <img src="~/image/shop/Stamix3.png" alt="level 3" />
+
+                    <div class="shop-action-row">
+                        <div class="shop-action-buttons">
+                            <button class="shop-buy-btn"
+                                    onclick="location.href='@Url.Action("Checkout","Shop", new { id = product.Id })'">
+                                Buy Now
+                            </button>
+                            <button onclick="location.href='@Url.Action("Quiz","Home")'" class="shop-quiz-btn">Take Quiz</button>
+                        </div>
+                        <span class="shop-choose-help">Confused to Choose Your Level?</span>
                     </div>
+                </div>
+
+                <div class="shop-product-thumbs">
+                    @if (images.Any())
+                    {
+                        foreach (var img in images)
+                        {
+                            <img src="@img" alt="@product.ProductName" class="@(img == primaryImg ? "active" : "")" />
+                        }
+                    }
+                    else
+                    {
+                        <img src="~/image/shop/Stamix1.png" alt="fallback 1" class="active" />
+                        <img src="~/image/shop/Stamix2.png" alt="fallback 2" />
+                        <img src="~/image/shop/Stamix3.png" alt="fallback 3" />
+                    }
                 </div>
             </div>
         </div>
+    }
+    else
+    {
+        <div class="alert alert-info">No products available.</div>
+    }
+</div>
     </div>
 </section>
 
