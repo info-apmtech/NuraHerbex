@@ -1,0 +1,394 @@
+﻿@{
+    ViewData["Title"] = "Payment";
+}
+<style>
+    body {
+        background: #fdf6f0 !important;
+        font-family: 'Inter', Arial, sans-serif;
+    }
+
+    .checkout-stepper {
+        background: #141925;
+        padding: 38px 0 47px 0;
+        display: flex;
+        align-items: center;
+        gap: 22px;
+        justify-content: center;
+    }
+
+        .checkout-stepper .step {
+            display: flex;
+            align-items: center;
+        }
+
+        .checkout-stepper .step-indicator {
+            font-size: 1.13rem;
+            font-weight: 600;
+            border-radius: 50%;
+            width: 38px;
+            height: 38px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #23bb3a;
+            color: #fff;
+            letter-spacing: 0.04em;
+        }
+
+            .checkout-stepper .step-indicator.current {
+                background: #fd7014;
+            }
+
+            .checkout-stepper .step-indicator.inactive {
+                background: #373a44;
+                color: #b3b3b3;
+            }
+
+        .checkout-stepper .step-label {
+            margin-left: 8px;
+            font-size: 1.13rem;
+            color: #fff;
+            font-weight: 500;
+            margin-right: 20px;
+        }
+
+            .checkout-stepper .step-label.inactive {
+                color: #8c8c8c;
+            }
+
+        .checkout-stepper .step-line {
+            border-top: 2.7px solid #fd7014;
+            width: 58px;
+            margin-right: 8px;
+        }
+
+            .checkout-stepper .step-line.inactive {
+                border-color: #bebebe;
+            }
+
+    .payment-container {
+        max-width: 1280px;
+        margin: 0 auto 0 auto;
+        display: flex;
+        gap: 53px;
+        align-items: flex-start;
+        justify-content: center;
+        font-family: 'Inter', Arial, sans-serif;
+    }
+
+    .payment-section {
+        flex: 2.1;
+    }
+
+    .payment-card {
+        background: #fff;
+        border-radius: 22px;
+        box-shadow: 0 6px 44px #f6e8d3a8;
+        padding: 44px 34px 37px 41px;
+        border: 1.5px solid #ede2d2;
+    }
+
+    .payment-title {
+        font-size: 1.34rem;
+        color: #232324;
+        font-weight: 500;
+        margin-bottom: 2.1rem;
+        font-family: 'Inter', Arial, sans-serif;
+        letter-spacing: 0.01em;
+    }
+
+        .payment-title .highlight {
+            color: #fd7014;
+            font-size: inherit;
+            font-weight: 500;
+            letter-spacing: 0.008em;
+        }
+
+    .payment-method-list {
+        display: flex;
+        flex-direction: column;
+        gap: 27px;
+    }
+
+    .payment-method {
+        background: #fff;
+        border-radius: 15px;
+        padding: 26px 20px 22px 16px;
+        cursor: pointer;
+        border: 1.7px solid #ece1d6;
+        box-shadow: 0 0 0 transparent;
+        display: flex;
+        align-items: center;
+        transition: background 0.12s, border 0.14s, box-shadow 0.17s;
+        min-height: 86px;
+    }
+
+        .payment-method.selected {
+            background: #fff8f2;
+            border-color: #fd7014;
+            box-shadow: 0 7px 27px #fd70141a;
+        }
+
+    .method-icon {
+        width: 41px;
+        height: 41px;
+        background: #fff8f4;
+        border-radius: 11px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 17px;
+    }
+
+    .method-title {
+        font-size: 1.13rem;
+        font-weight: 700;
+        color: #232324;
+    }
+
+    .method-desc {
+        font-size: 1.02rem;
+        color: #c7c7c7;
+        margin-top: 3px;
+        font-weight: 500;
+    }
+
+    .method-arrow {
+        margin-left: auto;
+        color: #ddccbe;
+        font-size: 1.32rem;
+    }
+
+    .summary-section {
+        flex: 1.1;
+    }
+
+    .summary-card {
+        background: #fff;
+        border-radius: 23px;
+        box-shadow: 0 7px 47px 0 #efd9c880;
+        border: 1.6px solid #ede2d2;
+        min-width: 340px;
+        max-width: 415px;
+        padding: 39px 20px 26px 28px;
+    }
+
+    .summary-title {
+        font-size: 1.26rem;
+        font-weight: 700;
+        color: #181a24;
+        margin-bottom: 19px;
+        letter-spacing: 0.018em;
+    }
+
+    .summary-product-row {
+        display: flex;
+        align-items: center;
+        gap: 25px;
+        margin-bottom: 24px;
+    }
+
+    .summary-product-img {
+        width: 61px;
+        height: 61px;
+        background: #f6f5f4;
+        border-radius: 0.63rem;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+        .summary-product-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            border-radius: 7px;
+        }
+
+    .summary-product-info {
+        font-size: 0.99rem;
+        color: #232324;
+    }
+
+    .summary-qty {
+        font-size: 0.99rem;
+        font-weight: 600;
+        color: #2e2e2f;
+        margin-bottom: 1px;
+    }
+
+    .summary-label {
+        color: #cbc8bd;
+        margin-bottom: 2px;
+        font-size: 0.97rem;
+        font-weight: 500;
+    }
+
+    .summary-price {
+        font-size: 1.19rem;
+        font-weight: 800;
+        color: #18202d;
+        margin-top: 5px;
+    }
+
+    .summary-divider {
+        border: none;
+        border-top: 1.21px solid #efe6d7;
+        margin: 16px 0 17px 0;
+    }
+
+    .summary-total-box {
+        display: flex;
+        justify-content: space-between;
+        font-size: 1.22rem;
+        font-weight: 800;
+        margin-bottom: 22px;
+    }
+
+    .summary-amount {
+        color: #fd7014;
+    }
+
+    .pay-btn {
+        width: 100%;
+        background: #fd7014;
+        border-radius: 11px;
+        border: none;
+        color: #fff;
+        font-size: 1.22rem;
+        font-weight: 700;
+        padding: 15px 0 12px 0;
+        margin-bottom: 7px;
+        margin-top: 2px;
+        letter-spacing: 0.03em;
+        box-shadow: 0 4px 24px #fd701477;
+    }
+
+        .pay-btn:hover {
+            background: #e55b02;
+        }
+
+    .summary-note {
+        color: #bbb;
+        font-size: 1.03rem;
+        text-align: center;
+        margin-top: 4px;
+    }
+    @@media (max-width:1100px) {
+        .payment-container
+
+    {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .summary-card {
+        min-width: unset;
+        max-width: unset;
+        width: 100%;
+        margin-top: 34px;
+    }
+
+    }
+</style>
+
+<!-- Stepper -->
+<div class="checkout-stepper">
+    <div class="step">
+        <span class="step-indicator">&#10003;</span>
+        <span class="step-label">Checkout</span>
+        <span class="step-line"></span>
+    </div>
+    <div class="step">
+        <span class="step-indicator current">2</span>
+        <span class="step-label">Payment</span>
+        <span class="step-line inactive"></span>
+    </div>
+    <div class="step">
+        <span class="step-indicator inactive">3</span>
+        <span class="step-label inactive">Confirmation</span>
+    </div>
+</div>
+
+<!-- Main Containers -->
+<div class="payment-container">
+    <!-- Left: Payment Method -->
+    <div class="payment-section">
+        <div class="payment-card">
+            <div class="payment-title">
+                Select <span class="highlight">Payment Method</span>
+            </div>
+            <div class="payment-method-list">
+                <!-- UPI -->
+                <div class="payment-method selected">
+                    <span class="method-icon">
+                        <img src="https://img.icons8.com/ios/48/FD7014/iphone-x.png" alt="UPI" />
+                    </span>
+                    <div>
+                        <div class="method-title">UPI</div>
+                        <div class="method-desc">Pay using UPI Apps</div>
+                    </div>
+                    <span class="method-arrow">&#9662;</span>
+                </div>
+                <!-- Card -->
+                <div class="payment-method">
+                    <span class="method-icon">
+                        <img src="https://img.icons8.com/ios/50/FD7014/bank-card-back-side.png" alt="Card" />
+                    </span>
+                    <div>
+                        <div class="method-title">Credit / Debit Card</div>
+                        <div class="method-desc">Visa, Master Card, Amex</div>
+                    </div>
+                    <span class="method-arrow">&#9662;</span>
+                </div>
+                <!-- Wallet -->
+                <div class="payment-method">
+                    <span class="method-icon">
+                        <img src="https://img.icons8.com/ios/50/FD7014/wallet--v1.png" alt="Wallet" />
+                    </span>
+                    <div>
+                        <div class="method-title">Wallet</div>
+                        <div class="method-desc">Paytm, PhonePay, Google Pay</div>
+                    </div>
+                    <span class="method-arrow">&#9662;</span>
+                </div>
+                <!-- Net Banking -->
+                <div class="payment-method">
+                    <span class="method-icon">
+                        <img src="https://img.icons8.com/ios/50/FD7014/bank-building.png" alt="Netbanking" />
+                    </span>
+                    <div>
+                        <div class="method-title">Net Banking</div>
+                        <div class="method-desc">All major Banks supported</div>
+                    </div>
+                    <span class="method-arrow">&#9662;</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Right: Summary -->
+    <div class="summary-section">
+        <div class="summary-card">
+            <div class="summary-title">Level 1 : Activate</div>
+            <div class="summary-product-row">
+                <div class="summary-product-img">
+                    <img src="~/image/consultation/stamix activate.png" alt="Product Image">
+                </div>
+                <div class="summary-product-info">
+                    <div class="summary-qty">Quantity : 1</div>
+                    <div class="summary-label">Order Summary</div>
+                    <div class="summary-price">$ 49</div>
+                </div>
+            </div>
+            <hr class="summary-divider">
+            <div class="summary-total-box">
+                <span>Total Amount</span>
+                <span class="summary-amount">$ 54.00</span>
+            </div>
+            <button class="pay-btn">Pay Securely &nbsp; $ 54.00</button>
+            <div class="summary-note">Your payment is protected by Razorpay</div>
+        </div>
+    </div>
+</div>
+
