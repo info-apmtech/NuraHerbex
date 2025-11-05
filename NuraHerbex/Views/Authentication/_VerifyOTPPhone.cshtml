@@ -1,0 +1,235 @@
+﻿<style>
+	.locked {
+		pointer-events: none;
+		opacity: .6;
+	}
+</style>
+
+<!-- OTP Modal -->
+<div class="otp-modal" id="otpModal" style="display:none;">
+	<div class="otp-modal-content">
+		<!-- Close button to close the modal -->
+		<button class="close-btn" id="closeModalBtn" aria-label="Close">&times;</button>
+
+		<h2>Verify Your Phone No</h2>
+		<p>We’ve sent a 6-digit code to your Phone.</p>
+
+		<form method="post" id="verifyOtpForm" novalidate>
+			@Html.AntiForgeryToken()
+
+			<!-- Use explicit name/id to avoid duplicate id="Email" -->
+			<input type="hidden" name="phone" id="ModalPhoneHidden" />
+			<input type="hidden" name="Otp" id="ModalOtpHidden" />
+
+			<div class="otp-inputs" aria-label="Enter 6 digit code">
+				<input type="text" class="otp-input" inputmode="numeric" pattern="[0-9]*" maxlength="1">
+				<input type="text" class="otp-input" inputmode="numeric" pattern="[0-9]*" maxlength="1">
+				<input type="text" class="otp-input" inputmode="numeric" pattern="[0-9]*" maxlength="1">
+				<input type="text" class="otp-input" inputmode="numeric" pattern="[0-9]*" maxlength="1">
+				<input type="text" class="otp-input" inputmode="numeric" pattern="[0-9]*" maxlength="1">
+				<input type="text" class="otp-input" inputmode="numeric" pattern="[0-9]*" maxlength="1">
+			</div>
+
+			<p class="mt-2">
+				Didn't receive code?
+				<a href="#" id="resendOtpBtn" style="color:#f44900;">Resend OTP</a>
+			</p>
+
+			<button type="submit" class="verify-btn">Verify & Continue</button>
+		</form>
+		<p id="resendMessage" class="text-success mt-3"></p>
+	</div>
+</div>
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const signupForm = document.getElementById('signupForm');
+      const sendBtn    = document.getElementById('openOtpBtn');
+      const otpModal   = document.getElementById('otpModal');
+      const closeModal = document.getElementById('closeModalBtn');
+      const verifyForm = document.getElementById('verifyOtpForm');
+
+      // === NEW: keep a flag in memory + a hidden input on the form ===
+      let phoneVerified = false;
+      if (signupForm && !signupForm.querySelector('#PhoneVerified')) {
+        const v = document.createElement('input');
+        v.type = 'hidden';
+        v.name = 'PhoneVerified';
+        v.id   = 'PhoneVerified';
+        v.value = 'false';
+        signupForm.appendChild(v);
+      }
+
+      // === Helpers to select fields to lock/unlock ===
+      const getPhoneInput = () =>
+        signupForm?.querySelector('[name="RegisteredUser.PhoneNumber"], #RegisteredUser_PhoneNumber');
+
+      // Everything from this model except PhoneNumber & hidden fields
+      const getLockableInputs = () => signupForm
+        ? signupForm.querySelectorAll(
+            [
+              // text-like inputs
+              'input[name^="RegisteredUser."]:not([name="RegisteredUser.PhoneNumber"]):not([type="hidden"])',
+              // selects/textareas
+              'select[name^="RegisteredUser."]',
+              'textarea[name^="RegisteredUser."]'
+            ].join(',')
+          )
+        : [];
+
+      const submitBtn = signupForm?.querySelector('button[type="submit"]');
+
+      // === Lock/Unlock functions ===
+      function lockFields() {
+        getLockableInputs().forEach(el => {
+          // Prefer disabled (prevents posting and tabbing)
+          el.setAttribute('disabled', 'disabled');
+          el.classList.add('locked');
+          // Also keep readonly for semantic clarity (optional)
+          if ('readOnly' in el) el.readOnly = true;
+        });
+        if (submitBtn) {
+          submitBtn.setAttribute('disabled', 'disabled');
+          submitBtn.classList.add('locked');
+        }
+      }
+
+      function unlockFields() {
+        getLockableInputs().forEach(el => {
+          el.removeAttribute('disabled');
+          el.classList.remove('locked');
+          if ('readOnly' in el) el.readOnly = false;
+        });
+        if (submitBtn) {
+          submitBtn.removeAttribute('disabled');
+          submitBtn.classList.remove('locked');
+        }
+      }
+
+      // === On first load: lock everything except Phone & Verify button ===
+      lockFields();
+
+      if (!sendBtn || !otpModal) return; // hard guard
+
+      // Open modal on Verify click (and copy phone)
+      sendBtn.addEventListener('click', function (e) {
+        e.preventDefault();
+
+        const phoneInput = getPhoneInput();
+        const phone = phoneInput?.value?.trim() || '';
+        if (!phone) { alert('Please enter your Phone no.'); phoneInput?.focus(); return; }
+
+        // show modal
+        otpModal.style.display = 'flex';
+
+        // set hidden phone field for OTP form
+        const phoneHidden = document.getElementById('ModalPhoneHidden');
+        if (phoneHidden) phoneHidden.value = phone;
+
+        otpModal.querySelector('.otp-input')?.focus();
+      });
+
+      // Concat 6 digits into hidden field before POSTing
+      if (verifyForm) {
+        verifyForm.addEventListener('submit', async function (e) {
+          e.preventDefault(); // we'll handle post via fetch (AJAX)
+
+          const digits = Array.from(otpModal.querySelectorAll('.otp-input'))
+            .map(i => (i.value || '').trim())
+            .join('');
+          if (digits.length !== 6) {
+            alert('Please enter the 6-digit code.');
+            return;
+          }
+
+          const otpHidden = document.getElementById('ModalOtpHidden');
+          if (otpHidden) otpHidden.value = digits;
+
+          // === NEW: POST to your OTP verify endpoint (adjust URL/action as needed) ===
+          // Expecting JSON: { success: true/false, message: "..." }
+          try {
+            const tokenInput = verifyForm.querySelector('input[name="__RequestVerificationToken"]');
+            const res = await fetch('/Account/VerifyOtp', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'RequestVerificationToken': tokenInput?.value ?? ''
+              },
+              body: JSON.stringify({
+                phone: document.getElementById('ModalPhoneHidden')?.value,
+                otp: digits
+              })
+            });
+
+            const data = await res.json();
+
+            if (data?.success) {
+              phoneVerified = true;
+              // reflect it on the main form
+              const pv = document.getElementById('PhoneVerified');
+              if (pv) pv.value = 'true';
+
+              // Lock the phone field and Verify button (optional)
+              const phoneInput = getPhoneInput();
+              phoneInput?.setAttribute('readonly', 'readonly');
+              phoneInput?.setAttribute('disabled', 'disabled');
+              sendBtn.setAttribute('disabled', 'disabled');
+
+              // Unlock the rest
+              unlockFields();
+
+              // Close & reset modal
+              otpModal.style.display = 'none';
+              otpModal.querySelectorAll('.otp-input').forEach(i => i.value = '');
+              document.getElementById('ModalOtpHidden').value = '';
+              document.getElementById('resendMessage').textContent = '';
+
+            } else {
+              alert(data?.message || 'Invalid OTP. Please try again.');
+            }
+          } catch (err) {
+            console.error(err);
+            alert('Could not verify OTP at the moment. Please try again.');
+          }
+        });
+      }
+
+      // OTP UX: digit-only + auto-advance + backspace to previous + paste
+      otpModal.querySelectorAll('.otp-input').forEach((el, idx, arr) => {
+        el.addEventListener('input', () => {
+          el.value = el.value.replace(/\D/g, '').slice(0, 1);
+          if (el.value && idx < arr.length - 1) arr[idx + 1].focus();
+        });
+        el.addEventListener('keydown', (e) => {
+          if ((e.key === 'Backspace' || e.key === 'Delete') && !el.value && idx > 0) {
+            e.preventDefault();
+            arr[idx - 1].focus();
+          }
+        });
+        el.addEventListener('paste', (e) => {
+          const t = (e.clipboardData || window.clipboardData).getData('text') || '';
+          if (!t) return;
+          e.preventDefault();
+          const digits = t.replace(/\D/g, '').slice(0, arr.length).split('');
+          arr.forEach((inp, i) => inp.value = digits[i] ?? '');
+          arr[Math.min(digits.length, arr.length - 1)].focus();
+        });
+      });
+
+      // Close modal
+      closeModal?.addEventListener('click', () => {
+        otpModal.style.display = 'none';
+        otpModal.querySelectorAll('.otp-input').forEach(i => i.value = '');
+        const otpHidden = document.getElementById('ModalOtpHidden');
+        if (otpHidden) otpHidden.value = '';
+      });
+
+      // Close on backdrop click + Esc
+      otpModal.addEventListener('click', (e) => { if (e.target === otpModal) otpModal.style.display = 'none'; });
+      document.addEventListener('keydown', (e) => { if (e.key === 'Escape') otpModal.style.display = 'none'; });
+    });
+</script>
+
+
+

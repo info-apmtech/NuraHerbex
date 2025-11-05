@@ -42,15 +42,44 @@ namespace Domain.ViewModel
 		public DateTime? FromDate { get; set; }
 		public DateTime? ToDate { get; set; }
 	}
-	public class ForgotPasswordViewModel
-	{
-		//[Required(ErrorMessage = "Email is required.")]
-		[EmailAddress(ErrorMessage = "Invalid email address.")]
-		public string? Email { get; set; } = string.Empty;
+	public enum ForgotFlowStep { Request = 0, Verify = 1 }
 
-		[StringLength(6, MinimumLength = 6, ErrorMessage = "OTP must be 6 digits.")]
-		public string? Otp { get; set; } = string.Empty;
+	public class ForgotPasswordViewModel : IValidatableObject
+	{
+		[Required, EmailAddress]
+		public string Email { get; set; } = string.Empty;
+
+		// Only required when Step == Verify
+		[StringLength(6, MinimumLength = 6)]
+		public string? Otp { get; set; }
+
+		public ForgotFlowStep Step { get; set; } = ForgotFlowStep.Request;
+
+		public IEnumerable<ValidationResult> Validate(ValidationContext ctx)
+		{
+			if (Step == ForgotFlowStep.Verify && string.IsNullOrWhiteSpace(Otp))
+			{
+				yield return new ValidationResult("OTP is required.", new[] { nameof(Otp) });
+			}
+		}
 	}
+
+	public class ResetPasswordViewModel
+	{
+		[Required, EmailAddress]
+		public string Email { get; set; } = string.Empty;
+
+		// Keep OTP on the Create Password page too (server will re-verify atomically)
+		[Required, StringLength(6, MinimumLength = 6)]
+		public string Otp { get; set; } = string.Empty;
+
+		[Required, DataType(DataType.Password), StringLength(100, MinimumLength = 8)]
+		public string NewPassword { get; set; } = string.Empty;
+
+		[Required, DataType(DataType.Password), Compare(nameof(NewPassword), ErrorMessage = "Passwords do not match.")]
+		public string ConfirmPassword { get; set; } = string.Empty;
+	}
+
 
 	//public class VerifyOtpViewModel
 	//{
@@ -61,20 +90,20 @@ namespace Domain.ViewModel
 	//	public string Otp { get; set; }
 	//}
 
-	public class ResetPasswordViewModel
-	{
-		//[Required, EmailAddress]
-		public string Email { get; set; }
-		public string Otp { get; set; } = string.Empty; // Used to validate before reset
+	//public class ResetPasswordViewModel
+	//{
+	//	//[Required, EmailAddress]
+	//	public string Email { get; set; }
+	//	public string Otp { get; set; } = string.Empty; // Used to validate before reset
 
-		//[Required]
-		[StringLength(100, MinimumLength = 6)]
-		public string NewPassword { get; set; }
+	//	//[Required]
+	//	[StringLength(100, MinimumLength = 6)]
+	//	public string NewPassword { get; set; }
 
-		//[Required]
-		[Compare("NewPassword", ErrorMessage = "Passwords do not match.")]
-		public string ConfirmPassword { get; set; }
-	}
+	//	//[Required]
+	//	[Compare("NewPassword", ErrorMessage = "Passwords do not match.")]
+	//	public string ConfirmPassword { get; set; }
+	//}
 	//public class ForgotPasswordViewModel
 	//{
 	//	// Step 1: Request OTP
@@ -94,7 +123,7 @@ namespace Domain.ViewModel
 	//	public string ConfirmPassword { get; set; } = string.Empty;
 
 	//}
-    public class BlogCategoryViewModel
+	public class BlogCategoryViewModel
     {
         public List<BlogCategory> CategoryList { get; set; } = new();
         public BlogCategory NewCategory { get; set; } = new();

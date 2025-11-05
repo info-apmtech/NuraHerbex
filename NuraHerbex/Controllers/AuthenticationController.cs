@@ -65,8 +65,10 @@ namespace NuraHerbex.Controllers
 			await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(identity), new AuthenticationProperties { IsPersistent = true });
 			if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
 				return Redirect(returnUrl);
-
+			if(User.IsInRole("Admin") || User.IsInRole("Employee") || User.IsInRole("Doctor"))
 			return RedirectToAction("UserCreation", "Admin");
+			else
+				return RedirectToAction("MyOrders", "Home");
 		}
 		public async Task<IActionResult> LogOut()
 		{
@@ -112,45 +114,37 @@ namespace NuraHerbex.Controllers
 		{
 			var response = await AuthorizedClient.PostAsJsonAsync("AuthenticationAPI/VerifyOtp", model);
 			if (response.IsSuccessStatusCode)
-				return RedirectToAction("CreatePassword", new { email = model.Email });
+				return RedirectToAction("CreatePassword", new { email = model.Email,otp=model.Otp });
 
 			ModelState.AddModelError("", "Invalid OTP. Please try again.");
 			return View(model);
 		}
 
 		[HttpGet]
-		public IActionResult CreatePassword(string email)
+		public IActionResult CreatePassword(string email,string otp)
 		{
-			return View(new ResetPasswordViewModel { Email = email });
+			return View(new ResetPasswordViewModel { Email = email,Otp=otp });
 		}
 
-		[HttpPost("ResetPassword")]
+		[HttpPost]
+		//[ValidateAntiForgeryToken]
 		public async Task<IActionResult> CreatePassword(ResetPasswordViewModel model)
 		{
 			var json = JsonConvert.SerializeObject(model);
 			var content = new StringContent(json, Encoding.UTF8, "application/json");
 
 			var response = await AuthorizedClient.PostAsync("AuthenticationAPI/ResetPasswordWithOtp", content);
-			ViewBag.Message = await response.Content.ReadAsStringAsync();
+			var msg = await response.Content.ReadAsStringAsync();
 
-			return View();
+			// If you want the JS to see a redirect on success:
+			if (response.IsSuccessStatusCode)
+				return RedirectToAction("SignIn", "Authentication");
+
+			// Otherwise return the same view with a message
+			ViewBag.Message = msg;
+			return View(model);
 		}
 
-		//[HttpPost("ResetPassword")]
-		//public async Task<IActionResult> CreatePassword(ResetPasswordViewModel model)
-		//{
-		//	if (!ModelState.IsValid)
-		//		return View(model);
-
-		//	var json = JsonConvert.SerializeObject(model);
-		//	var content = new StringContent(json, Encoding.UTF8, "application/json");
-
-		//	var response = await AuthorizedClient.PostAsync("AuthenticationAPI/ResetPassword", content);
-		//	var result = await response.Content.ReadAsStringAsync();
-
-		//	ViewBag.Message = result;
-		//	return View();
-		//}
 
 	}
 }

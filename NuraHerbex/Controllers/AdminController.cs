@@ -30,12 +30,10 @@ namespace NuraHerbex.Controllers
 		{
 			return View();
 		}
-		public IActionResult UserCreation()
-		{
-			return View();
-		}
-
-
+		//public IActionResult UserCreation()
+		//{
+		//	return View();
+		//}
         //Blog
         [HttpGet]
         public async Task<IActionResult> AdminBlog(int id = 0)
@@ -442,8 +440,11 @@ namespace NuraHerbex.Controllers
             if (response.IsSuccessStatusCode)
             {
                 TempData["Success"] = "User Registered Successfully!";
-                return RedirectToAction("UserCreation", new { role = model.RegisteredUser.Role });
-            }
+				if (User.Identity.IsAuthenticated) 
+					return RedirectToAction("UserCreation", new { role = model.RegisteredUser.Role });
+				else
+					return RedirectToAction("SignIn", "Authentication");
+			}
             var errorMsg = await response.Content.ReadAsStringAsync();
             ModelState.AddModelError(string.Empty, errorMsg);
             return View(model);
@@ -463,11 +464,11 @@ namespace NuraHerbex.Controllers
             return RedirectToAction(nameof(UserCreation));
         }
 
-        private async Task LoadDropdownsAsync(RegisterUserViewModel model, UserRole role)
-		{
-			// Example: load countries/states/specialties
-			await Task.CompletedTask;
-		}
+  //      private async Task LoadDropdownsAsync(RegisterUserViewModel model, UserRole role)
+		//{
+		//	// Example: load countries/states/specialties
+		//	await Task.CompletedTask;
+		//}
 
 	}
 }

@@ -59,25 +59,40 @@ namespace Domain.Implementation
 
 		public async Task<IdentityResult> AddOrUpdateUserAsync(RegisterUser user)
 		{
-			//if (string.IsNullOrEmpty(user.Id))
-			//{
-				user.CreatedAt = DateTime.Now;
+			// Try to find an existing user in the database
+			var existingUser = await _usermanager.FindByIdAsync(user.Id);
+
+			if (existingUser == null)
+			{
+				// ✅ Create new user
+				user.CreatedAt = DateTime.UtcNow;
+				user.Role = user.Role == 0 ? UserRole.Customer : user.Role; // Ensure safe default
+                user.UserName = user.Email;
 				return await _usermanager.CreateAsync(user, user.Password);
-			//}
-			//else
-			//{
-			//	var existing = await _adminService.FindByIdAsync(user.Id);
-			//	if (existing == null) return IdentityResult.Failed(new IdentityError { Description = "User not found" });
+			}
+			else
+			{
+				// ✅ Update existing user
+				existingUser.Email = user.Email;
+				existingUser.UserName = user.Email;
+				existingUser.PhoneNumber = user.PhoneNumber;
+				existingUser.Role = user.Role;
+				existingUser.UserName = user.Email;
+				existingUser.UpdatedAt = DateTime.UtcNow;
 
-			//	existing.Email = user.Email;
-			//	existing.PhoneNumber = user.PhoneNumber;
-			//	existing.Role = user.Role;
-			//	existing.UpdatedAt = DateTime.Now;
+				// Update password only if explicitly provided
+				if (!string.IsNullOrWhiteSpace(user.Password))
+				{
+					var token = await _usermanager.GeneratePasswordResetTokenAsync(existingUser);
+					var passResult = await _usermanager.ResetPasswordAsync(existingUser, token, user.Password);
+					if (!passResult.Succeeded)
+						return passResult;
+				}
 
-			//	await _adminService.UpdateAsync(existing);
-			//	return IdentityResult.Success;
-			//}
+				return await _usermanager.UpdateAsync(existingUser);
+			}
 		}
+
 		public async Task<LoginResponseModel?> SignInAsync(RegisterUserViewModel model)
 		{
 			var user = await _usermanager.FindByNameAsync(model.Username);
@@ -106,7 +121,7 @@ namespace Domain.Implementation
 			var token = new JwtSecurityToken(
 				issuer: issuer,
 				audience: audience,
-				expires: DateTime.Now.AddMinutes(60),
+				expires: DateTime.UtcNow.AddMinutes(60),
 				claims: authClaims,
 				signingCredentials: new SigningCredentials(signingKey, SecurityAlgorithms.HmacSha256)
 			);
@@ -158,15 +173,14 @@ namespace Domain.Implementation
 			return false;
 		}
 
-		// ✅ Step 3: Reset Password (after OTP verified)
 		public async Task<string> ResetPasswordWithOtpAsync(ResetPasswordViewModel model)
 		{
 			var user = await _usermanager.FindByEmailAsync(model.Email);
 			if (user == null)
 				return "Invalid email address.";
 
-			var resetToken = await _usermanager.GeneratePasswordResetTokenAsync(user);
-			var result = await _usermanager.ResetPasswordAsync(user, resetToken, model.NewPassword);
+			var token = await _usermanager.GeneratePasswordResetTokenAsync(user);
+			var result = await _usermanager.ResetPasswordAsync(user, token, model.NewPassword);
 
 			if (!result.Succeeded)
 			{
@@ -174,8 +188,15 @@ namespace Domain.Implementation
 				return $"Password reset failed: {errors}";
 			}
 
+			// ✅ Manually update custom fields if needed
+			user.Password = model.NewPassword; //  Plain text — only if you have a business need
+			user.UpdatedAt = DateTime.Now;
+			//user.UpdatedBy = "System (ForgotPassword flow)";
+			await _usermanager.UpdateAsync(user);
 			return "Password has been reset successfully.";
 		}
+
+
 		//BlogCategory
 		public async Task<BlogCategory> GetBlogCategoryByIdAsync(int id)
         {
