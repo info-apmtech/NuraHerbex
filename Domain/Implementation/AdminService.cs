@@ -14,6 +14,7 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Net.Mail;
+using System.Reflection.Metadata;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
@@ -303,6 +304,7 @@ namespace Domain.Implementation
                 existing.Evidence = ingredient.Evidence;
                 existing.ImagePath = ingredient.ImagePath;
                 existing.IsActive = ingredient.IsActive;
+                existing.ShowHome = ingredient.ShowHome;
 
                 _db.Ingredients.Update(existing);
             }
