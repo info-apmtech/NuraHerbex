@@ -10,22 +10,42 @@
     <div class="pcoded-content">
         <div class="d-flex flex-column align-items-center" style="min-height: 90vh;">
             <div class="w-100">
-                @* style="max-width: 1100px;" *@
                 <div class="d-flex justify-content-between align-items-center mt-4 mb-3">
                     <h4 class="mb-0">Product Management</h4>
                 </div>
 
                 <ul class="nav nav-tabs mb-3" id="productTab" role="tablist">
                     <li class="nav-item">
-                        <a class="nav-link active text-uppercase" id="list-tab" @(activeTab == "list" ? "active" : "")" data-toggle="tab" href="#list" role="tab" aria-controls="list" aria-selected="@(activeTab == "list" ? "true" : "false")">List</a>
+                        <a class="nav-link text-uppercase @(activeTab == "list" ? "active" : "")"
+                           id="list-tab"
+                           data-toggle="tab"
+                           href="#list"
+                           role="tab"
+                           aria-controls="list"
+                           aria-selected="@(activeTab == "list" ? "true" : "false")">
+                            List
+                        </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link text-uppercase" id="newproduct-tab" @(activeTab == "newingredient" ? "active" : "")" data-toggle="tab" href="#newproduct" role="tab" aria-controls="newproduct" aria-selected="@(activeTab == "newProduct" ? "true" : "false")"> @(!isEdit ? "New Product" : "Edit Product")</a>
+                        <a class="nav-link text-uppercase @(activeTab == "newproduct" ? "active" : "")"
+                           id="newproduct-tab"
+                           data-toggle="tab"
+                           href="#newproduct"
+                           role="tab"
+                           aria-controls="newproduct"
+                           aria-selected="@(activeTab == "newproduct" ? "true" : "false")">
+                            @(!isEdit ? "New Product" : "Edit Product")
+                        </a>
                     </li>
                 </ul>
 
                 <div class="tab-content" id="productTabContent">
-                    <div class="tab-pane fade  @(activeTab == "list" ? "show active" : "")" " id="list" role="tabpanel" aria-labelledby="list-tab">
+
+                    <!-- Product List Tab -->
+                    <div class="tab-pane fade @(activeTab == "list" ? "show active" : "")"
+                         id="list"
+                         role="tabpanel"
+                         aria-labelledby="list-tab">
                         <div class="card shadow-sm">
                             <div class="card-header bg-white border-bottom-0">
                                 <h5 class="mb-0">Product List</h5>
@@ -47,13 +67,14 @@
                                             </tr>
                                         </thead>
                                         <tbody>
-
                                             @if (Model.ProductList.Any())
                                             {
                                                 foreach (var Product in Model.ProductList)
                                                 {
                                                     <tr>
-                                                        <td><img src="@Product.ProductImages" alt="Image" style="width:40px;height:40px;border-radius:6px;" /></td>
+                                                        <td>
+                                                            <img src="@Product.ProductImages" alt="Image" style="width:40px;height:40px;border-radius:6px;" />
+                                                        </td>
                                                         <td>@Product.ProductName</td>
                                                         <td>@Product.SubTitle</td>
                                                         <td>@Product.Description</td>
@@ -62,15 +83,15 @@
                                                             @Model.GSTDetails.FirstOrDefault(c => c.Id == Product.GSTId)?.TaxName
                                                         </td>
                                                         <td>@Product.CreatedAt?.ToString("dd MMM yyyy")</td>
+                                                        <td>@Product.DiscountPercentage</td>
                                                         <td>
-                                                            @Product.DiscountPercentage
-                                                        </td>
-                                                        <td>
-                                                            <form method="get" asp-action="AdminIngredient" asp-route-id="@Product.Id" style="display:inline;">
+                                                            <form method="get" asp-action="AdminProduct" asp-route-id="@Product.Id" style="display:inline;">
                                                                 <button type="submit" class="btn btn-sm btn-warning">Edit</button>
                                                             </form>
 
-                                                            <form method="post" asp-action="DeleteIngredient" asp-route-id="@Product.Id" onsubmit="return confirm('Are you sure you want to delete this ingredient?');" style="display:inline;">
+                                                            <form method="post" asp-action="DeleteProduct" asp-route-id="@Product.Id"
+                                                                  onsubmit="return confirm('Are you sure you want to delete this product?');"
+                                                                  style="display:inline;">
                                                                 @Html.AntiForgeryToken()
                                                                 <button type="submit" class="btn btn-sm btn-danger">Delete</button>
                                                             </form>
@@ -81,11 +102,9 @@
                                             else
                                             {
                                                 <tr>
-                                                    <td colspan="7" class="text-center">No ingredients found.</td>
+                                                    <td colspan="9" class="text-center">No products found.</td>
                                                 </tr>
                                             }
-
-
                                         </tbody>
                                     </table>
                                 </div>
@@ -93,10 +112,14 @@
                         </div>
                     </div>
 
-                    <div class="tab-pane fade @(activeTab == "newingredient" ? "show active" : "")" id="newproduct" role="tabpanel" aria-labelledby="newproduct-tab">
+                    <!-- New / Edit Product Tab -->
+                    <div class="tab-pane fade @(activeTab == "newproduct" ? "show active" : "")"
+                         id="newproduct"
+                         role="tabpanel"
+                         aria-labelledby="newproduct-tab">
                         <div class="card shadow-sm">
                             <div class="card-header bg-white border-bottom-0">
-                                <h5 class="mb-0">@(!isEdit ? "Create Product" : "Edit Product") </h5>
+                                <h5 class="mb-0">@(!isEdit ? "Create Product" : "Edit Product")</h5>
                             </div>
                             <div class="card-body">
                                 <form asp-action="Product" asp-controller="Admin" method="post" enctype="multipart/form-data">
@@ -107,27 +130,27 @@
 
                                     <div class="row mb-3">
                                         <div class="col-md-4">
-                                            <label for="ProductName" asp-for="NewProduct.ProductName"> </label>
+                                            <label asp-for="NewProduct.ProductName"></label>
                                             <input type="text" asp-for="NewProduct.ProductName" class="form-control" required />
                                         </div>
                                         <div class="col-md-4">
-                                            <label for="Level" asp-for="NewProduct.SubTitle"></label>
-                                            <input asp-for="NewProduct.SubTitle" class="form-control" required>
+                                            <label asp-for="NewProduct.SubTitle"></label>
+                                            <input type="text" asp-for="NewProduct.SubTitle" class="form-control" required />
                                         </div>
                                         <div class="col-md-4">
-                                            <label for="Amount" asp-for="NewProduct.Amount"></label>
+                                            <label asp-for="NewProduct.Amount"></label>
                                             <input type="number" asp-for="NewProduct.Amount" class="form-control" step="0.01" required />
                                         </div>
-
                                     </div>
+
                                     <div class="row mb-3">
                                         <div class="col-md-4">
                                             <label asp-for="NewProduct.Description"></label>
-                                            <input type="text" asp-for="NewProduct.Description" class="form-control" step="0.01" required />
+                                            <input type="text" asp-for="NewProduct.Description" class="form-control" required />
                                         </div>
                                         <div class="col-md-4">
                                             <label asp-for="NewProduct.GSTId">GST</label>
-                                            <input asp-for="NewProduct.GSTId" class="form-control" required>
+                                            <input type="number" asp-for="NewProduct.GSTId" class="form-control" required />
                                         </div>
                                         <div class="col-md-4">
                                             <label asp-for="NewProduct.DiscountPercentage">Discount Percentage</label>
@@ -147,16 +170,16 @@
                                         </div>
                                     </div>
 
-                                    <button type="submit" class="btn btn-primary">@(!isEdit ? "Create" : "Update")</button>
+                                    <button type="submit" class="btn btn-primary">
+                                        @(!isEdit ? "Create" : "Update")
+                                    </button>
                                 </form>
                             </div>
                         </div>
                     </div>
 
-                </div>
+                </div> <!-- End tab-content -->
             </div>
         </div>
     </div>
 </div>
-
-
