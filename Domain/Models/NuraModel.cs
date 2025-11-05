@@ -23,6 +23,7 @@ namespace Domain.Models
         public string? NMConfirmPassword { get; set; }
         [JsonConverter(typeof(JsonStringEnumConverter))]
         public UserRole Role { get; set; }
+        public Specialities? Specialties { get; set; } // time slot need to discuss
         public DateTime CreatedAt { get; set; }
         public string? CreatedBy { get; set; }
         public string? UpdatedBy { get; set; }
@@ -37,52 +38,20 @@ namespace Domain.Models
         public string? NMCountry { get; set; }
         [NotMapped]
         public string? NMState { get; set; }
-     
-     
+        [Display(Name = "Country")]
+        public int Country { get; set; }
+        [Display(Name = "State")]
+        public int? State { get; set; }
+        [Display(Name = "Address")]
+        public string? Address { get; set; }
+        [Display(Name = "Pincode")]
+        public string? Pincode { get; set; }
         public string? Experience { get; set; }// for doctor
         public bool isActive { get; set; } = true; //need to check user active
-		public string FirstName { get; set; }
-		public string? LastName { get; set; }
-		//public string? MobileNo { get; set; }
-	}
-    public class AddressDetails
-    {
-        public int Id { get; set; }
-        public string UserId { get; set; }
-        public string Name { get; set; }
-        public string Location { get; set; }
-        public string DoorNo { get; set; }
-        public string PhoneNumber { get; set; }
-        public string Address { get; set; }
-        public int State { get; set; }
-        public string Pincode { get; set; }
-        public int Country { get; set; }
-        public bool IsDefault { get; set; }
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
-
-    }
-    public class DoctorDetails
-    {
-        public int Id { get; set; }
-        public string PrimarySpecality { get; set; }
-        public string Remark { get; set; }
-        public string SpecalityId { get; set; }
-        public bool IsWorking { get; set; } = true;
-        public TimeOnly MondayStartTime { get; set; }
-        public TimeOnly MondayEndTime { get; set; } 
-        public TimeOnly TuesdayStartTime { get; set; }
-        public TimeOnly TuesdayEndTime { get; set; }
-        public TimeOnly WednesdayStartTime { get; set; }
-        public TimeOnly WednesdayEndTime { get; set; }
-        public TimeOnly ThursdayStartTime { get; set; }
-        public TimeOnly ThursdayEndTime { get; set; }
-        public TimeOnly FridayStartTime { get; set; }
-        public TimeOnly FridayEndTime { get; set; }
-        public TimeOnly SaturdayStartTime { get; set; }
-        public TimeOnly SaturdayEndTime { get; set; }
-        public TimeOnly SundayStartTime { get; set; }
-        public TimeOnly SundayEndTime { get; set; }
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public bool? isWorking { get; set; } = true; // need to check doctor availability
+        public string FirstName { get; set; }
+        public string? LastName { get; set; }
+        //public string? MobileNo { get; set; }
     }
     public class GST
     {
@@ -93,7 +62,7 @@ namespace Domain.Models
         public decimal SGSTPercentage { get; set; }
         public decimal CGSTPercentage { get; set; }
         public decimal IGSTPercentage { get; set; }
-        [BindNever] 
+        [BindNever]
         public string UpdatedBy { get; set; } = "System";
         public DateTime UpdateDate { get; set; } = DateTime.UtcNow;
         public string? Remarks { get; set; }
@@ -108,7 +77,7 @@ namespace Domain.Models
         public decimal Amount { get; set; } = 0; //For Gst need to discuss
         public int GSTId { get; set; }
         public decimal DiscountPercentage { get; set; } = 0;
-        public string? ProductImages { get; set; } 
+        public string? ProductImages { get; set; }
         [NotMapped]
         public ICollection<IFormFile>? ProductFiles { get; set; }
         public string? UpdatedBy { get; set; }
@@ -141,81 +110,7 @@ namespace Domain.Models
         public bool IsActive { get; set; } = true;
         public DateTime CreatedAt { get; set; } = DateTime.Now;
     }
-   
-    public class Ingredient
-    {
-        public int Id { get; set; }
-        public string ImagePath { get; set; }
-        public string IngredientName { get; set; }
-        public int IngredientCategoryId { get; set; }
-        public string? ScientificName { get; set; }
-        public string? Benefits { get; set; }    
-        public string? Evidence { get; set; } 
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
-        public bool ShowHome { get; set; } 
-        public bool IsActive { get; set; } = true;
-    }
-    public class IngredientCategory
-    {
-        public int Id { get; set; }
-        public string Name { get; set; }
-        public bool IsActive { get; set; } = true;
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-    }
-    //public class QuizQuestion
-    //{
-    //    public int Id { get; set; }
-    //    public string QuestionText { get; set; }
 
-    //    // Navigation property to options
-    //    public List<QuizOption> Options { get; set; } = new List<QuizOption>();
-    //}
-
-    //public class QuizOption
-    //{
-    //    public int Id { get; set; }
-    //    public int QuestionId { get; set; }
-    //    public string OptionText { get; set; }
-    //    public List<ProductRecommendation> ProductRecommendations { get; set; } = new();
-
-    //}
-    //public class ProductRecommendation
-    //{
-    //    public int Id { get; set; }
-    //    public int QuizOptionId { get; set; }
-    //    public QuizOption Option { get; set; }
-
-    //    public int ProductId { get; set; }
-    //    public Product Product { get; set; }
-
-    //    public int Score { get; set; } = 1;
-    //}
-
-    public class CartItem
-    {
-        public int Id { get; set; }
-        public int ProductId { get; set; }
-        public int Quantity { get; set; }
-        public decimal Price { get; set; }
-        public string UserId { get; set; }
-
-    }
-    public class WishlistItem
-    {
-        public int Id { get; set; }
-        public string UserId { get; set; }
-        public int ProductId { get; set; }
-    }
-    //public class PlanModel
-    //{
-    //    public string PlanName { get; set; }
-    //    public string Subtitle { get; set; }
-    //    public string Description { get; set; }
-    //    public decimal Price { get; set; }
-    //    public string Duration { get; set; }
-    //    public bool IsPopular { get; set; }
-    //    public List<string> Features { get; set; }
-    //}
 
     public class ConsultationBooking
     {
@@ -225,10 +120,10 @@ namespace Domain.Models
         public string FirstName { get; set; }
 
         [Required, MaxLength(100)]
-        public string? LastName { get; set; }
+        public string LastName { get; set; }
 
         [Required, EmailAddress]
-        public string? Email { get; set; }
+        public string Email { get; set; }
 
         [Required, MaxLength(20)]
         public string Phone { get; set; }
@@ -247,5 +142,26 @@ namespace Domain.Models
 
         public DateTime SubmittedAt { get; set; } = DateTime.Now;
     }
+    public class Ingredient
+    {
+        public int Id { get; set; }
+        public string ImagePath { get; set; }
+        public string IngredientName { get; set; }
+        public int IngredientCategoryId { get; set; }
+        public string? ScientificName { get; set; }
+        public string? Benefits { get; set; }
+        public string? Evidence { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public bool IsActive { get; set; } = true;
+        public bool ShowHome { get; set; } = true;
+    }
+    public class IngredientCategory
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public bool IsActive { get; set; } = true;
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    }
+
 
 }
