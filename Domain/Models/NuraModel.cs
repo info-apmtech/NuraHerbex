@@ -49,11 +49,11 @@ namespace Domain.Models
         public string? Experience { get; set; }// for doctor
         public bool isActive { get; set; } = true; //need to check user active
         public bool? isWorking { get; set; } = true; // need to check doctor availability
-		public string FirstName { get; set; }
-		public string? LastName { get; set; }
-		//public string? MobileNo { get; set; }
-	}
-	public class GST
+        public string FirstName { get; set; }
+        public string? LastName { get; set; }
+        //public string? MobileNo { get; set; }
+    }
+    public class GST
     {
         [Key]
         public int Id { get; set; }
@@ -62,7 +62,7 @@ namespace Domain.Models
         public decimal SGSTPercentage { get; set; }
         public decimal CGSTPercentage { get; set; }
         public decimal IGSTPercentage { get; set; }
-        [BindNever] 
+        [BindNever]
         public string UpdatedBy { get; set; } = "System";
         public DateTime UpdateDate { get; set; } = DateTime.UtcNow;
         public string? Remarks { get; set; }
@@ -77,7 +77,7 @@ namespace Domain.Models
         public decimal Amount { get; set; } = 0; //For Gst need to discuss
         public int GSTId { get; set; }
         public decimal DiscountPercentage { get; set; } = 0;
-        public string? ProductImages { get; set; } 
+        public string? ProductImages { get; set; }
         [NotMapped]
         public ICollection<IFormFile>? ProductFiles { get; set; }
         public string? UpdatedBy { get; set; }
@@ -110,21 +110,6 @@ namespace Domain.Models
         public bool IsActive { get; set; } = true;
         public DateTime CreatedAt { get; set; } = DateTime.Now;
     }
-    public class QuizQuestion
-    {
-        public int Id { get; set; }
-        public string QuestionText { get; set; }
-
-        // Navigation property to options
-        public List<QuizOption> Options { get; set; } = new List<QuizOption>();
-    }
-
-    public class QuizOption
-    {
-        public int Id { get; set; }
-        public int QuestionId { get; set; }
-        public string OptionText { get; set; }
-    }
 
 
     public class ConsultationBooking
@@ -146,7 +131,7 @@ namespace Domain.Models
         [Required]
         public ConsultationType ConsultationType { get; set; }
 
-        public string? PreferredDoctorId { get; set; }  
+        public string? PreferredDoctorId { get; set; }
         public RegisterUser PreferredDoctor { get; set; }
 
         [Required]
@@ -164,10 +149,11 @@ namespace Domain.Models
         public string IngredientName { get; set; }
         public int IngredientCategoryId { get; set; }
         public string? ScientificName { get; set; }
-        public string? Benefits { get; set; }    
-        public string? Evidence { get; set; } 
+        public string? Benefits { get; set; }
+        public string? Evidence { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.Now;
         public bool IsActive { get; set; } = true;
+        public bool ShowHome { get; set; } = true;
     }
     public class IngredientCategory
     {
