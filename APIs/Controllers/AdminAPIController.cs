@@ -347,6 +347,51 @@ namespace APIs.Controllers
             return BadRequest(result.Errors);
         }
 
+        [AllowAnonymous]
+        [HttpGet("gstentries")]
+        public async Task<IActionResult> GetGSTEntries()
+        {
+            var gstEntries = await _adminservice.GetGSTEntriesAsync();
+            return Ok(gstEntries);
+        }
 
+        [AllowAnonymous]
+        [HttpGet("gstentry/{id}")]
+        public async Task<IActionResult> GetGSTEntry(int id)
+        {
+            var gst = await _adminservice.GetGSTEntryByIdAsync(id);
+            if (gst == null) return NotFound();
+            return Ok(gst);
+        }
+
+        //[AllowAnonymous]
+        [Authorize]
+        [HttpPost("gstentry")]
+        public async Task<IActionResult> AddOrUpdateGSTEntry([FromBody] GST gst)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            // ✅ Extract the logged-in username or user ID from claims
+            var updatedBy = User?.Identity?.Name ?? "System";
+            gst.UpdatedBy = updatedBy;
+
+            var result = await _adminservice.AddOrUpdateGSTEntryAsync(gst);
+            if (result.Succeeded)
+                return Ok(new { success = true, message = "GST entry saved successfully", updatedBy });
+
+            return BadRequest(result.Errors);
+        }
+
+        [AllowAnonymous]
+        [HttpDelete("gstentry/{id}")]
+        public async Task<IActionResult> DeleteGSTEntry(int id)
+        {
+            var result = await _adminservice.DeleteGSTEntryAsync(id);
+            if (result.Succeeded)
+                return Ok(new { success = true, message = "GST entry deleted successfully" });
+
+            return BadRequest(result.Errors);
+        }
     }
 }

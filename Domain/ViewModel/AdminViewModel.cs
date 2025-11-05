@@ -128,5 +128,10 @@ namespace Domain.ViewModel
         public List<GST> GSTDetails { get; set; } = new List<GST>();
 
     }
+    public class GSTViewModel
+    {
+        public List<GST> GSTList { get; set; } = new();
+        public GST NewGST { get; set; } = new();
+    }
 
 }
