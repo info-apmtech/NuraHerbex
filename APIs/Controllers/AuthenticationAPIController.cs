@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages;
+using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -24,14 +25,16 @@ namespace APIs.Controllers
 		private readonly RoleManager<IdentityRole> _roleManager;
 		private readonly IConfiguration _configuration;
 		private readonly NuraDbContext _dbContext;
+		//private readonly INotificationClientService _notificationService;
 		//private readonly IEmailService _emailService;
-		public AuthenticationAPIController(UserManager<RegisterUser> userManager, RoleManager<IdentityRole> roleManager, IConfiguration configuration,NuraDbContext dbContext,IAdmin adminservice)
+		public AuthenticationAPIController(UserManager<RegisterUser> userManager, RoleManager<IdentityRole> roleManager, IConfiguration configuration,NuraDbContext dbContext,IAdmin adminservice)//, INotificationClientService notificationClientService)
 		{
 			_userManager = userManager;
 			_adminService = adminservice;
 			_roleManager = roleManager;
 			_configuration = configuration;
 			_dbContext = dbContext;
+			//_notificationService = notificationClientService;
 			//_emailService = emailService;
 		}
 		[HttpPost("DefaultUser")]
@@ -111,5 +114,29 @@ namespace APIs.Controllers
 
 			return Ok(result);
 		}
+		//[HttpPost("VerifyPhoneOTP")]
+		//[AllowAnonymous]
+		//public async Task<IActionResult> VerifyPhoneOTP([FromForm] string phone)
+		//{
+		//	if (string.IsNullOrWhiteSpace(phone))
+		//		return BadRequest(new { success = false, message = "invalid phone number" });
+
+		//	const string ApiKey = "apm_forgetkey_nuraherbex";
+		//	var otp = await _notificationService.SendOtpSms(ApiKey, phone, SMSTemplateType.Registration);
+
+		//	if (string.IsNullOrWhiteSpace(otp)) // or use C#
+		//		return StatusCode(502, new { success = false, message = "failed to send otp" });
+
+		//	// For production, remove `otp` from response
+		//	return Ok(new
+		//	{
+		//		success = true,
+		//		mobileNumber = phone,
+		//		otp,
+		//		createdDate = DateTime.UtcNow,
+		//		isActive = true
+		//	});
+		//}
+
 	}
 }
