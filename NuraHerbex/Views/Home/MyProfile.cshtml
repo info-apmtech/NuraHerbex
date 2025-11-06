@@ -1,4 +1,4 @@
-﻿@{
+﻿@* @{
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 <div class="profile-layout">
@@ -85,7 +85,249 @@
 
 
     </div>
+</div> *@
+@model Domain.ViewModel.UserProfileViewModel
+@using Microsoft.AspNetCore.Mvc.Rendering
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var countrySelectList = new SelectList(Model.Countries, "Id", "CountryName", Model.AddressDetail?.Country);
+    var stateSelectList = new SelectList(Model.States, "Id", "StateName", Model.AddressDetail?.State);
+}
+
+<div class="profile-layout">
+    @Html.Partial("_UserSidebar")
+    <div class="profile-main-content">
+        <h2 class="profile-title">My Profile</h2>
+        <p class="profile-subtitle">Manage your personal information and addresses</p>
+
+        <!-- Personal Information Card -->
+        <div class="profile-card">
+            <div class="profile-card-title">Personal Information</div>
+            <form class="profile-form">
+                <div class="form-row">
+                    <label>
+                        Full Name
+                        <input type="text" placeholder="Placeholder" />
+                    </label>
+                </div>
+                <div class="form-row row-inline">
+                    <label>
+                        Phone
+                        <input type="text" placeholder="Placeholder" />
+                    </label>
+                    <label>
+                        Email
+                        <input type="text" placeholder="Placeholder" />
+                    </label>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="orange-btn">Save Changes</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Saved Addresses Card -->
+        <div class="profile-card address-card">
+            <div class="profile-card-title-row">
+                <span class="profile-card-title">Saved Addresses</span>
+                <button type="button" class="orange-btn add-new" onclick="document.getElementById('addAddressPopup').style.display='block'"><span>+</span> Add New</button>
+            </div>
+            <div class="saved-addresses-list">
+                @foreach (var addr in Model.Addresses)
+                {
+                    <div class="address-block">
+                        @if (addr.IsDefault)
+                        {
+                            <span class="address-badge">Default</span>
+                        }
+                        <span class="address-name">@addr.Name</span>
+                        <div class="address-detail">
+                            @addr.Location <br />
+                            @addr.DoorNo <br />
+                            @addr.Address <br />
+                            Pincode: @addr.Pincode <br />
+                            Phone: @addr.PhoneNumber
+                        </div>
+                        <div class="address-actions">
+                            <form asp-action="MyProfile" method="get" style="display:inline">
+                                <input type="hidden" name="id" value="@addr.Id" />
+                                <button type="submit" class="icon-btn" title="Edit"><img src="~/image/userSidebar/EditIcon.png" alt="Edit" /></button>
+                            </form>
+                            <form asp-action="DeleteAddress" method="post" style="display:inline" onsubmit="return confirm('Are you sure to delete this address?');">
+                                <input type="hidden" name="id" value="@addr.Id" />
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="icon-btn" title="Delete"><img src="~/image/userSidebar/Deleteicon.png" alt="Delete" /></button>
+                            </form>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Add/Edit Address Popup -->
+        <div id="addAddressPopup"
+             class="modal-popup"
+             style="display:@(Model.AddressDetail.Id > 0 ? "block" : "none");">
+            <div class="popup-content">
+                <span class="close-btn" onclick="document.getElementById('addAddressPopup').style.display='none'">&times;</span>
+                <h3>@(Model.AddressDetail.Id > 0 ? "Edit Address" : "Add New Address")</h3>
+
+                <form asp-action="MyProfile" method="post" class="profile-form">
+                    @Html.AntiForgeryToken()
+                    <input asp-for="AddressDetail.Id" type="hidden" />
+                    <input asp-for="AddressDetail.UserId" type="hidden" />
+
+                    <!-- Name + Location -->
+                    <div class="form-row row-inline">
+                        <label>
+                            Name
+                            <input asp-for="AddressDetail.Name" required />
+                        </label>
+                        <label>
+                            Location
+                            <input asp-for="AddressDetail.Location" required />
+                        </label>
+                    </div>
+
+                    <!-- Door No + Phone -->
+                    <div class="form-row row-inline">
+                        <label>
+                            Door No
+                            <input asp-for="AddressDetail.DoorNo" required />
+                        </label>
+                        <label>
+                            Phone Number
+                            <input asp-for="AddressDetail.PhoneNumber" required />
+                        </label>
+                    </div>
+
+                    <!-- Address -->
+                    <div class="form-row">
+                        <label style="width:100%;">
+                            Address
+                            <textarea asp-for="AddressDetail.Address" required></textarea>
+                        </label>
+                    </div>
+
+                    <!-- Country + State -->
+                    <div class="form-row row-inline">
+                        <label>
+                            Country
+                            <select asp-for="AddressDetail.Country"
+                                    asp-items="@(new SelectList(Model.Countries, "Id", "CountryName", Model.AddressDetail?.Country))"
+                                    class="form-control"
+                                    required>
+                                <option value="">-- Select Country --</option>
+                            </select>
+                        </label>
+                        <label>
+                            State
+                            <select asp-for="AddressDetail.State"
+                                    asp-items="@(new SelectList(Model.States, "Id", "StateName", Model.AddressDetail?.State))"
+                                    class="form-control"
+                                    required>
+                                <option value="">-- Select State --</option>
+                            </select>
+                        </label>
+                    </div>
+
+                    <!-- Pincode + Is Default -->
+                    <div class="form-row row-inline">
+                        <label>
+                            Pincode
+                            <input asp-for="AddressDetail.Pincode" required />
+                        </label>
+                        <label class="checkbox-inline">
+                            Is Default
+                            <input asp-for="AddressDetail.IsDefault" type="checkbox" />
+                        </label>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="orange-btn">Save</button>
+                        <button type="button" class="orange-btn" onclick="document.getElementById('addAddressPopup').style.display='none'">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Account Security Card -->
+        <div class="profile-card account-card">
+            <div class="profile-card-title">Account Security</div>
+            <div class="security-valuebox-row">
+                <div class="security-row-texts">
+                    <span class="security-label">Password</span>
+                    <span class="security-hint">Last changed 3 months ago</span>
+                </div>
+                <button class="orange-btn security-btn">Change Password</button>
+            </div>
+        </div>
+
+    </div>
 </div>
+
+<style>
+    .modal-popup {
+        position: fixed;
+        z-index: 999;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0, 0, 0, 0.5);
+    }
+
+    .popup-content {
+        background-color: #fff;
+        margin: 10% auto;
+        padding: 20px;
+        width: 50%;
+        border-radius: 5px;
+        position: relative;
+    }
+
+    .close-btn {
+        position: absolute;
+        top: 10px;
+        right: 15px;
+        font-size: 28px;
+        font-weight: bold;
+        color: #888;
+        cursor: pointer;
+    }
+
+    .form-row {
+        margin-bottom: 15px;
+    }
+
+    .row-inline {
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+    }
+
+        .row-inline label {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+    textarea {
+        width: 100%;
+        resize: vertical;
+    }
+
+    .checkbox-inline {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+</style>
+
+
 
 <style>
     .profile-layout {
@@ -496,3 +738,6 @@
         }
  }
 </style>
+
+
+

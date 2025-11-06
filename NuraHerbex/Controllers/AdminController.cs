@@ -459,11 +459,72 @@ namespace NuraHerbex.Controllers
             return RedirectToAction(nameof(AdminGSTEntry));
         }
 
+        //Plans
 
-        //public IActionResult Product()
-        //{
-        //    return View();
-        //}
+        [HttpGet]
+        public async Task<IActionResult> AdminPricingPlan(int id = 0)
+        {
+            var response = await AuthorizedClient.GetAsync("AdminAPI/pricingplans");
+            var planList = response.IsSuccessStatusCode
+                ? JsonConvert.DeserializeObject<List<PricingPlan>>(await response.Content.ReadAsStringAsync()) ?? new List<PricingPlan>()
+                : new List<PricingPlan>();
+
+            var vm = new PricingPlanViewModel
+            {
+                PlanList = planList ?? new List<PricingPlan>(), 
+                NewPlan = new PricingPlan()
+            };
+
+            if (id > 0)
+            {
+                var planResp = await AuthorizedClient.GetAsync($"AdminAPI/pricingplan/{id}");
+                if (planResp.IsSuccessStatusCode)
+                {
+                    var plan = JsonConvert.DeserializeObject<PricingPlan>(await planResp.Content.ReadAsStringAsync());
+                    if (plan != null)
+                        vm.NewPlan = plan;
+                }
+            }
+
+            return View(vm);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AdminPricingPlan(PricingPlanViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
+                TempData["Error"] = "Validation failed: " + string.Join("; ", errors);
+                return View(model);
+            }
+
+            var response = await AuthorizedClient.PostAsJsonAsync("AdminAPI/pricingplan", model.NewPlan);
+
+            if (response.IsSuccessStatusCode)
+            {
+                TempData["Success"] = model.NewPlan.Id > 0 ? "Pricing plan updated successfully" : "Pricing plan added successfully";
+                return RedirectToAction(nameof(AdminPricingPlan), new { id = 0 });
+            }
+
+            var error = await response.Content.ReadAsStringAsync();
+            TempData["Error"] = $"Error: {error}";
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeletePricingPlan(int id)
+        {
+            var response = await AuthorizedClient.DeleteAsync($"AdminAPI/pricingplan/{id}");
+            if (response.IsSuccessStatusCode)
+                TempData["Success"] = "Pricing plan deleted successfully!";
+            else
+                TempData["Error"] = $"Delete failed: {await response.Content.ReadAsStringAsync()}";
+
+            return RedirectToAction(nameof(AdminPricingPlan));
+        }
         public IActionResult DoctorConsultation()
         {
             return View();
@@ -666,5 +727,6 @@ namespace NuraHerbex.Controllers
 
             return RedirectToAction(nameof(Product));
         }
+
     }
 }

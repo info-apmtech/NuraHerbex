@@ -26,6 +26,7 @@ namespace Domain.Models
 
         
 
+		public DbSet<PricingPlan> PricingPlans { get; set; }
 
     }
 }

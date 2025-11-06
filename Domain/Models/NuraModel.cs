@@ -83,6 +83,19 @@ namespace Domain.Models
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 
     }
+    public class PricingPlan
+    {
+        public int Id { get; set; }
+        public string PlanName { get; set; }
+        public string PlanSubtitle { get; set; }
+        public string PlanDescription { get; set; }
+        public decimal PriceAmount { get; set; }      
+        public string Duration { get; set; }   
+        public string PlanFeatures { get; set; } 
+        public bool IsMostPopular { get; set; }
+        public DateTime UpdatedAt { get; set; }
+
+    }
     public class GST
     {
         [Key]

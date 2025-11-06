@@ -199,5 +199,17 @@ namespace Domain.ViewModel
         public string UserSubject { get; set; } = string.Empty;
         public string UserBodyHtml { get; set; } = string.Empty;
     }
+    public class PricingPlanViewModel
+    {
+        public List<PricingPlan> PlanList { get; set; } = new List<PricingPlan>(); 
+        public PricingPlan NewPlan { get; set; } = new PricingPlan();
+    }
 
+    public class UserProfileViewModel
+    {
+        public AddressDetail AddressDetail { get; set; } = new AddressDetail();
+        public List<AddressDetail> Addresses { get; set; } = new List<AddressDetail>();
+        public List<Country> Countries { get; set; } = new List<Country>();
+        public List<State> States { get; set; } = new List<State>();
+    }
 }
