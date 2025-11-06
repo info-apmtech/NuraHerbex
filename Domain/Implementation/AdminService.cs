@@ -23,26 +23,26 @@ using System.Threading.Tasks;
 
 namespace Domain.Implementation
 {
-	public class AdminService : IAdmin
-	{
-		private readonly UserManager<RegisterUser> _usermanager;
-		private readonly IConfiguration _config;
-		private readonly IHttpClientFactory _httpClientFactory;
-		private readonly NuraDbContext _db;
-		private readonly IEmailService _emailService;
+    public class AdminService : IAdmin
+    {
+        private readonly UserManager<RegisterUser> _usermanager;
+        private readonly IConfiguration _config;
+        private readonly IHttpClientFactory _httpClientFactory;
+        private readonly NuraDbContext _db;
+        private readonly IEmailService _emailService;
         private readonly IWebHostEnvironment _env;
 
         // In-memory OTP store (You can store this in DB/Redis for production)
         private static readonly ConcurrentDictionary<string, (string Otp, DateTime Expiry)> _otpStore = new();
 
 
-		public AdminService(UserManager<RegisterUser> userManager,IConfiguration config,IHttpClientFactory httpClientFactory, NuraDbContext db, IEmailService emailService, IWebHostEnvironment env)
-		{
-			_usermanager = userManager;
-			_config = config;
-			_httpClientFactory = httpClientFactory;
-			_db = db;
-			_emailService = emailService;
+        public AdminService(UserManager<RegisterUser> userManager, IConfiguration config, IHttpClientFactory httpClientFactory, NuraDbContext db, IEmailService emailService, IWebHostEnvironment env)
+        {
+            _usermanager = userManager;
+            _config = config;
+            _httpClientFactory = httpClientFactory;
+            _db = db;
+            _emailService = emailService;
             _env = env;
         }
         public async Task<List<RegisterUser>> GetAllUsersAsync()
@@ -52,158 +52,158 @@ namespace Domain.Implementation
         }
 
         public async Task<List<RegisterUser>> GetUsersByRoleAsync(UserRole role)
-		{
-			var users = await _usermanager.Users.Where(u => u.Role == role).OrderByDescending(u => u.CreatedAt).ToListAsync();
-			return users;
-		}
+        {
+            var users = await _usermanager.Users.Where(u => u.Role == role).OrderByDescending(u => u.CreatedAt).ToListAsync();
+            return users;
+        }
 
-		public async Task<RegisterUser?> GetUserByIdAsync(string id)
-		{
-			return await _usermanager.FindByIdAsync(id);
-		}
+        public async Task<RegisterUser?> GetUserByIdAsync(string id)
+        {
+            return await _usermanager.FindByIdAsync(id);
+        }
 
-		public async Task<IdentityResult> AddOrUpdateUserAsync(RegisterUser user)
-		{
-			// Try to find an existing user in the database
-			var existingUser = await _usermanager.FindByIdAsync(user.Id);
+        public async Task<IdentityResult> AddOrUpdateUserAsync(RegisterUser user)
+        {
+            // Try to find an existing user in the database
+            var existingUser = await _usermanager.FindByIdAsync(user.Id);
 
-			if (existingUser == null)
-			{
-				// ✅ Create new user
-				user.CreatedAt = DateTime.UtcNow;
-				user.Role = user.Role == 0 ? UserRole.Customer : user.Role; // Ensure safe default
+            if (existingUser == null)
+            {
+                // ✅ Create new user
+                user.CreatedAt = DateTime.UtcNow;
+                user.Role = user.Role == 0 ? UserRole.Customer : user.Role; // Ensure safe default
                 user.UserName = user.Email;
-				return await _usermanager.CreateAsync(user, user.Password);
-			}
-			else
-			{
-				// ✅ Update existing user
-				existingUser.Email = user.Email;
-				existingUser.UserName = user.Email;
-				existingUser.PhoneNumber = user.PhoneNumber;
-				existingUser.Role = user.Role;
-				existingUser.UserName = user.Email;
-				existingUser.UpdatedAt = DateTime.UtcNow;
+                return await _usermanager.CreateAsync(user, user.Password);
+            }
+            else
+            {
+                // ✅ Update existing user
+                existingUser.Email = user.Email;
+                existingUser.UserName = user.Email;
+                existingUser.PhoneNumber = user.PhoneNumber;
+                existingUser.Role = user.Role;
+                existingUser.UserName = user.Email;
+                existingUser.UpdatedAt = DateTime.UtcNow;
 
-				// Update password only if explicitly provided
-				if (!string.IsNullOrWhiteSpace(user.Password))
-				{
-					var token = await _usermanager.GeneratePasswordResetTokenAsync(existingUser);
-					var passResult = await _usermanager.ResetPasswordAsync(existingUser, token, user.Password);
-					if (!passResult.Succeeded)
-						return passResult;
-				}
+                // Update password only if explicitly provided
+                if (!string.IsNullOrWhiteSpace(user.Password))
+                {
+                    var token = await _usermanager.GeneratePasswordResetTokenAsync(existingUser);
+                    var passResult = await _usermanager.ResetPasswordAsync(existingUser, token, user.Password);
+                    if (!passResult.Succeeded)
+                        return passResult;
+                }
 
-				return await _usermanager.UpdateAsync(existingUser);
-			}
-		}
+                return await _usermanager.UpdateAsync(existingUser);
+            }
+        }
 
-		public async Task<LoginResponseModel?> SignInAsync(RegisterUserViewModel model)
-		{
-			var user = await _usermanager.FindByNameAsync(model.Username);
-			if (user == null || !await _usermanager.CheckPasswordAsync(user, model.Password))
-				return null;
+        public async Task<LoginResponseModel?> SignInAsync(RegisterUserViewModel model)
+        {
+            var user = await _usermanager.FindByNameAsync(model.Username);
+            if (user == null || !await _usermanager.CheckPasswordAsync(user, model.Password))
+                return null;
 
-			var roles = (await _usermanager.GetRolesAsync(user)).ToList();
+            var roles = (await _usermanager.GetRolesAsync(user)).ToList();
 
-			var authClaims = new List<Claim>
-			{
-				new Claim(JwtRegisteredClaimNames.Sub, user.UserName),
-				new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-				new Claim(ClaimTypes.NameIdentifier, user.Id),
-				new Claim(ClaimTypes.Name, user.UserName)
-			};
+            var authClaims = new List<Claim>
+            {
+                new Claim(JwtRegisteredClaimNames.Sub, user.UserName),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                new Claim(ClaimTypes.NameIdentifier, user.Id),
+                new Claim(ClaimTypes.Name, user.UserName)
+            };
 
-			foreach (var role in roles)
-				authClaims.Add(new Claim(ClaimTypes.Role, role));
+            foreach (var role in roles)
+                authClaims.Add(new Claim(ClaimTypes.Role, role));
 
-			var secretKey = _config["JWT:Secret"] ?? "this_is_a_super_secure_key_12345678";
-			var issuer = _config["JWT:ValidIssuer"] ?? "https://nura.apmtechnologies.in";
-			var audience = _config["JWT:ValidAudience"] ?? "https://nura.apmtechnologies.in";
+            var secretKey = _config["JWT:Secret"] ?? "this_is_a_super_secure_key_12345678";
+            var issuer = _config["JWT:ValidIssuer"] ?? "https://nura.apmtechnologies.in";
+            var audience = _config["JWT:ValidAudience"] ?? "https://nura.apmtechnologies.in";
 
-			var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
+            var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
 
-			var token = new JwtSecurityToken(
-				issuer: issuer,
-				audience: audience,
-				expires: DateTime.UtcNow.AddMinutes(60),
-				claims: authClaims,
-				signingCredentials: new SigningCredentials(signingKey, SecurityAlgorithms.HmacSha256)
-			);
+            var token = new JwtSecurityToken(
+                issuer: issuer,
+                audience: audience,
+                expires: DateTime.UtcNow.AddMinutes(60),
+                claims: authClaims,
+                signingCredentials: new SigningCredentials(signingKey, SecurityAlgorithms.HmacSha256)
+            );
 
-			return new LoginResponseModel
-			{
-				Token = new JwtSecurityTokenHandler().WriteToken(token),
-				User = user,
-				Roles = roles,
-				Expiration = token.ValidTo
-			};
-		}
-		// ✅ Step 1: Send OTP
-		public async Task<bool> SendOtpAsync(string email)
-		{
-			var user = await _usermanager.Users.FirstOrDefaultAsync(u => u.Email == email);
-			if (user == null) return false;
+            return new LoginResponseModel
+            {
+                Token = new JwtSecurityTokenHandler().WriteToken(token),
+                User = user,
+                Roles = roles,
+                Expiration = token.ValidTo
+            };
+        }
+        // ✅ Step 1: Send OTP
+        public async Task<bool> SendOtpAsync(string email)
+        {
+            var user = await _usermanager.Users.FirstOrDefaultAsync(u => u.Email == email);
+            if (user == null) return false;
 
-			var otp = new Random().Next(100000, 999999).ToString();
-			_otpStore[email] = (otp, DateTime.UtcNow.AddMinutes(5));
+            var otp = new Random().Next(100000, 999999).ToString();
+            _otpStore[email] = (otp, DateTime.UtcNow.AddMinutes(5));
 
-			var body = $@"
+            var body = $@"
                 <p>Hi {user.UserName},</p>
                 <p>Your password reset OTP is: <strong>{otp}</strong></p>
                 <p>This OTP is valid for 5 minutes.</p>";
 
-			await _emailService.SendAsync(email, "Password Reset OTP", body);
+            await _emailService.SendAsync(email, "Password Reset OTP", body);
 
-			return true;
-		}
+            return true;
+        }
 
-		// ✅ Step 2: Verify OTP
-		public async Task<bool> VerifyOtpAsync(string email, string otp)
-		{
-			if (_otpStore.TryGetValue(email, out var entry))
-			{
-				if (entry.Expiry < DateTime.UtcNow)
-				{
-					_otpStore.TryRemove(email, out _);
-					return false;
-				}
+        // ✅ Step 2: Verify OTP
+        public async Task<bool> VerifyOtpAsync(string email, string otp)
+        {
+            if (_otpStore.TryGetValue(email, out var entry))
+            {
+                if (entry.Expiry < DateTime.UtcNow)
+                {
+                    _otpStore.TryRemove(email, out _);
+                    return false;
+                }
 
-				if (entry.Otp == otp)
-				{
-					_otpStore.TryRemove(email, out _);
-					return true;
-				}
-			}
-			return false;
-		}
+                if (entry.Otp == otp)
+                {
+                    _otpStore.TryRemove(email, out _);
+                    return true;
+                }
+            }
+            return false;
+        }
 
-		public async Task<string> ResetPasswordWithOtpAsync(ResetPasswordViewModel model)
-		{
-			var user = await _usermanager.FindByEmailAsync(model.Email);
-			if (user == null)
-				return "Invalid email address.";
+        public async Task<string> ResetPasswordWithOtpAsync(ResetPasswordViewModel model)
+        {
+            var user = await _usermanager.FindByEmailAsync(model.Email);
+            if (user == null)
+                return "Invalid email address.";
 
-			var token = await _usermanager.GeneratePasswordResetTokenAsync(user);
-			var result = await _usermanager.ResetPasswordAsync(user, token, model.NewPassword);
+            var token = await _usermanager.GeneratePasswordResetTokenAsync(user);
+            var result = await _usermanager.ResetPasswordAsync(user, token, model.NewPassword);
 
-			if (!result.Succeeded)
-			{
-				var errors = string.Join(", ", result.Errors.Select(e => e.Description));
-				return $"Password reset failed: {errors}";
-			}
+            if (!result.Succeeded)
+            {
+                var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+                return $"Password reset failed: {errors}";
+            }
 
-			// ✅ Manually update custom fields if needed
-			user.Password = model.NewPassword; //  Plain text — only if you have a business need
-			user.UpdatedAt = DateTime.Now;
-			//user.UpdatedBy = "System (ForgotPassword flow)";
-			await _usermanager.UpdateAsync(user);
-			return "Password has been reset successfully.";
-		}
+            // ✅ Manually update custom fields if needed
+            user.Password = model.NewPassword; //  Plain text — only if you have a business need
+            user.UpdatedAt = DateTime.Now;
+            //user.UpdatedBy = "System (ForgotPassword flow)";
+            await _usermanager.UpdateAsync(user);
+            return "Password has been reset successfully.";
+        }
 
 
-		//BlogCategory
-		public async Task<BlogCategory> GetBlogCategoryByIdAsync(int id)
+        //BlogCategory
+        public async Task<BlogCategory> GetBlogCategoryByIdAsync(int id)
         {
             return await _db.BlogCategoryDetails.FindAsync(id);
         }
@@ -585,8 +585,72 @@ namespace Domain.Implementation
 
             return saved;
         }
+
+        public async Task<NewsletterSubscriptionResult> SaveNewsletterSubscriptionAsync(NewsletterSubscription dto)
+        {
+            var result = new NewsletterSubscriptionResult();
+
+            if (dto == null || string.IsNullOrWhiteSpace(dto.Email))
+            {
+                result.Succeeded = false;
+                result.Error = "Email is required";
+                return result;
+            }
+
+            var email = dto.Email.Trim().ToLowerInvariant();
+
+            // Upsert by Email
+            var entity = await _db.SubscriptionsDetails.FirstOrDefaultAsync(x => x.Email == email);
+
+            if (entity == null)
+            {
+                entity = new NewsletterSubscription
+                {
+                    Email = email,
+                    SubscribedAt = DateTime.UtcNow   // store UTC
+                };
+                await _db.SubscriptionsDetails.AddAsync(entity);
+            }
+            else
+            {
+                // already exists: keep original SubscribedAt (or update if you prefer)
+                // entity.SubscribedAt = DateTime.UtcNow;
+                _db.SubscriptionsDetails.Update(entity);
+            }
+
+            await _db.SaveChangesAsync();
+
+            result.Succeeded = true;
+            result.Email = entity.Email;
+            result.SubscribedAtUtc = entity.SubscribedAt;
+
+            // Compose messages here (single source of truth)
+            result.AdminSubject = "New Newsletter Subscription – Nura Herbex";
+            result.AdminBodyText =
+                $"A new user has subscribed to the Nura Herbex newsletter.\n\n" +
+                $"Email: {entity.Email}\n" +
+                $"Subscribed at: {entity.SubscribedAt:yyyy-MM-dd HH:mm:ss} UTC";
+
+            result.UserSubject = "Welcome to Nura Herbex!";
+            result.UserBodyHtml = @"
+<html>
+  <body style=""font-family: Arial, Helvetica, sans-serif; font-size: 14px; color: #222;"">
+    <p>Dear Subscriber,</p>
+    <p>Thank you for subscribing to <strong>Nura Herbex</strong> — your partner in natural wellness.</p>
+    <p>You'll be among the first to know about our latest herbal innovations, exclusive offers, and wellness insights.</p>
+    <p style=""margin-top:16px;"">Warm regards,<br/>The Nura Herbex Team</p>
+    <hr style=""margin-top:20px;margin-bottom:10px;border:0;border-top:1px solid #ddd;"">
+    <p style=""font-size:12px;color:#666;"">You’re receiving this email because you subscribed at <strong>nuraherbex.com</strong>.</p>
+  </body>
+</html>";
+
+            return result;
+        }
+
+       
     }
 }
+
 
 
 

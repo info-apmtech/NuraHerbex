@@ -175,4 +175,29 @@ namespace Domain.ViewModel
         public int Port { get; set; }
         public bool UseSSL { get; set; }
     }
+    public class NewsletterSubscription
+    {
+        public int Id { get; set; }
+
+        public string Email { get; set; } = default!;
+        public DateTime SubscribedAt { get; set; }
+
+    }
+    public class NewsletterSubscriptionResult
+    {
+        public bool Succeeded { get; set; }
+        public string? Error { get; set; }
+
+        public string Email { get; set; } = string.Empty;
+        public DateTime SubscribedAtUtc { get; set; }
+
+        // Admin notification
+        public string AdminSubject { get; set; } = string.Empty;
+        public string AdminBodyText { get; set; } = string.Empty;
+
+        // User auto-reply
+        public string UserSubject { get; set; } = string.Empty;
+        public string UserBodyHtml { get; set; } = string.Empty;
+    }
+
 }

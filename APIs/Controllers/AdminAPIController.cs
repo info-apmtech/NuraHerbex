@@ -1,6 +1,7 @@
 ﻿using Domain.Implementation;
 using Domain.Interface;
 using Domain.Models;
+using Domain.ViewModel;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -392,6 +393,19 @@ namespace APIs.Controllers
                 return Ok(new { success = true, message = "GST entry deleted successfully" });
 
             return BadRequest(result.Errors);
+        }
+        [AllowAnonymous]
+        [HttpPost("newsletter/subscription")]
+        public async Task<IActionResult> AddOrUpdateNewsletterSubscription([FromBody] NewsletterSubscription subscription)
+        {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
+            var result = await _adminservice.SaveNewsletterSubscriptionAsync(subscription);
+
+            if (!result.Succeeded)
+                return BadRequest(new { success = false, error = result.Error });
+
+            return Ok(result); // contains email message content
         }
     }
 }

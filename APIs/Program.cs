@@ -2,6 +2,7 @@ using Domain.Implementation;
 using Domain.Interface;
 using Domain.Models;
 using Domain.ServiceAPI;
+using Domain.ViewModel;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -42,6 +43,8 @@ var connectionString = builder.Configuration.GetConnectionString("NuraConnection
 
 builder.Services.AddDbContext<NuraDbContext>(options =>
 	options.UseSqlServer(connectionString));
+builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
+
 // Configure Identity
 
 builder.Services.AddIdentityCore<RegisterUser>(options => { })

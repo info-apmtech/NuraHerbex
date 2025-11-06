@@ -1,10 +1,11 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Domain.ViewModel;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 
 namespace Domain.Models
 {
@@ -21,6 +22,10 @@ namespace Domain.Models
 		public DbSet<AddressDetail> AddressDetails { get; set; }
 		public DbSet<State> States { get; set; }
 		public DbSet<Country> Countries { get; set; }
+        public DbSet<NewsletterSubscription> SubscriptionsDetails { get; set; }
 
-	}
+        
+
+
+    }
 }

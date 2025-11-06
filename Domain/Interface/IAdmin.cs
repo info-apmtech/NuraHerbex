@@ -54,5 +54,6 @@ namespace Domain.Interface
         Task<GST> GetGSTEntryByIdAsync(int id);
         Task<IdentityResult> AddOrUpdateGSTEntryAsync(GST gst);
         Task<IdentityResult> DeleteGSTEntryAsync(int id);
+        Task<NewsletterSubscriptionResult> SaveNewsletterSubscriptionAsync(NewsletterSubscription dto);
     }
 }
