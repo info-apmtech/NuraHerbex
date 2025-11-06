@@ -1,4 +1,5 @@
-﻿<section class="pricing-plans-section">
+﻿@using Domain.Models
+@* <section class="pricing-plans-section">
     <div class="pricing-plans-container">
         <div class="pricing-plans-grid">
 
@@ -112,6 +113,46 @@
                 <button class="plan-subscribe-btn">Subscribe Now</button>
             </div>
 
+        </div>
+    </div>
+</section>
+ *@
+ @model List<PricingPlan>
+
+<section class="pricing-plans-section">
+    <div class="pricing-plans-container">
+        <div class="pricing-plans-grid">
+            @foreach (var plan in Model)
+            {
+                var featureList = (plan.PlanFeatures ?? "").Split(',', StringSplitOptions.RemoveEmptyEntries);
+                var featuredClass = plan.IsMostPopular ? "pricing-plan-card pricing-plan-featured" : "pricing-plan-card";
+                <div class="@featuredClass">
+                    @if (plan.IsMostPopular)
+                    {
+                        <span class="popular-badge">Most Popular</span>
+                    }
+                    <h3 class="plan-name">@plan.PlanName</h3>
+                    <p class="plan-subtitle">@plan.PlanSubtitle</p>
+                    <p class="plan-description">@plan.PlanDescription</p>
+                    <div class="plan-price">
+                        <span class="price-currency">₹</span>
+                        <span class="price-amount">@plan.PriceAmount.ToString("N0")</span>
+                        <span class="price-duration">/ @plan.Duration</span>
+                    </div>
+                    <ul class="plan-features">
+                        @foreach (var feature in featureList)
+                        {
+                            <li>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                </svg>
+                                <span>@feature.Trim()</span>
+                            </li>
+                        }
+                    </ul>
+                    <button class="plan-subscribe-btn">Subscribe Now</button>
+                </div>
+            }
         </div>
     </div>
 </section>

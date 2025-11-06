@@ -262,7 +262,7 @@
             <h2 class="pricing-title">Choose Your <span class="highlight-text">Performance Plan</span></h2>
             <p class="pricing-subtitle">Flexible plans designed to fit your lifestyle and goals</p>
         </div>
-        @Html.Partial("_PlanPartial")
+        @Html.Partial("_PlanPartial", Model.PlanList)
         <div class="pricing-cta">
             <button class="btn-view-all"
                     onclick="location.href='@Url.Action("Plan", "Home")'">

@@ -1,4 +1,6 @@
-﻿@{
+﻿@using Domain.Models
+@model List<PricingPlan>
+@{
     ViewData["Title"] = "Plans";
 }
 
@@ -17,7 +19,7 @@
 </section>
 
 <!-- Pricing Plans Section -->
-@Html.Partial("_PlanPartial")
+@Html.Partial("_PlanPartial",Model)
 
 <!-- Why Subscribe Section -->
 <section class="why-subscribe-section">

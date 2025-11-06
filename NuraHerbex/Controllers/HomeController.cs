@@ -79,7 +79,8 @@ namespace NuraHerbex.Controllers
             var vm = new HomeViewModel
             {
                 BlogList = latestBlogs,
-                Ingredients = homeIngredients
+                Ingredients = homeIngredients,
+                PlanList = await GetPlansFromApi()
             };
 
             return View(vm);
@@ -189,10 +190,23 @@ namespace NuraHerbex.Controllers
             return View("BlogsByCategory", vm);
         }
 
-        public IActionResult Plan()
+        public async Task<IActionResult> Plan()
         {
-            return View();
+            var plans = await GetPlansFromApi();
+            return View(plans); 
         }
+        public async Task<List<PricingPlan>> GetPlansFromApi()
+        {
+            var plans = new List<PricingPlan>();
+            var response = await _httpClient.GetAsync("AdminAPI/pricingplans");
+            if (response.IsSuccessStatusCode)
+            {
+                var json = await response.Content.ReadAsStringAsync();
+                plans = JsonConvert.DeserializeObject<List<PricingPlan>>(json) ?? new List<PricingPlan>();
+            }
+            return plans;
+        }
+
         public async Task<IActionResult> Shop(int id = 0)
         {
             var products = new List<Product>();
