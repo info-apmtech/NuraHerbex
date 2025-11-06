@@ -545,6 +545,62 @@ namespace Domain.Implementation
             return IdentityResult.Success;
         }
 
+        //PLANS
+        public async Task<List<PricingPlan>> GetPricingPlansAsync()
+        {
+            return await _db.PricingPlans.OrderByDescending(p => p.UpdatedAt).ToListAsync();
+        }
+
+        public async Task<PricingPlan> GetPricingPlanByIdAsync(int id)
+        {
+            return await _db.PricingPlans.FindAsync(id);
+        }
+
+        public async Task<IdentityResult> AddOrUpdatePricingPlanAsync(PricingPlan plan)
+        {
+            if (plan == null)
+                return IdentityResult.Failed(new IdentityError { Description = "Pricing plan cannot be null" });
+
+            plan.UpdatedAt = DateTime.UtcNow;
+            if (plan.Id > 0)
+            {
+                var existing = await _db.PricingPlans.FindAsync(plan.Id);
+                if (existing == null)
+                    return IdentityResult.Failed(new IdentityError { Description = "Pricing plan not found" });
+
+                // Update properties
+                existing.PlanName = plan.PlanName;
+                existing.PlanSubtitle = plan.PlanSubtitle;
+                existing.PlanDescription = plan.PlanDescription;
+                existing.PriceAmount = plan.PriceAmount;
+                existing.Duration = plan.Duration;
+                existing.PlanFeatures = plan.PlanFeatures;
+                existing.IsMostPopular = plan.IsMostPopular;
+                existing.UpdatedAt = plan.UpdatedAt;
+
+                _db.PricingPlans.Update(existing);
+            }
+            else
+            {
+                await _db.PricingPlans.AddAsync(plan);
+            }
+
+            await _db.SaveChangesAsync();
+            return IdentityResult.Success;
+        }
+
+        public async Task<IdentityResult> DeletePricingPlanAsync(int id)
+        {
+            var existing = await _db.PricingPlans.FindAsync(id);
+            if (existing == null)
+                return IdentityResult.Failed(new IdentityError { Description = "Pricing plan not found" });
+
+            _db.PricingPlans.Remove(existing);
+            await _db.SaveChangesAsync();
+            return IdentityResult.Success;
+        }
+
+
         // DELETE
         public async Task<IdentityResult> DeleteProductAsync(int id)
         {
@@ -585,6 +641,80 @@ namespace Domain.Implementation
 
             return saved;
         }
+        public async Task<List<AddressDetail>> GetAddressesByUserAsync(string userId)
+            {
+            return await _db.AddressDetails
+                .Where(a => a.UserId == userId)
+                .OrderByDescending(a => a.CreatedAt)
+                .ToListAsync();
+        }
+
+        public async Task<AddressDetail?> GetAddressByIdAsync(int id)
+        {
+            return await _db.AddressDetails.FindAsync(id);
+        }
+
+        public async Task<IdentityResult> AddOrUpdateAddressAsync(AddressDetail address)
+        {
+            if (address == null)
+                return IdentityResult.Failed(new IdentityError { Description = "Address cannot be null" });
+
+            if (address.Id > 0)
+            {
+                var existing = await _db.AddressDetails.FindAsync(address.Id);
+                if (existing == null)
+                    return IdentityResult.Failed(new IdentityError { Description = "Address not found" });
+
+                existing.Name = address.Name;
+                existing.Location = address.Location;
+                existing.DoorNo = address.DoorNo;
+                existing.PhoneNumber = address.PhoneNumber;
+                existing.Address = address.Address;
+                existing.State = address.State;
+                existing.Pincode = address.Pincode;
+                existing.Country = address.Country;
+                existing.IsDefault = address.IsDefault;
+
+                _db.AddressDetails.Update(existing);
+            }
+            else
+            {
+                address.CreatedAt = DateTime.UtcNow;
+                await _db.AddressDetails.AddAsync(address);
+            }
+
+            await _db.SaveChangesAsync();
+            return IdentityResult.Success;
+        }
+
+        public async Task<IdentityResult> DeleteAddressAsync(int id)
+        {
+            var existing = await _db.AddressDetails.FindAsync(id);
+            if (existing == null)
+                return IdentityResult.Failed(new IdentityError { Description = "Address not found" });
+
+            _db.AddressDetails.Remove(existing);
+            await _db.SaveChangesAsync();
+            return IdentityResult.Success;
+        }
+
+        //State and Country
+
+        public async Task<List<Country>> GetCountriesAsync()
+        {
+            return await _db.Countries.OrderBy(c => c.CountryName).ToListAsync();
+        }
+
+        public async Task<List<State>> GetStatesByCountryAsync(int countryId)
+        {
+            return await _db.States.Where(s => s.CountryId == countryId).OrderBy(s => s.StateName).ToListAsync();
+        }
+
+        public async Task<List<State>> GetAllStatesAsync()
+        {
+            return await _db.States.OrderBy(s => s.StateName).ToListAsync();
+        }
+
     }
 }
 

@@ -21,6 +21,7 @@ namespace Domain.Models
 		public DbSet<AddressDetail> AddressDetails { get; set; }
 		public DbSet<State> States { get; set; }
 		public DbSet<Country> Countries { get; set; }
+		public DbSet<PricingPlan> PricingPlans { get; set; }
 
 	}
 }

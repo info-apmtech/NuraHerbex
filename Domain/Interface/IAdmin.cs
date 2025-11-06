@@ -54,5 +54,22 @@ namespace Domain.Interface
         Task<GST> GetGSTEntryByIdAsync(int id);
         Task<IdentityResult> AddOrUpdateGSTEntryAsync(GST gst);
         Task<IdentityResult> DeleteGSTEntryAsync(int id);
+
+        //Address
+        Task<List<AddressDetail>> GetAddressesByUserAsync(string userId);
+        Task<AddressDetail?> GetAddressByIdAsync(int id);
+        Task<IdentityResult> AddOrUpdateAddressAsync(AddressDetail address);
+        Task<IdentityResult> DeleteAddressAsync(int id);
+
+        //State Country
+        Task<List<Country>> GetCountriesAsync();
+        Task<List<State>> GetStatesByCountryAsync(int countryId);
+        Task<List<State>> GetAllStatesAsync();
+
+        //Plans
+        Task<List<PricingPlan>> GetPricingPlansAsync();
+        Task<PricingPlan> GetPricingPlanByIdAsync(int id);
+        Task<IdentityResult> AddOrUpdatePricingPlanAsync(PricingPlan plan);
+        Task<IdentityResult> DeletePricingPlanAsync(int id);
     }
 }

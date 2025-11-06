@@ -393,5 +393,115 @@ namespace APIs.Controllers
 
             return BadRequest(result.Errors);
         }
+
+        //Plans
+        [AllowAnonymous]
+        [HttpGet("pricingplans")]
+        public async Task<IActionResult> GetPricingPlans()
+        {
+            var plans = await _adminservice.GetPricingPlansAsync();
+            return Ok(plans);
+        }
+
+        [AllowAnonymous]
+        [HttpGet("pricingplan/{id}")]
+        public async Task<IActionResult> GetPricingPlan(int id)
+        {
+            var plan = await _adminservice.GetPricingPlanByIdAsync(id);
+            if (plan == null) return NotFound();
+            return Ok(plan);
+        }
+
+        [AllowAnonymous]
+        [Authorize]
+        [HttpPost("pricingplan")]
+        public async Task<IActionResult> AddOrUpdatePricingPlan([FromBody] PricingPlan plan)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var result = await _adminservice.AddOrUpdatePricingPlanAsync(plan);
+            if (result.Succeeded)
+                return Ok(new { success = true, message = "Pricing plan saved successfully" });
+
+            return BadRequest(result.Errors);
+        }
+
+        [AllowAnonymous]
+        [HttpDelete("pricingplan/{id}")]
+        public async Task<IActionResult> DeletePricingPlan(int id)
+        {
+            var result = await _adminservice.DeletePricingPlanAsync(id);
+            if (result.Succeeded)
+                return Ok(new { success = true, message = "Pricing plan deleted successfully" });
+
+            return BadRequest(result.Errors);
+        }
+        //Address
+        [AllowAnonymous]
+        [HttpGet("addresses/{userId}")]
+        public async Task<IActionResult> GetUserAddresses(string userId)
+        {
+            var addresses = await _adminservice.GetAddressesByUserAsync(userId);
+            return Ok(addresses);
+        }
+        [AllowAnonymous]
+        [HttpGet("address/{id}")]
+        public async Task<IActionResult> GetAddress(int id)
+        {
+            var address = await _adminservice.GetAddressByIdAsync(id);
+            if (address == null)
+                return NotFound();
+
+            return Ok(address);
+        }
+        [AllowAnonymous]
+        [HttpPost("address")]
+        public async Task<IActionResult> AddOrUpdateAddress([FromBody] AddressDetail address)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var result = await _adminservice.AddOrUpdateAddressAsync(address);
+
+            if (result.Succeeded)
+                return Ok(new { success = true, message = "Address saved successfully" });
+
+            return BadRequest(result.Errors);
+        }
+        [AllowAnonymous]
+        [HttpDelete("address/{id}")]
+        public async Task<IActionResult> DeleteAddress(int id)
+        {
+            var result = await _adminservice.DeleteAddressAsync(id);
+
+            if (result.Succeeded)
+                return Ok(new { success = true, message = "Address deleted successfully" });
+
+            return BadRequest(result.Errors);
+        }
+        [AllowAnonymous]
+        [HttpGet("countries")]
+        public async Task<IActionResult> GetCountries()
+        {
+            var countries = await _adminservice.GetCountriesAsync();
+            return Ok(countries);
+        }
+        [AllowAnonymous]
+        [HttpGet("states/{countryId}")]
+        public async Task<IActionResult> GetStates(int countryId)
+        {
+            var states = await _adminservice.GetStatesByCountryAsync(countryId);
+            return Ok(states);
+        }
+        [AllowAnonymous]
+        [HttpGet("states")]
+        public async Task<IActionResult> GetAllStates()
+        {
+            var states = await _adminservice.GetAllStatesAsync();
+            return Ok(states);
+        }
+
+
     }
 }

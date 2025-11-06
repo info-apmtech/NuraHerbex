@@ -1,11 +1,15 @@
+using Domain.Implementation;
 using Domain.Models;
 using Domain.ViewModel;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Newtonsoft.Json;
 using NuraHerbex.Models;
 using System.Diagnostics;
 using System.Net;
 using System.Net.Mail;
+using System.Security.Claims;
 //using static ServiceStack.Diagnostics.Events;
 
 namespace NuraHerbex.Controllers
@@ -14,6 +18,7 @@ namespace NuraHerbex.Controllers
     {
         private readonly ILogger<HomeController> _logger;
         private readonly HttpClient _httpClient;
+
 
         public HomeController(ILogger<HomeController> logger, IHttpClientFactory httpClientFactory)
         {
@@ -285,10 +290,10 @@ namespace NuraHerbex.Controllers
         {
             return View();
         }
-        public IActionResult MyProfile()
-        {
-            return View();
-        }
+        //public IActionResult MyProfile()
+        //{
+        //    return View();
+        //}
         public IActionResult MyOrders()
         {
             return View();
@@ -360,6 +365,107 @@ namespace NuraHerbex.Controllers
         public IActionResult Error()
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+        }
+        [HttpGet]
+        public async Task<IActionResult> MyProfile(int id = 0)
+        {
+            var userId = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "";
+
+            var addressesResponse = await _httpClient.GetAsync($"AdminAPI/addresses/{userId}");
+            var addresses = addressesResponse.IsSuccessStatusCode
+                ? await addressesResponse.Content.ReadFromJsonAsync<List<AddressDetail>>()
+                : new List<AddressDetail>();
+
+            var countriesResponse = await _httpClient.GetAsync("AdminAPI/countries");
+            var countries = countriesResponse.IsSuccessStatusCode
+                ? await countriesResponse.Content.ReadFromJsonAsync<List<Country>>()
+                : new List<Country>();
+
+            var statesResponse = await _httpClient.GetAsync("AdminAPI/states");
+            var states = statesResponse.IsSuccessStatusCode
+                ? await statesResponse.Content.ReadFromJsonAsync<List<State>>()
+                : new List<State>();
+
+            // Default empty address
+            var selectedAddress = new AddressDetail { UserId = userId };
+
+            if (id > 0)
+            {
+                var addressResponse = await _httpClient.GetAsync($"AdminAPI/address/{id}");
+                if (addressResponse.IsSuccessStatusCode)
+                    selectedAddress = await addressResponse.Content.ReadFromJsonAsync<AddressDetail>();
+            }
+
+            var vm = new UserProfileViewModel
+            {
+                AddressDetail = selectedAddress,
+                Addresses = addresses,
+                Countries = countries,
+                States = states
+            };
+
+            return View(vm);
+        }
+
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> MyProfile(UserProfileViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                var userId = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "";
+
+                var addressesResponse = await _httpClient.GetAsync($"AdminAPI/addresses/{userId}");
+                var addresses = addressesResponse.IsSuccessStatusCode
+                    ? await addressesResponse.Content.ReadFromJsonAsync<List<AddressDetail>>()
+                    : new List<AddressDetail>();
+
+                var countriesResponse = await _httpClient.GetAsync("AdminAPI/countries");
+                var countries = countriesResponse.IsSuccessStatusCode
+                    ? await countriesResponse.Content.ReadFromJsonAsync<List<Country>>()
+                    : new List<Country>();
+
+                List<State> states = new List<State>();
+
+                if (countries.Count > 0)
+                {
+                    var statesResponse = await _httpClient.GetAsync($"AdminAPI/states/{countries.First().Id}");
+                    if (statesResponse.IsSuccessStatusCode)
+                        states = await statesResponse.Content.ReadFromJsonAsync<List<State>>();
+                }
+
+                model.Addresses = addresses ?? new List<AddressDetail>();
+                model.Countries = countries ?? new List<Country>();
+                model.States = states ?? new List<State>();
+
+                return View(model);
+            }
+
+            var postResponse = await _httpClient.PostAsJsonAsync("AdminAPI/address", model.AddressDetail);
+            if (postResponse.IsSuccessStatusCode)
+            {
+                TempData["Success"] = model.AddressDetail.Id > 0 ? "Address updated successfully" : "Address added successfully";
+                return RedirectToAction(nameof(MyProfile));
+            }
+
+            TempData["Error"] = "Failed to save address";
+            // reload dropdown data after failure
+            return await MyProfile(model.AddressDetail.Id);
+        }
+
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteAddress(int id)
+        {
+            var response = await _httpClient.DeleteAsync($"AdminAPI/address/{id}");
+            if (response.IsSuccessStatusCode)
+                TempData["Success"] = "Address deleted successfully";
+            else
+                TempData["Error"] = "Failed to delete address";
+
+            return RedirectToAction(nameof(MyProfile));
         }
     }
 }
