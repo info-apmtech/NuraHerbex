@@ -28,4 +28,8 @@ namespace Domain.Models
 		Afternoon,  // 12:00 - 17:00
 		Evening     // Optional, can add if needed
 	}
+	public enum SMSTemplateType
+	{
+		Registration,
+	}
 }
