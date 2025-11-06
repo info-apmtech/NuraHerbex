@@ -1,6 +1,8 @@
 using Domain.Models;
 using Domain.ViewModel;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
+using MimeKit;
 using Newtonsoft.Json;
 using NuraHerbex.Models;
 using System.Diagnostics;
@@ -14,11 +16,13 @@ namespace NuraHerbex.Controllers
     {
         private readonly ILogger<HomeController> _logger;
         private readonly HttpClient _httpClient;
+        private readonly EmailSettings _emailSettings;
 
-        public HomeController(ILogger<HomeController> logger, IHttpClientFactory httpClientFactory)
+        public HomeController(ILogger<HomeController> logger, IHttpClientFactory httpClientFactory, IOptions<EmailSettings> emailSettings)
         {
             _logger = logger;
             _httpClient = httpClientFactory.CreateClient("NuraHerbexApi");
+            _emailSettings = emailSettings.Value;
         }
 
         public async Task<IActionResult> Index()
@@ -314,43 +318,77 @@ namespace NuraHerbex.Controllers
             return View();
         }
         [HttpPost]
-        public async Task<IActionResult> Subscribe(string Email)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Subscribe(string email)
         {
-            if (string.IsNullOrEmpty(Email))
-                return BadRequest("Email is required.");
+            var fromAddress = _emailSettings.FromAddress;
+            var fromPassword = _emailSettings.Password;
+            var smtpHost = _emailSettings.Host;
+            var smtpPort = _emailSettings.Port;
+            var useSsl = _emailSettings.UseSSL;
+
+            if (string.IsNullOrWhiteSpace(email) || !MailboxAddress.TryParse(email, out var userMailbox))
+            {
+                TempData["Message"] = "Invalid email address.";
+                return RedirectToAction("Index");
+            }
+
+            // 1?? Notify your internal team
+            var toCompany = new MimeMessage();
+            toCompany.From.Add(MailboxAddress.Parse(fromAddress));
+            toCompany.To.Add(MailboxAddress.Parse(fromAddress));
+            toCompany.Subject = "New Newsletter Subscription – Nura Herbex";
+            toCompany.Body = new TextPart("plain")
+            {
+                Text = $"A new user has subscribed to the Nura Herbex newsletter.\n\n" +
+                       $"Email: {email}\n" +
+                       $"Subscribed at: {DateTime.UtcNow:yyyy-MM-dd HH:mm:ss} UTC"
+            };
+
+            // 2?? Auto-reply to subscriber
+            var toUser = new MimeMessage();
+            toUser.From.Add(MailboxAddress.Parse(fromAddress));
+            toUser.To.Add(userMailbox);
+            toUser.Subject = "Welcome to Nura Herbex!";
+
+            var htmlBody = $@"
+<html>
+  <body style=""font-family: Arial, Helvetica, sans-serif; font-size: 14px; color: #222;"">
+    <p>Dear Subscriber,</p>
+    <p>Thank you for subscribing to <strong>Nura Herbex</strong> — your partner in natural wellness.</p>
+    <p>You'll be among the first to know about our latest herbal innovations, exclusive offers, and wellness insights.</p>
+    <p style=""margin-top:16px;"">Warm regards,<br/>The Nura Herbex Team</p>
+    <hr style=""margin-top:20px;margin-bottom:10px;border:0;border-top:1px solid #ddd;"">
+    <p style=""font-size:12px;color:#666;"">You’re receiving this email because you subscribed at <strong>nuraherbex.com</strong>.</p>
+  </body>
+</html>";
+
+            toUser.Body = new TextPart("html") { Text = htmlBody };
 
             try
             {
-                // Configure mail message
-                var mail = new MailMessage();
-                mail.From = new MailAddress("yourcompanyemail@example.com", "Nura Herbex");
-                mail.To.Add(Email);
-                mail.Subject = "Thanks for Subscribing!";
-                mail.Body = "Thank you for subscribing to Nura Herbex! Our team will contact you soon.";
-                mail.IsBodyHtml = false;
+                using var smtp = new MailKit.Net.Smtp.SmtpClient();
+                smtp.ServerCertificateValidationCallback = (s, c, h, e) => true;
 
-                // Configure SMTP client
-                using (var smtp = new SmtpClient("smtp.gmail.com", 587))
-                {
-                    smtp.Credentials = new NetworkCredential("yourcompanyemail@example.com", "your-app-password");
-                    smtp.EnableSsl = true;
-                    await smtp.SendMailAsync(mail);
-                }
+                var secure = useSsl
+                    ? MailKit.Security.SecureSocketOptions.StartTls
+                    : MailKit.Security.SecureSocketOptions.None;
 
-                // Optionally send internal notification
-                // e.g., send to your admin email also
-                // mail.To.Clear();
-                // mail.To.Add("support@nuraherbex.com");
+                await smtp.ConnectAsync(smtpHost, smtpPort, secure);
+                await smtp.AuthenticateAsync(fromAddress, fromPassword);
 
-                TempData["Message"] = "Subscription successful! Please check your email.";
-                return RedirectToAction("Index");
+                await smtp.SendAsync(toCompany);  // notify admin
+                await smtp.SendAsync(toUser);     // thank subscriber
+                await smtp.DisconnectAsync(true);
+
+                TempData["Message"] = "Thank you for subscribing! Please check your inbox for confirmation.";
             }
             catch (Exception ex)
             {
-                // Log error here
-                TempData["Message"] = "Error: " + ex.Message;
-                return RedirectToAction("Index");
+                TempData["Message"] = $"Subscription failed: {ex.Message}";
             }
+
+            return RedirectToAction("Index");
         }
         public ActionResult _ShoppingCartPartial()
         {
