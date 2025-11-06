@@ -18,6 +18,9 @@ namespace Domain.Models
 		public DbSet<ConsultationBooking> ConsultationBookingDetails { get; set; }
 		public DbSet<Ingredient> Ingredients { get; set; }
 		public DbSet<IngredientCategory> IngredientCategories { get; set; }
+		public DbSet<AddressDetail> AddressDetails { get; set; }
+		public DbSet<State> States { get; set; }
+		public DbSet<Country> Countries { get; set; }
 
 	}
 }

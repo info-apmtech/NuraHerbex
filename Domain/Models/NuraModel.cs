@@ -53,6 +53,36 @@ namespace Domain.Models
         public string? LastName { get; set; }
         //public string? MobileNo { get; set; }
     }
+    public class State
+    {
+        public int Id { get; set; }
+        public string StateName { get; set; }
+        public string? StateCode { get; set; }
+        public int CountryId { get; set; }
+        public DateTime? UpdatedDate { get; set; }
+    }
+    public class Country
+    {
+        public int Id { get; set; }
+        public string CountryName { get; set; }
+        public DateTime? UpdatedDate { get; set; }
+    }
+    public class AddressDetail
+    {
+        public int Id { get; set; }
+        public string UserId { get; set; }
+        public string Name { get; set; }
+        public string Location { get; set; }
+        public string DoorNo { get; set; }
+        public string PhoneNumber { get; set; }
+        public string Address { get; set; }
+        public int State { get; set; }
+        public string Pincode { get; set; }
+        public int Country { get; set; }
+        public bool IsDefault { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
+
+    }
     public class GST
     {
         [Key]
