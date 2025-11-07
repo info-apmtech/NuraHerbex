@@ -1,12 +1,8 @@
-﻿@model Domain.ViewModel.HomeViewModel
+﻿@using Domain.Models
+@model Domain.ViewModel.HomeViewModel
 @{
     ViewData["Title"] = "Home";
 }
-@* <style>
-    .feature-icon{
-        background: #f44900;
-    }
-</style> *@
 
 <!-- Hero Section -->
 <section class="hero-section">
@@ -142,7 +138,7 @@
 
 
 <!-- 3-Level Journey Section -->
-<section class="journey-section">
+@* <section class="journey-section">
     <div class="journey-container">
         <div class="journey-header">
             <h2 class="journey-title">Your 3-Level Journey to <span class="highlight-text">Peak Performance</span></h2>
@@ -215,7 +211,114 @@
         </div>
     </div>
 </section>
+ *@
 
+
+<section class="journey-section">
+    <div class="journey-container">
+        <div class="journey-header">
+            <h2 class="journey-title">Your 3-Level Journey to <span class="highlight-text">Peak Performance</span></h2>
+            <p class="journey-subtitle">A progressive system designed to take you from where you are to where you want to be</p>
+        </div>
+
+        <div class="journey-grid">
+            @{
+                // Mapping product IDs or indices to design details
+                var cardClasses = new Dictionary<int, string>
+            {
+            { 1, "card-green card-featured" },
+            { 2, "card-dark-brown" },
+            { 3, "card-brown" }
+            };
+
+                var defaultImages = new Dictionary<int, string>
+            {
+            { 1, "~/image/HomePage/STAMIX Activate.png" },
+            { 2, "~/image/HomePage/STAMIX Elevate.png" },
+            { 3, "~/image/HomePage/STAMIX Unleash.png" }
+            };
+
+                decimal FinalPrice(Product p) => p.Amount * (1 - p.DiscountPercentage / 100);
+                string GetImage(Product p, int id) => string.IsNullOrWhiteSpace(p.ProductImages) ? defaultImages[id] : p.ProductImages.Split(';')[0];
+            }
+
+            @foreach (var product in Model.FeaturedProducts)
+            {
+                int levelId = product.Id; // assuming Id 1,2,3 corresponds to levels
+                var cardClass = cardClasses.ContainsKey(levelId) ? cardClasses[levelId] : "journey-card";
+                var image = GetImage(product, levelId);
+                var finalPrice = FinalPrice(product);
+
+                <div class="journey-card @cardClass" data-product-id="@product.Id">
+                    <form method="post" action="@Url.Action("ToggleWishlist", "Home")" style="display:inline;">
+                        <input type="hidden" name="productId" value="@product.Id" />
+                        <button type="button" class="wishlist-btn" aria-label="Add to wishlist" title="Add to wishlist" data-product-id="@product.Id" style="background:none; border:none; padding:0; cursor:pointer;">
+                            @if (Model.WishlistProductIds.Contains(product.Id))
+                            {
+                                <!-- Filled heart -->
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2">
+                                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                                </svg>
+                            }
+                            else
+                            {
+                                <!-- Outline heart -->
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                                </svg>
+                            }
+                        </button>
+                    </form>
+
+                    <div class="card-product-image">
+                        <img src="@Url.Content(image)" alt="Level @levelId: @product.ProductName" />
+                    </div>
+
+                    <div class="card-info">
+                        <h3 class="card-level-title">Level @levelId: @product.ProductName</h3>
+                        <p class="card-level-description">@product.Description</p>
+                        <p class="card-price">₹@finalPrice.ToString("F0")</p>
+                        <div class="card-buttons">
+                            <button class="btn-buy-now" onclick="location.href='@Url.Action("Shop", "Home", new { id = product.Id })'">Buy Now</button>
+                            <button class="btn-add-cart" data-product-id="@product.Id">Add to Cart</button>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</section>
+<script>
+    $(document).ready(function () {
+        $('.wishlist-btn').click(function () {
+            var btn = $(this);
+            var productId = btn.data('product-id');
+
+            $.ajax({
+                type: "POST",
+                url: '@Url.Action("ToggleWishlist", "Home")',
+                data: { productId: productId },
+                success: function (response) {
+                    // Red filled heart
+                    var filledHeart = '<svg width="20" height="20" viewBox="0 0 24 24" fill="red" stroke="red" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>';
+
+                    // Outline heart
+                    var outlineHeart = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>';
+
+                    // Check current fill to toggle
+                    if (btn.find('svg').attr('fill') === 'red') {
+                        btn.html(outlineHeart);
+                    } else {
+                        btn.html(filledHeart);
+                    }
+                },
+                error: function () {
+                    alert("Something went wrong. Please try again.");
+                }
+            });
+        });
+    });
+</script>
 
 <!-- Powered by Nature's Best Section -->
 <section class="ingredients-section">

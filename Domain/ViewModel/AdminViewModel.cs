@@ -132,7 +132,8 @@ namespace Domain.ViewModel
         public List<Blog> BlogList { get; set; } = new List<Blog>();
         public List<Ingredient> Ingredients { get; set; } = new();
         public List<PricingPlan> PlanList { get; set; } = new();
-
+        public List<Product> FeaturedProducts { get; set; } = new List<Product>();
+        public List<int> WishlistProductIds { get; set; } = new List<int>();
     }
     public class BlogCategoryViewModel
     {

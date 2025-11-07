@@ -517,5 +517,37 @@ namespace APIs.Controllers
 
             return Ok(result); // contains email message content
         }
+
+        // Wishlist
+        [AllowAnonymous]
+        [HttpGet("wishlist/{userId}")]
+        public async Task<IActionResult> GetWishlist(string userId)
+        {
+            var items = await _adminservice.GetWishlistByUserAsync(userId);
+            return Ok(items);
+        }
+        [AllowAnonymous]
+        [HttpPost("wishlist")]
+        public async Task<IActionResult> AddOrUpdateWishlist([FromBody] WishlistItem item)
+        {
+            if (item == null || string.IsNullOrEmpty(item.UserId) || item.ProductId == 0)
+                return BadRequest("Invalid wishlist item payload.");
+
+            var result = await _adminservice.AddOrUpdateWishlistAsync(item);
+            if (result.Succeeded)
+                return Ok(new { success = true, message = "Wishlist updated" });
+
+            return BadRequest(result.Errors);
+        }
+        [AllowAnonymous]
+        [HttpDelete("wishlist/{id}")]
+        public async Task<IActionResult> DeleteWishlist(int id)
+        {
+            var result = await _adminservice.DeleteWishlistAsync(id);
+            if (result.Succeeded)
+                return Ok(new { success = true });
+
+            return BadRequest(result.Errors);
+        }
     }
 }
