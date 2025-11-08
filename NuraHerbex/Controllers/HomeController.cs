@@ -3,22 +3,23 @@ using Domain.Implementation;
 using Domain.Models;
 using Domain.ViewModel;
 using MailKit.Security;
+using MailKit.Security;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Options;
 using MimeKit;
-using Microsoft.AspNetCore.Mvc.Rendering;
+using MimeKit;
 using Newtonsoft.Json;
 using NuraHerbex.Models;
 using System.Diagnostics;
 using System.Net;
 using System.Net.Http;
 using System.Net.Mail;
-using MimeKit;
-using MailKit.Security;
-using SmtpClient = MailKit.Net.Smtp.SmtpClient;
 using System.Security.Claims;
+using SmtpClient = MailKit.Net.Smtp.SmtpClient;
 //using static ServiceStack.Diagnostics.Events;
 
 namespace NuraHerbex.Controllers
@@ -559,8 +560,8 @@ namespace NuraHerbex.Controllers
 
             return RedirectToAction("Index");
         }
-       
-        public ActionResult _ShoppingCartPartial()
+		[AllowAnonymous]   // <-- change this
+		public ActionResult _ShoppingCartPartial()
         {
             return PartialView("_ShoppingCartPartial");
         }
@@ -670,5 +671,80 @@ namespace NuraHerbex.Controllers
 
             return RedirectToAction(nameof(MyProfile));
         }
-    }
+		[HttpPost]
+		public async Task<IActionResult> Cartlist(int productId)
+		{
+			var userId = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+			if (string.IsNullOrEmpty(userId))
+			{
+				TempData["CartMessage"] = "Please login to modify Cart.";
+				return RedirectToAction("Index");
+			}
+
+			try
+			{
+				// 1?? Get current wishlist
+				var cartResponse = await _httpClient.GetAsync($"AdminAPI/Cart/{userId}");
+				var cartItems = cartResponse.IsSuccessStatusCode
+					? await cartResponse.Content.ReadFromJsonAsync<List<CartItem>>()
+					: new List<CartItem>();
+
+				// 2?? Check if product already in wishlist
+				var existingItem = cartItems.FirstOrDefault(x => x.ProductId == productId);
+
+				if (existingItem != null)
+				{
+					// ? Remove from wishlist
+					var deleteResponse = await _httpClient.DeleteAsync($"AdminAPI/Cart/{existingItem.Id}");
+					if (deleteResponse.IsSuccessStatusCode)
+						TempData["CartMessage"] = "Product removed from Cart.";
+					else
+						TempData["CartMessage"] = "Failed to remove product from Cart.";
+				}
+				else
+				{
+					// ? Add to wishlist
+					var postData = new { UserId = userId, ProductId = productId };
+					var postResponse = await _httpClient.PostAsJsonAsync("AdminAPI/Cart", postData);
+					if (postResponse.IsSuccessStatusCode)
+						TempData["CartMessage"] = "Product added to Cart.";
+					else
+						TempData["CartMessage"] = "Failed to add product to Cart.";
+				}
+			}
+			catch (Exception ex)
+			{
+				TempData["CartMessage"] = $"Unexpected error: {ex.Message}";
+			}
+
+			return RedirectToAction("Index");
+		}
+
+
+		public async Task<IActionResult> Cart()
+		{
+			var userId = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+			if (string.IsNullOrEmpty(userId))
+				return RedirectToAction("SignIn", "Authentication");
+
+			var client = AuthorizedClient;
+
+			var cartResponse = await client.GetAsync($"AdminAPI/Cart/{userId}");
+			var cartItems = cartResponse.IsSuccessStatusCode
+				? await cartResponse.Content.ReadFromJsonAsync<List<CartItem>>()
+				: new List<CartItem>();
+
+			var productsResponse = await client.GetAsync("AdminAPI/products");
+			var products = productsResponse.IsSuccessStatusCode
+				? await productsResponse.Content.ReadFromJsonAsync<List<Product>>()
+				: new List<Product>();
+
+			var cartProducts = from wish in cartItems
+								   join prod in products on wish.ProductId equals prod.Id
+								   select prod;
+
+			return View(cartProducts.ToList());
+		}
+	}
 }

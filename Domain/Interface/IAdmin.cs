@@ -77,5 +77,9 @@ namespace Domain.Interface
         Task<List<WishlistItem>> GetWishlistByUserAsync(string userId);
         Task<IdentityResult> AddOrUpdateWishlistAsync(WishlistItem item);
         Task<IdentityResult> DeleteWishlistAsync(int id);
-    }
+		//Cart
+		Task<List<CartItem>> GetCartByUserAsync(string userId);
+		Task<IdentityResult> AddOrUpdateCartAsync(CartItem item);
+		Task<IdentityResult> DeleteCartAsync(int id);
+	}
 }
