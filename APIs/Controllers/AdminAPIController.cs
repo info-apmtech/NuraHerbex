@@ -25,6 +25,7 @@ namespace APIs.Controllers
             var users = await _adminservice.GetAllUsersAsync();
             return Ok(users);
         }
+        [AllowAnonymous]
         [HttpGet("users/{role}")]
 		public async Task<IActionResult> GetUsers(UserRole role)
 		{
@@ -525,5 +526,72 @@ namespace APIs.Controllers
             var subs = await _adminservice.GetAllSubscription();
             return Ok(subs);
         }
+
+        // Wishlist
+        [AllowAnonymous]
+        [HttpGet("wishlist/{userId}")]
+        public async Task<IActionResult> GetWishlist(string userId)
+        {
+            var items = await _adminservice.GetWishlistByUserAsync(userId);
+            return Ok(items);
+        }
+        [AllowAnonymous]
+        [HttpPost("wishlist")]
+        public async Task<IActionResult> AddOrUpdateWishlist([FromBody] WishlistItem item)
+        {
+            if (item == null || string.IsNullOrEmpty(item.UserId) || item.ProductId == 0)
+                return BadRequest("Invalid wishlist item payload.");
+
+            var result = await _adminservice.AddOrUpdateWishlistAsync(item);
+            if (result.Succeeded)
+                return Ok(new { success = true, message = "Wishlist updated" });
+
+            return BadRequest(result.Errors);
+        }
+        [AllowAnonymous]
+        [HttpDelete("wishlist/{id}")]
+        public async Task<IActionResult> DeleteWishlist(int id)
+        {
+            var result = await _adminservice.DeleteWishlistAsync(id);
+            if (result.Succeeded)
+                return Ok(new { success = true });
+
+            return BadRequest(result.Errors);
+        }
+
+        [AllowAnonymous]
+        [HttpPost("consultationbooking")]
+        public async Task<IActionResult> BookConsultation([FromBody] ConsultationBooking consultation)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var result = await _adminservice.SaveConsultationAsync(consultation);
+            if (result.Succeeded)
+            {
+                return Ok(new { success = true, message = "Consultation booked" });
+            }
+
+            return BadRequest(result.Errors);
+        }
+
+        // ✅ Get all consultations for a specific doctor
+        [AllowAnonymous]
+        [HttpGet("consultationbooking/{userId}")]
+        public async Task<IActionResult> GetConsultations(string userId)
+        {
+            var consultations = await _adminservice.GetConsultationsByUserAsync(userId);
+            return Ok(consultations);
+        }
+
+        // ✅ Get all consultations created by a specific user (patient)
+        [AllowAnonymous]
+        [HttpGet("consultationbooking/user/{userId}")]
+        public async Task<IActionResult> GetConsultationsByCreator(string userId)
+        {
+            var consultations = await _adminservice.GetConsultationsByCreatorAsync(userId);
+            return Ok(consultations);
+        }
+
     }
 }

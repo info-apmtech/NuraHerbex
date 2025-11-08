@@ -1,4 +1,7 @@
-﻿@{
+﻿@using Domain.Models
+@using Domain.ViewModel
+ @model ConsultationBookingViewModel
+@{
     ViewData["Title"] = "Consultation";
 }
 
@@ -229,80 +232,76 @@
 </section>
 
 <!-- Consultation Form Section -->
-<section class="consultation-section">
-    <div class="consultation-header">
-        <h2>Book Your <span class="highlight">Consultation</span></h2>
-        <p>Schedule your personalized wellness consultation in just a few steps.</p>
-    </div>
 
-    <div class="form-container">
-        <form class="consultation-form">
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="firstName">First Name</label>
-                    <input type="text" id="firstName" placeholder="Enter Your First Name">
+    <section class="consultation-section">
+        <div class="consultation-header">
+            <h2>Book Your <span class="highlight">Consultation</span></h2>
+            <p>Schedule your personalized wellness consultation in just a few steps.</p>
+        </div>
+
+        <div class="form-container">
+            <form asp-action="Consultation" method="post" class="consultation-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label asp-for="Email"></label>
+                        <input asp-for="Email" placeholder="email@example.com" class="form-control" />
+                        <span asp-validation-for="Email" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Phone"></label>
+                        <input asp-for="Phone" placeholder="+91 0000000000" class="form-control" />
+                        <span asp-validation-for="Phone" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label asp-for="FirstName"></label>
+                        <input asp-for="FirstName" placeholder="Enter Your First Name" class="form-control" />
+                        <span asp-validation-for="FirstName" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="LastName"></label>
+                        <input asp-for="LastName" placeholder="Enter Your Last Name" class="form-control" />
+                        <span asp-validation-for="LastName" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label asp-for="ConsultationType"></label>
+                        <select asp-for="ConsultationType" asp-items="Html.GetEnumSelectList<ConsultationType>()" class="form-control">
+                            <option value="">Select Consultation Type</option>
+                        </select>
+                        <span asp-validation-for="ConsultationType" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label asp-for="PreferredDoctorId">Preferred Doctor</label>
+                        <select asp-for="PreferredDoctorId" class="form-control" asp-items="ViewBag.DoctorList">
+                            <option value="">Choose a Doctor</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="PreferredTimeSlot"></label>
+                        <select asp-for="PreferredTimeSlot" asp-items="Html.GetEnumSelectList<TimeSlot>()" class="form-control">
+                            <option value="">Select Time Slot</option>
+                        </select>
+                        <span asp-validation-for="PreferredTimeSlot" class="text-danger"></span>
+                    </div>
                 </div>
                 <div class="form-group">
-                    <label for="lastName">Last Name</label>
-                    <input type="text" id="lastName" placeholder="Enter Your Last Name">
-                </div>
-            </div>
-
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="email">Email Address</label>
-                    <input type="email" id="email" placeholder="email@example.com">
+                    <label asp-for="Concerns"></label>
+                    <textarea asp-for="Concerns" rows="4" placeholder="Describe Your Health Concerns" class="form-control"></textarea>
                 </div>
                 <div class="form-group">
-                    <label for="phone">Phone Number</label>
-                    <input type="tel" id="phone" placeholder="+91 0000000000">
+                    <label asp-for="Medications"></label>
+                    <textarea asp-for="Medications" rows="4" placeholder="List medications" class="form-control"></textarea>
                 </div>
-            </div>
 
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="consultationType">Consultation Type</label>
-                    <select id="consultationType">
-                        <option>Select Consultation Type</option>
-                        <option>Video Call</option>
-                        <option>Phone Call</option>
-                        <option>In-Person</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="doctor">Preferred Doctor</label>
-                    <select id="doctor">
-                        <option>Choose a Doctor</option>
-                        <option>Dr. Marcus Chen</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="time">Preferred Time</label>
-                    <select id="time">
-                        <option>Select Time Slot</option>
-                        <option>Morning (8:00 - 12:00)</option>
-                        <option>Afternoon (12:00 - 17:00)</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label for="concerns">Health Concerns & Goals</label>
-                <textarea id="concerns" rows="4" placeholder="Describe Your Health Concerns"></textarea>
-            </div>
-
-            <div class="form-group">
-                <label for="medications">Current Medication & Supplements</label>
-                <textarea id="medications" rows="4" placeholder="List medications"></textarea>
-            </div>
-
-            <button type="submit" class="submit-button">Book My Free Consultation</button>
-        </form>
-    </div>
-</section>
+                <button type="submit" class="submit-button">Book My Free Consultation</button>
+            </form>
+        </div>
+    </section>
 
 <!-- Process Section -->
 <section class="process-section">

@@ -45,41 +45,46 @@ namespace NuraHerbex.Controllers
         {
             var blogs = new List<Blog>();
             var ingredients = new List<Ingredient>();
+            var products = new List<Product>();
 
-            // ? Get Blogs
+            // Fetch blogs, ingredients, products as before
             var blogResponse = await _httpClient.GetAsync("AdminAPI/blogs");
             if (blogResponse.IsSuccessStatusCode)
-            {
-                var json = await blogResponse.Content.ReadAsStringAsync();
-                blogs = JsonConvert.DeserializeObject<List<Blog>>(json) ?? new List<Blog>();
-            }
+                blogs = JsonConvert.DeserializeObject<List<Blog>>(await blogResponse.Content.ReadAsStringAsync()) ?? new List<Blog>();
 
-            // ? Get Ingredients
             var ingredientResponse = await _httpClient.GetAsync("AdminAPI/ingredients");
             if (ingredientResponse.IsSuccessStatusCode)
+                ingredients = JsonConvert.DeserializeObject<List<Ingredient>>(await ingredientResponse.Content.ReadAsStringAsync()) ?? new List<Ingredient>();
+
+            var productsResponse = await _httpClient.GetAsync("AdminAPI/products");
+            if (productsResponse.IsSuccessStatusCode)
+                products = JsonConvert.DeserializeObject<List<Product>>(await productsResponse.Content.ReadAsStringAsync()) ?? new List<Product>();
+
+            // Filter home ingredients, featured products, etc.
+            var homeIngredients = ingredients.Where(i => i.IsActive && i.ShowHome).OrderByDescending(i => i.CreatedAt).Take(6).ToList();
+            var latestBlogs = blogs.OrderByDescending(b => b.CreatedAt).Take(10).ToList();
+            var featuredProducts = products.OrderBy(p => p.Id).ToList();
+
+            // ? Fetch user's wishlist IDs if logged in
+            var userId = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            List<int> wishlistIds = new List<int>();
+            if (!string.IsNullOrEmpty(userId))
             {
-                var json = await ingredientResponse.Content.ReadAsStringAsync();
-                ingredients = JsonConvert.DeserializeObject<List<Ingredient>>(json) ?? new List<Ingredient>();
+                var wishlistResponse = await _httpClient.GetAsync($"AdminAPI/wishlist/{userId}");
+                if (wishlistResponse.IsSuccessStatusCode)
+                {
+                    var wishlistItems = await wishlistResponse.Content.ReadFromJsonAsync<List<WishlistItem>>();
+                    wishlistIds = wishlistItems?.Select(x => x.ProductId).ToList() ?? new List<int>();
+                }
             }
-
-            // ? Filter only active ingredients for homepage
-            var homeIngredients = ingredients
-                .Where(i => i.IsActive && i.ShowHome)
-                .OrderByDescending(i => i.CreatedAt)
-                .Take(6) // optional: show first 6 for layout balance
-                .ToList();
-
-            // ? Get top 10 blogs
-            var latestBlogs = blogs
-                .OrderByDescending(b => b.CreatedAt)
-                .Take(10)
-                .ToList();
 
             var vm = new HomeViewModel
             {
                 BlogList = latestBlogs,
                 Ingredients = homeIngredients,
-                PlanList = await GetPlansFromApi()
+                PlanList = await GetPlansFromApi(),
+                FeaturedProducts = featuredProducts,
+                WishlistProductIds = wishlistIds // pass to view
             };
 
             return View(vm);
@@ -261,7 +266,7 @@ namespace NuraHerbex.Controllers
             // For the selected product
             ViewBag.SelectedBenefits = Extract(vm.NewProduct); // List<KeyValuePair<string,string>>
 
-            // For product cards list — handle duplicate IDs safely
+            // For product cards list � handle duplicate IDs safely
             ViewBag.BenefitsByProduct = products
                 .GroupBy(p => p.Id)
                 .ToDictionary(g => g.Key, g => Extract(g.First()));
@@ -301,12 +306,6 @@ namespace NuraHerbex.Controllers
 
             return View(vm);
         }
-
-
-        public IActionResult Consultation()
-        {
-            return View();
-        }
         public IActionResult OrderSummary()
         {
             return View();
@@ -319,10 +318,6 @@ namespace NuraHerbex.Controllers
         {
             return View();
         }
-        //public IActionResult MyProfile()
-        //{
-        //    return View();
-        //}
         public IActionResult MyOrders()
         {
             return View();
@@ -331,10 +326,82 @@ namespace NuraHerbex.Controllers
         {
             return View();
         }
-        public IActionResult Wishlist()
+        [HttpPost]
+        public async Task<IActionResult> ToggleWishlist(int productId)
         {
-            return View();
+            var userId = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                TempData["WishlistMessage"] = "Please login to modify wishlist.";
+                return RedirectToAction("Index");
+            }
+
+            try
+            {
+                // 1?? Get current wishlist
+                var wishlistResponse = await _httpClient.GetAsync($"AdminAPI/wishlist/{userId}");
+                var wishlistItems = wishlistResponse.IsSuccessStatusCode
+                    ? await wishlistResponse.Content.ReadFromJsonAsync<List<WishlistItem>>()
+                    : new List<WishlistItem>();
+
+                // 2?? Check if product already in wishlist
+                var existingItem = wishlistItems.FirstOrDefault(x => x.ProductId == productId);
+
+                if (existingItem != null)
+                {
+                    // ? Remove from wishlist
+                    var deleteResponse = await _httpClient.DeleteAsync($"AdminAPI/wishlist/{existingItem.Id}");
+                    if (deleteResponse.IsSuccessStatusCode)
+                        TempData["WishlistMessage"] = "Product removed from wishlist.";
+                    else
+                        TempData["WishlistMessage"] = "Failed to remove product from wishlist.";
+                }
+                else
+                {
+                    // ? Add to wishlist
+                    var postData = new { UserId = userId, ProductId = productId };
+                    var postResponse = await _httpClient.PostAsJsonAsync("AdminAPI/wishlist", postData);
+                    if (postResponse.IsSuccessStatusCode)
+                        TempData["WishlistMessage"] = "Product added to wishlist.";
+                    else
+                        TempData["WishlistMessage"] = "Failed to add product to wishlist.";
+                }
+            }
+            catch (Exception ex)
+            {
+                TempData["WishlistMessage"] = $"Unexpected error: {ex.Message}";
+            }
+
+            return RedirectToAction("Index");
         }
+
+
+        public async Task<IActionResult> Wishlist()
+        {
+            var userId = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+                return RedirectToAction("Login", "Account");
+
+            var client = AuthorizedClient;
+
+            var wishlistResponse = await client.GetAsync($"AdminAPI/wishlist/{userId}");
+            var wishlistItems = wishlistResponse.IsSuccessStatusCode
+                ? await wishlistResponse.Content.ReadFromJsonAsync<List<WishlistItem>>()
+                : new List<WishlistItem>();
+
+            var productsResponse = await client.GetAsync("AdminAPI/products");
+            var products = productsResponse.IsSuccessStatusCode
+                ? await productsResponse.Content.ReadFromJsonAsync<List<Product>>()
+                : new List<Product>();
+
+            var wishlistProducts = from wish in wishlistItems
+                                   join prod in products on wish.ProductId equals prod.Id
+                                   select prod;
+
+            return View(wishlistProducts.ToList());
+        }
+
         public IActionResult Invoice()
         {
             return View();
@@ -347,6 +414,82 @@ namespace NuraHerbex.Controllers
         {
             return View();
         }
+
+        [HttpGet]
+        public async Task<IActionResult> Consultation()
+        {
+            var response = await _httpClient.GetAsync("AdminAPI/users/Doctor");
+
+            List<RegisterUser> doctors = new List<RegisterUser>();
+            if (response.IsSuccessStatusCode)
+            {
+                doctors = await response.Content.ReadFromJsonAsync<List<RegisterUser>>();
+            }
+
+            var doctorListItems = doctors.Select(d => new SelectListItem
+            {
+                Value = d.Id,
+                Text = d.UserName ?? d.Email
+            }).ToList();
+
+            ViewBag.DoctorList = doctorListItems;
+
+            return View(new ConsultationBookingViewModel());
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Consultation(ConsultationBookingViewModel model)
+        {
+            if (!ModelState.IsValid)
+                return View(model);
+
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+            {
+                TempData["ConsultationMessage"] = "Please login to book a consultation.";
+                return RedirectToAction("Index");
+            }
+
+            var booking = new
+            {
+                model.FirstName,
+                model.LastName,
+                model.Email,
+                model.Phone,
+                model.ConsultationType,
+                model.PreferredDoctorId,
+                model.PreferredTimeSlot,
+                model.Concerns,
+                model.Medications,
+                CreatedBy = userId,              
+                SubmittedAt = DateTime.Now
+            };
+
+            var response = await _httpClient.PostAsJsonAsync("AdminAPI/consultationbooking", booking);
+
+            if (response.IsSuccessStatusCode)
+            {
+                TempData["ConsultationMessage"] = "Consultation booked successfully.";
+                return RedirectToAction("MyConsultation");
+            }
+
+            var errorMsg = await response.Content.ReadAsStringAsync();
+            ModelState.AddModelError(string.Empty, "Failed to book consultation: " + errorMsg);
+            return View(model);
+        }
+
+
+
+        //        [HttpPost]
+        //        [ValidateAntiForgeryToken]
+        //        public async Task<IActionResult> Subscribe(string email)
+        //        {
+        //            var fromAddress = _emailSettings.FromAddress;
+        //            var fromPassword = _emailSettings.Password;
+        //            var smtpHost = _emailSettings.Host;
+        //            var smtpPort = _emailSettings.Port;
+        //            var useSsl = _emailSettings.UseSSL;
 
         [HttpPost]
         [ValidateAntiForgeryToken]

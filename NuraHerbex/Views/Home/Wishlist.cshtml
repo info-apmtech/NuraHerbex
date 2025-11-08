@@ -1,4 +1,5 @@
-﻿@{
+﻿
+@* @{
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 <div class="wishlist-layout">
@@ -59,7 +60,67 @@
             </div>
         </div>
     </div>
+</div> *@
+@using Domain.Models
+@model List<Product>
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="wishlist-layout">
+    @Html.Partial("_UserSidebar")
+
+    <div class="wishlist-main">
+        <div class="wishlist-header">
+            <div class="wishlist-title">My Wishlist</div>
+            <div class="wishlist-subtitle">@Model.Count items saved</div>
+        </div>
+
+        <div class="wishlist-grid">
+            @foreach (var product in Model)
+            {
+                <div class="wishlist-card" data-productid="@product.Id">
+                    <span class="wishlist-heart" data-productid="@product.Id" title="Remove from wishlist">♥</span>
+                    <img class="wishlist-img" src="@product.ProductImages" alt="@product.ProductName" />
+                    <div class="wishlist-prod-title">@product.ProductName</div>
+                    <div class="wishlist-prod-price">
+                        <span class="wishlist-price-main">₹@product.Amount</span>
+                    </div>
+                    <button class="wishlist-buy-btn" onclick="location.href='@Url.Action("Shop", "Home", new { id = product.Id })'">Buy Now</button>
+                    <button class="wishlist-cart-btn" data-productid="@product.Id">Add to cart</button>
+                </div>
+            }
+        </div>
+    </div>
 </div>
+
+    <script>
+        $(document).ready(function () {
+            $('.wishlist-heart').click(function () {
+                var heart = $(this);
+                var productId = heart.data('productid');
+
+                $.ajax({
+                    type: 'POST',
+                    url: '@Url.Action("ToggleWishlist", "Home")',
+                    data: { productId: productId },
+                    success: function () {
+                        heart.closest('.wishlist-card').fadeOut(300, function () {
+                            $(this).remove();
+
+                            var count = $('.wishlist-card').length;
+                            $('.wishlist-subtitle').text(count + ' items saved');
+                        });
+                    },
+                    error: function () {
+                        alert('Failed to remove item from wishlist. Please try again.');
+                    }
+                });
+            });
+        });
+    </script>
+
+
 
 <style>
     .wishlist-layout {
