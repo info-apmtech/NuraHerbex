@@ -23,7 +23,7 @@ namespace Domain.Models
         public string? NMConfirmPassword { get; set; }
         [JsonConverter(typeof(JsonStringEnumConverter))]
         public UserRole Role { get; set; }
-        public Specialities? Specialties { get; set; } // time slot need to discuss
+        //public Specialities? Specialties { get; set; } // time slot need to discuss
         public DateTime CreatedAt { get; set; }
         public string? CreatedBy { get; set; }
         public string? UpdatedBy { get; set; }
@@ -52,6 +52,60 @@ namespace Domain.Models
         public string FirstName { get; set; }
         public string? LastName { get; set; }
         //public string? MobileNo { get; set; }
+    }
+
+    public class DoctorDetail
+    {
+        public int Id { get; set; }
+        public string DoctorId { get; set; }
+        public string PrimarySpecality { get; set; }
+        public string? Remark { get; set; }
+        public string? SpecalityId { get; set; }
+        public bool IsWorking { get; set; } = true;
+        public TimeOnly? MondayStartTime { get; set; }
+        public TimeOnly? MondayEndTime { get; set; }
+        public TimeOnly? TuesdayStartTime { get; set; }
+        public TimeOnly? TuesdayEndTime { get; set; }
+        public TimeOnly? WednesdayStartTime { get; set; }
+        public TimeOnly? WednesdayEndTime { get; set; }
+        public TimeOnly? ThursdayStartTime { get; set; }
+        public TimeOnly? ThursdayEndTime { get; set; }
+        public TimeOnly? FridayStartTime { get; set; }
+        public TimeOnly? FridayEndTime { get; set; }
+        public TimeOnly? SaturdayStartTime { get; set; }
+        public TimeOnly? SaturdayEndTime { get; set; }
+        public TimeOnly? SundayStartTime { get; set; }
+        public TimeOnly? SundayEndTime { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
+    }
+    public class ConsultationBooking
+    {
+        public int Id { get; set; }
+
+        [Required, MaxLength(100)]
+        public string FirstName { get; set; }
+
+        [Required, MaxLength(100)]
+        public string LastName { get; set; }
+
+        [Required, EmailAddress]
+        public string Email { get; set; }
+
+        [Required, MaxLength(20)]
+        public string Phone { get; set; }
+
+        [Required]
+        public ConsultationType ConsultationType { get; set; }
+
+        public string? PreferredDoctorId { get; set; }
+        [Required]
+        public TimeSlot PreferredTimeSlot { get; set; }
+        public DateOnly PreferredDate { get; set; }
+
+        public string? Concerns { get; set; }
+        public string? Medications { get; set; }
+        public string CreatedBy { get; set; }
+        public DateTime SubmittedAt { get; set; } = DateTime.Now;
     }
     public class State
     {
@@ -178,35 +232,6 @@ namespace Domain.Models
         public DateTime CreatedAt { get; set; } = DateTime.Now;
     }
 
-
-    public class ConsultationBooking
-    {
-        public int Id { get; set; }
-
-        [Required, MaxLength(100)]
-        public string FirstName { get; set; }
-
-        [Required, MaxLength(100)]
-        public string LastName { get; set; }
-
-        [Required, EmailAddress]
-        public string Email { get; set; }
-
-        [Required, MaxLength(20)]
-        public string Phone { get; set; }
-
-        [Required]
-        public ConsultationType ConsultationType { get; set; }
-
-        public string? PreferredDoctorId { get; set; }
-        [Required]
-        public TimeSlot PreferredTimeSlot { get; set; }
-
-        public string? Concerns { get; set; }
-        public string? Medications { get; set; }
-        public string CreatedBy { get; set; }
-        public DateTime SubmittedAt { get; set; } = DateTime.Now;
-    }
     public class Ingredient
     {
         public int Id { get; set; }

@@ -460,6 +460,7 @@ namespace NuraHerbex.Controllers
                 model.ConsultationType,
                 model.PreferredDoctorId,
                 model.PreferredTimeSlot,
+                model.PreferredDate,
                 model.Concerns,
                 model.Medications,
                 CreatedBy = userId,              
