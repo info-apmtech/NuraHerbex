@@ -231,5 +231,12 @@ namespace Domain.Models
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
 
+    public class NewsletterSubscription
+    {
+        public int Id { get; set; }
 
+        public string Email { get; set; } = default!;
+        public DateTime SubscribedAt { get; set; }
+
+    }
 }

@@ -1,24 +1,23 @@
-using Domain.Extensions;
+ï»¿using Domain.Extensions;
 using Domain.Implementation;
 using Domain.Models;
 using Domain.ViewModel;
+using MailKit;
+using MailKit.Net.Smtp;
 using MailKit.Security;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Options;
 using MimeKit;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Newtonsoft.Json;
 using NuraHerbex.Models;
 using System.Diagnostics;
 using System.Net;
 using System.Net.Http;
 using System.Net.Mail;
-using MimeKit;
-using MailKit.Security;
-using SmtpClient = MailKit.Net.Smtp.SmtpClient;
 using System.Security.Claims;
+using SmtpClient = MailKit.Net.Smtp.SmtpClient;
 //using static ServiceStack.Diagnostics.Events;
 
 namespace NuraHerbex.Controllers
@@ -262,7 +261,7 @@ namespace NuraHerbex.Controllers
             // For the selected product
             ViewBag.SelectedBenefits = Extract(vm.NewProduct); // List<KeyValuePair<string,string>>
 
-            // For product cards list — handle duplicate IDs safely
+            // For product cards list â€” handle duplicate IDs safely
             ViewBag.BenefitsByProduct = products
                 .GroupBy(p => p.Id)
                 .ToDictionary(g => g.Key, g => Extract(g.First()));
@@ -348,79 +347,7 @@ namespace NuraHerbex.Controllers
         {
             return View();
         }
-        //        [HttpPost]
-        //        [ValidateAntiForgeryToken]
-        //        public async Task<IActionResult> Subscribe(string email)
-        //        {
-        //            var fromAddress = _emailSettings.FromAddress;
-        //            var fromPassword = _emailSettings.Password;
-        //            var smtpHost = _emailSettings.Host;
-        //            var smtpPort = _emailSettings.Port;
-        //            var useSsl = _emailSettings.UseSSL;
 
-        //            if (string.IsNullOrWhiteSpace(email) || !MailboxAddress.TryParse(email, out var userMailbox))
-        //            {
-        //                TempData["Message"] = "Invalid email address.";
-        //                return RedirectToAction("Index");
-        //            }
-
-        //            // 1?? Notify your internal team
-        //            var toCompany = new MimeMessage();
-        //            toCompany.From.Add(MailboxAddress.Parse(fromAddress));
-        //            toCompany.To.Add(MailboxAddress.Parse(fromAddress));
-        //            toCompany.Subject = "New Newsletter Subscription – Nura Herbex";
-        //            toCompany.Body = new TextPart("plain")
-        //            {
-        //                Text = $"A new user has subscribed to the Nura Herbex newsletter.\n\n" +
-        //                       $"Email: {email}\n" +
-        //                       $"Subscribed at: {DateTime.UtcNow:yyyy-MM-dd HH:mm:ss} UTC"
-        //            };
-
-        //            // 2?? Auto-reply to subscriber
-        //            var toUser = new MimeMessage();
-        //            toUser.From.Add(MailboxAddress.Parse(fromAddress));
-        //            toUser.To.Add(userMailbox);
-        //            toUser.Subject = "Welcome to Nura Herbex!";
-
-        //            var htmlBody = $@"
-        //<html>
-        //  <body style=""font-family: Arial, Helvetica, sans-serif; font-size: 14px; color: #222;"">
-        //    <p>Dear Subscriber,</p>
-        //    <p>Thank you for subscribing to <strong>Nura Herbex</strong> — your partner in natural wellness.</p>
-        //    <p>You'll be among the first to know about our latest herbal innovations, exclusive offers, and wellness insights.</p>
-        //    <p style=""margin-top:16px;"">Warm regards,<br/>The Nura Herbex Team</p>
-        //    <hr style=""margin-top:20px;margin-bottom:10px;border:0;border-top:1px solid #ddd;"">
-        //    <p style=""font-size:12px;color:#666;"">You’re receiving this email because you subscribed at <strong>nuraherbex.com</strong>.</p>
-        //  </body>
-        //</html>";
-
-        //            toUser.Body = new TextPart("html") { Text = htmlBody };
-
-        //            try
-        //            {
-        //                using var smtp = new MailKit.Net.Smtp.SmtpClient();
-        //                smtp.ServerCertificateValidationCallback = (s, c, h, e) => true;
-
-        //                var secure = useSsl
-        //                    ? MailKit.Security.SecureSocketOptions.StartTls
-        //                    : MailKit.Security.SecureSocketOptions.None;
-
-        //                await smtp.ConnectAsync(smtpHost, smtpPort, secure);
-        //                await smtp.AuthenticateAsync(fromAddress, fromPassword);
-
-        //                await smtp.SendAsync(toCompany);  // notify admin
-        //                await smtp.SendAsync(toUser);     // thank subscriber
-        //                await smtp.DisconnectAsync(true);
-
-        //                TempData["Message"] = "Thank you for subscribing! Please check your inbox for confirmation.";
-        //            }
-        //            catch (Exception ex)
-        //            {
-        //                TempData["Message"] = $"Subscription failed: {ex.Message}";
-        //            }
-
-        //            return RedirectToAction("Index");
-        //        }
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Subscribe([FromForm] string email)
@@ -432,61 +359,91 @@ namespace NuraHerbex.Controllers
             }
 
             var payload = new { Email = parsed.Address.Trim().ToLowerInvariant() };
-            var res = await AuthorizedClient.PostAsJsonAsync("AdminAPI/newsletter/subscription", payload);
+            var apiResponse = await AuthorizedClient.PostAsJsonAsync("AdminAPI/newsletter/subscription", payload);
 
-            if (!res.IsSuccessStatusCode)
+            if (!apiResponse.IsSuccessStatusCode)
             {
-                var err = await res.Content.ReadAsStringAsync();
+                var err = await apiResponse.Content.ReadAsStringAsync();
                 TempData["Message"] = $"Subscription failed: {err}";
                 return RedirectToAction("Index");
             }
 
-            var dto = await res.Content.ReadFromJsonAsync<NewsletterSubscriptionResult>();
+            var dto = await apiResponse.Content.ReadFromJsonAsync<NewsletterSubscriptionResult>();
             if (dto is null || !dto.Succeeded)
             {
                 TempData["Message"] = "Subscription failed: unexpected response.";
                 return RedirectToAction("Index");
             }
 
-            // Send using content from Service
             try
             {
-                using var smtp = new SmtpClient();
-                var secure = _emailSettings.UseSSL
-                    ? (_emailSettings.Port == 465 ? SecureSocketOptions.SslOnConnect : SecureSocketOptions.StartTls)
-                    : SecureSocketOptions.None;
+                using var logger = new ProtocolLogger("smtp.log");
+                using var smtp = new SmtpClient(logger);
 
-                await smtp.ConnectAsync(_emailSettings.Host, _emailSettings.Port, secure);
-                await smtp.AuthenticateAsync(_emailSettings.FromAddress, _emailSettings.Password);
+                smtp.ServerCertificateValidationCallback = (s, certificate, chain, sslPolicyErrors) => true;
 
-                // Admin
-                var toCompany = new MimeMessage();
-                toCompany.From.Add(MailboxAddress.Parse(_emailSettings.FromAddress));
-                toCompany.To.Add(MailboxAddress.Parse(_emailSettings.FromAddress));
-                toCompany.Subject = dto.AdminSubject;
-                toCompany.Body = new TextPart("plain") { Text = dto.AdminBodyText };
+                var host = _emailSettings.Host;                
+                var port = _emailSettings.Port;               
+                var secure = port == 465
+                    ? SecureSocketOptions.SslOnConnect
+                    : port == 587 ? SecureSocketOptions.StartTls
+                    : SecureSocketOptions.Auto;
 
-                // User
-                var toUser = new MimeMessage();
-                toUser.From.Add(MailboxAddress.Parse(_emailSettings.FromAddress));
-                toUser.To.Add(MailboxAddress.Parse(dto.Email));
-                toUser.Subject = dto.UserSubject;
-                toUser.Body = new TextPart("html") { Text = dto.UserBodyHtml };
+                await smtp.ConnectAsync(host, port, secure);
 
-                await smtp.SendAsync(toCompany);
-                await smtp.SendAsync(toUser);
+                smtp.AuthenticationMechanisms.Remove("XOAUTH2");
+
+                if (!string.IsNullOrWhiteSpace(_emailSettings.Password))
+                {
+                    await smtp.AuthenticateAsync(_emailSettings.FromAddress, _emailSettings.Password);
+                }
+
+                var adminMsg = new MimeMessage();
+                adminMsg.From.Add(MailboxAddress.Parse(_emailSettings.FromAddress));
+                adminMsg.To.Add(MailboxAddress.Parse(_emailSettings.FromAddress));
+                adminMsg.Subject = dto.AdminSubject;
+                adminMsg.Body = new TextPart("plain") { Text = dto.AdminBodyText };
+
+                var userMsg = new MimeMessage();
+                userMsg.From.Add(MailboxAddress.Parse(_emailSettings.FromAddress));
+                userMsg.To.Add(MailboxAddress.Parse(dto.Email));
+                userMsg.Subject = dto.UserSubject;
+                userMsg.Body = new BodyBuilder
+                {
+                    TextBody = "Thank you for subscribing to Nura Herbex!",
+                    HtmlBody = dto.UserBodyHtml
+                }.ToMessageBody();
+
+                // 5) Send emails
+                await smtp.SendAsync(userMsg);
+                await smtp.SendAsync(adminMsg);
                 await smtp.DisconnectAsync(true);
 
                 TempData["Message"] = "Thank you for subscribing! Please check your inbox.";
             }
-            catch
+            catch (SmtpCommandException ex)
             {
-                TempData["Message"] = "Saved successfully, but sending email failed.";
+                TempData["Message"] = $"Email send failed ({ex.StatusCode}): {ex.Message}";
+            }
+            catch (SmtpProtocolException ex)
+            {
+                TempData["Message"] = $"Email send failed (protocol): {ex.Message}";
+            }
+            catch (SslHandshakeException ex)
+            {
+                TempData["Message"] =
+                    $"TLS handshake failed: {ex.Message}. Make sure the SMTP certificate includes '{_emailSettings.Host}'.";
+            }
+            catch (Exception ex)
+            {
+                TempData["Message"] = $"Saved successfully, but sending email failed: {ex.Message}";
             }
 
             return RedirectToAction("Index");
         }
-       
+
+
+
         public ActionResult _ShoppingCartPartial()
         {
             return PartialView("_ShoppingCartPartial");

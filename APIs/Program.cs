@@ -1,4 +1,4 @@
-using Domain.Implementation;
+﻿using Domain.Implementation;
 using Domain.Interface;
 using Domain.Models;
 using Domain.ServiceAPI;
@@ -30,10 +30,15 @@ builder.Services.AddCors(options =>
 });
 
 // Add HTTP client for API consumption
-builder.Services.AddHttpClient("NURAAPI", client =>
+builder.Services.AddHttpClient("NuraHerbexApi", client =>
 {
-	client.BaseAddress = new Uri("https://localhost:44316/api/");
+    client.BaseAddress = new Uri(builder.Configuration["ApiBaseUrl"]); // or your hard-coded URL
 });
+builder.Services.AddOptions<EmailSettings>()
+    .BindConfiguration("EmailSettings")              // 👈 IMPORTANT: must be "EmailSettings"
+    .ValidateDataAnnotations()                       // if you add [Required] on props
+    .Validate(s => !string.IsNullOrWhiteSpace(s.Host), "EmailSettings:Host is required")
+    .ValidateOnStart();
 
 // Register YourService with the HTTP client
 //builder.Services.AddHttpClient<YourService>();
@@ -43,7 +48,7 @@ var connectionString = builder.Configuration.GetConnectionString("NuraConnection
 
 builder.Services.AddDbContext<NuraDbContext>(options =>
 	options.UseSqlServer(connectionString));
-builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
+//builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
 
 // Configure Identity
 

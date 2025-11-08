@@ -172,6 +172,15 @@ namespace Domain.ViewModel
         public List<GST> GSTList { get; set; } = new();
         public GST NewGST { get; set; } = new();
     }
+    public class SubscriptionViewModel
+    {
+        public List<NewsletterSubscription> SubscriptionList { get; set; } = new List<NewsletterSubscription>();
+    }
+    public sealed class SubscribeRequest
+    {
+        public string Email { get; set; } = "";
+    }
+
     public class EmailSettings
     {
         public string FromAddress { get; set; }
@@ -180,14 +189,8 @@ namespace Domain.ViewModel
         public int Port { get; set; }
         public bool UseSSL { get; set; }
     }
-    public class NewsletterSubscription
-    {
-        public int Id { get; set; }
-
-        public string Email { get; set; } = default!;
-        public DateTime SubscribedAt { get; set; }
-
-    }
+    
+   
     public class NewsletterSubscriptionResult
     {
         public bool Succeeded { get; set; }
@@ -199,7 +202,7 @@ namespace Domain.ViewModel
         // Admin notification
         public string AdminSubject { get; set; } = string.Empty;
         public string AdminBodyText { get; set; } = string.Empty;
-
+        public bool IsNew { get; set; }
         // User auto-reply
         public string UserSubject { get; set; } = string.Empty;
         public string UserBodyHtml { get; set; } = string.Empty;

@@ -714,55 +714,60 @@ namespace Domain.Implementation
         {
             return await _db.States.OrderBy(s => s.StateName).ToListAsync();
         }
-
-
-        public async Task<NewsletterSubscriptionResult> SaveNewsletterSubscriptionAsync(NewsletterSubscription dto)
+        public async Task<NewsletterSubscriptionResult> SaveNewsletterSubscriptionAsync(string rawEmail)
         {
-            var result = new NewsletterSubscriptionResult();
+            if (string.IsNullOrWhiteSpace(rawEmail))
+                return new() { Succeeded = false, Error = "Email is required" };
 
-            if (dto == null || string.IsNullOrWhiteSpace(dto.Email))
+            var email = rawEmail.Trim().ToLowerInvariant();
+
+            // Check existence WITHOUT tracking (we won't modify it)
+            var existing = await _db.SubscriptionsDetails
+                                    .AsNoTracking()
+                                    .FirstOrDefaultAsync(x => x.Email == email);
+
+            NewsletterSubscription entity;
+            var isNew = existing == null;
+
+            if (!isNew)
             {
-                result.Succeeded = false;
-                result.Error = "Email is required";
-                return result;
+                entity = existing!;
             }
-
-            var email = dto.Email.Trim().ToLowerInvariant();
-
-            // Upsert by Email
-            var entity = await _db.SubscriptionsDetails.FirstOrDefaultAsync(x => x.Email == email);
-
-            if (entity == null)
+            else
             {
                 entity = new NewsletterSubscription
                 {
                     Email = email,
-                    SubscribedAt = DateTime.UtcNow   // store UTC
+                    SubscribedAt = DateTime.UtcNow
                 };
+
                 await _db.SubscriptionsDetails.AddAsync(entity);
+
+                try
+                {
+                    await _db.SaveChangesAsync(); // should be 1 row
+                }
+                catch (DbUpdateException)
+                {
+                    entity = await _db.SubscriptionsDetails.AsNoTracking()
+                                .FirstOrDefaultAsync(x => x.Email == email) ?? entity;
+                    isNew = false;
+                }
             }
-            else
+
+            return new NewsletterSubscriptionResult
             {
-                // already exists: keep original SubscribedAt (or update if you prefer)
-                // entity.SubscribedAt = DateTime.UtcNow;
-                _db.SubscriptionsDetails.Update(entity);
-            }
-
-            await _db.SaveChangesAsync();
-
-            result.Succeeded = true;
-            result.Email = entity.Email;
-            result.SubscribedAtUtc = entity.SubscribedAt;
-
-            // Compose messages here (single source of truth)
-            result.AdminSubject = "New Newsletter Subscription – Nura Herbex";
-            result.AdminBodyText =
-                $"A new user has subscribed to the Nura Herbex newsletter.\n\n" +
-                $"Email: {entity.Email}\n" +
-                $"Subscribed at: {entity.SubscribedAt:yyyy-MM-dd HH:mm:ss} UTC";
-
-            result.UserSubject = "Welcome to Nura Herbex!";
-            result.UserBodyHtml = @"
+                Succeeded = true,
+                Email = entity.Email,
+                SubscribedAtUtc = entity.SubscribedAt,
+                IsNew = isNew,
+                AdminSubject = "New Newsletter Subscription – Nura Herbex",
+                AdminBodyText =
+                    $"A new user has subscribed to the Nura Herbex newsletter.\n\n" +
+                    $"Email: {entity.Email}\n" +
+                    $"Subscribed at: {entity.SubscribedAt:yyyy-MM-dd HH:mm:ss} UTC",
+                UserSubject = "Welcome to Nura Herbex!",
+                UserBodyHtml = @"
 <html>
   <body style=""font-family: Arial, Helvetica, sans-serif; font-size: 14px; color: #222;"">
     <p>Dear Subscriber,</p>
@@ -772,12 +777,15 @@ namespace Domain.Implementation
     <hr style=""margin-top:20px;margin-bottom:10px;border:0;border-top:1px solid #ddd;"">
     <p style=""font-size:12px;color:#666;"">You’re receiving this email because you subscribed at <strong>nuraherbex.com</strong>.</p>
   </body>
-</html>";
-
-            return result;
+</html>"
+            };
         }
 
-       
+        public async Task<List<NewsletterSubscription>> GetAllSubscription()
+        {
+            return await _db.SubscriptionsDetails.OrderBy(s => s.SubscribedAt).ToListAsync();
+        }
+
     }
 }
 

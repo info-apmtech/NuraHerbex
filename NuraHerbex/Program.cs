@@ -3,9 +3,11 @@ using AspNetCoreHero.ToastNotification.Extensions;
 using Domain.Implementation;
 using Domain.Interface;
 using Domain.Models;
+using Domain.ViewModel;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using ServiceStack.Configuration;
 using System.Net.Http.Headers;
 
@@ -71,6 +73,13 @@ builder.Services.AddHttpClient("NuraHerbexApi", client =>
 	client.DefaultRequestHeaders.Accept.Add(
 		new MediaTypeWithQualityHeaderValue("application/json"));
 });
+builder.Services.AddOptions<EmailSettings>()
+    .BindConfiguration("EmailSettings")
+    .Validate(s => !string.IsNullOrWhiteSpace(s.Host), "EmailSettings:Host is required")
+    .ValidateOnStart();
+
+builder.Services.AddSingleton(sp =>
+    sp.GetRequiredService<IOptions<EmailSettings>>().Value);
 builder.Services.AddNotyf(config => { config.DurationInSeconds = 10; config.IsDismissable = true; config.Position = NotyfPosition.TopRight; });
 builder.Services.AddCors(options =>
 {

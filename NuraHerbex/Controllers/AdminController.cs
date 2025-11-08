@@ -728,5 +728,21 @@ namespace NuraHerbex.Controllers
             return RedirectToAction(nameof(Product));
         }
 
+        [HttpGet]
+        public async Task<IActionResult> SubscribeDetail(int id = 0)
+        {
+            var response = await AuthorizedClient.GetAsync("/api/AdminAPI/subscriptions");
+            var list = response.IsSuccessStatusCode
+                ? JsonConvert.DeserializeObject<List<NewsletterSubscription>>(await response.Content.ReadAsStringAsync())
+                : new List<NewsletterSubscription>();
+
+            var vm = new SubscriptionViewModel
+            {
+                SubscriptionList = list
+            };
+
+            return View(vm);
+        }
+
     }
 }

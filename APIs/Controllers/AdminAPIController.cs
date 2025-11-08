@@ -506,16 +506,24 @@ namespace APIs.Controllers
 
         [AllowAnonymous]
         [HttpPost("newsletter/subscription")]
-        public async Task<IActionResult> AddOrUpdateNewsletterSubscription([FromBody] NewsletterSubscription subscription)
+        public async Task<IActionResult> AddOrUpdateNewsletterSubscription([FromBody] SubscribeRequest request)
         {
-            if (!ModelState.IsValid) return BadRequest(ModelState);
+            if (!ModelState.IsValid || string.IsNullOrWhiteSpace(request.Email))
+                return BadRequest(new { success = false, error = "Email is required" });
 
-            var result = await _adminservice.SaveNewsletterSubscriptionAsync(subscription);
-
+            var result = await _adminservice.SaveNewsletterSubscriptionAsync(request.Email);
             if (!result.Succeeded)
                 return BadRequest(new { success = false, error = result.Error });
 
-            return Ok(result); // contains email message content
+            return Ok(result);
+        }
+
+        [AllowAnonymous]
+        [HttpGet("subscriptions")]
+        public async Task<IActionResult> GetSubscriptions()
+        {
+            var subs = await _adminservice.GetAllSubscription();
+            return Ok(subs);
         }
     }
 }
