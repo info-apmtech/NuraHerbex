@@ -247,6 +247,9 @@ namespace Domain.ViewModel
         [Required] public int ConsultationType { get; set; }
         public string PreferredDoctorId { get; set; }
         [Required] public int PreferredTimeSlot { get; set; }
+        [Required]
+        [DataType(DataType.Date)]
+        public DateOnly PreferredDate { get; set; }
         public string Concerns { get; set; }
         public string Medications { get; set; }
     }

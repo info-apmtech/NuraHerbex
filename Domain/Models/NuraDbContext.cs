@@ -29,6 +29,7 @@ namespace Domain.Models
 		public DbSet<PricingPlan> PricingPlans { get; set; }
 		public DbSet<CartItem> CartItems { get; set; }
         public DbSet<WishlistItem> WishlistItems { get; set; }
+        public DbSet<DoctorDetail> DoctorDetails { get; set; }
 
 
     }
