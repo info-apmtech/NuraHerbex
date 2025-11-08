@@ -71,8 +71,7 @@ namespace Domain.Interface
         Task<PricingPlan> GetPricingPlanByIdAsync(int id);
         Task<IdentityResult> AddOrUpdatePricingPlanAsync(PricingPlan plan);
         Task<IdentityResult> DeletePricingPlanAsync(int id);
-        Task<NewsletterSubscriptionResult> SaveNewsletterSubscriptionAsync(NewsletterSubscription dto);
-
+      
         //Wishlist
         Task<List<WishlistItem>> GetWishlistByUserAsync(string userId);
         Task<IdentityResult> AddOrUpdateWishlistAsync(WishlistItem item);
@@ -85,7 +84,7 @@ namespace Domain.Interface
         //subscription
         Task<NewsletterSubscriptionResult> SaveNewsletterSubscriptionAsync(string rawEmail);
         Task<List<NewsletterSubscription>> GetAllSubscription();
-    }
+    
 		//Cart
 		Task<List<CartItem>> GetCartByUserAsync(string userId);
 		Task<IdentityResult> AddOrUpdateCartAsync(CartItem item);

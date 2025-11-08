@@ -589,7 +589,7 @@ namespace APIs.Controllers
 
 			return BadRequest(result.Errors);
 		}
-	}
+	
 
         [AllowAnonymous]
         [HttpPost("consultationbooking")]
