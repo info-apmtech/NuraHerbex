@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using ServiceStack.Configuration;
 using System.Net.Http.Headers;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 //var connectionString = builder.Configuration.GetConnectionString("NuraConnection")
@@ -26,7 +27,16 @@ var builder = WebApplication.CreateBuilder(args);
 //});
 
 // Add services to the container.
-builder.Services.AddControllersWithViews();
+builder.Services.AddControllersWithViews()
+    .AddJsonOptions(options =>
+    {
+
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+
+        options.JsonSerializerOptions.PropertyNamingPolicy = null;
+
+        options.JsonSerializerOptions.NumberHandling = JsonNumberHandling.AllowReadingFromString;
+    });
 //builder.Services.AddScoped<IAdmin, AdminService>();
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 

@@ -238,4 +238,16 @@ namespace Domain.ViewModel
         public List<Country> Countries { get; set; } = new List<Country>();
         public List<State> States { get; set; } = new List<State>();
     }
+    public class ConsultationBookingViewModel
+    {
+        [Required, MaxLength(100)] public string FirstName { get; set; }
+        [Required, MaxLength(100)] public string LastName { get; set; }
+        [Required, EmailAddress] public string Email { get; set; }
+        [Required, MaxLength(20)] public string Phone { get; set; }
+        [Required] public int ConsultationType { get; set; }
+        public string PreferredDoctorId { get; set; }
+        [Required] public int PreferredTimeSlot { get; set; }
+        public string Concerns { get; set; }
+        public string Medications { get; set; }
+    }
 }

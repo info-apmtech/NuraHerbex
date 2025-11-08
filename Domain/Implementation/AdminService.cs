@@ -816,6 +816,30 @@ namespace Domain.Implementation
             await _db.SaveChangesAsync();
             return IdentityResult.Success;
         }
+        public async Task<IdentityResult> SaveConsultationAsync(ConsultationBooking consultation)
+        {
+            await _db.ConsultationBookingDetails.AddAsync(consultation);
+            await _db.SaveChangesAsync();
+            return IdentityResult.Success;
+        }
+
+        // ✅ Get consultations assigned to a specific doctor
+        public async Task<List<ConsultationBooking>> GetConsultationsByUserAsync(string userId)
+        {
+            return await _db.ConsultationBookingDetails
+                .Where(c => c.PreferredDoctorId == userId)
+                .OrderByDescending(c => c.SubmittedAt)
+                .ToListAsync();
+        }
+
+        // ✅ Get consultations created by a specific patient
+        public async Task<List<ConsultationBooking>> GetConsultationsByCreatorAsync(string userId)
+        {
+            return await _db.ConsultationBookingDetails
+                .Where(c => c.CreatedBy == userId)
+                .OrderByDescending(c => c.SubmittedAt)
+                .ToListAsync();
+        }
 
 
     }

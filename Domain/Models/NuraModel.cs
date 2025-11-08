@@ -199,14 +199,12 @@ namespace Domain.Models
         public ConsultationType ConsultationType { get; set; }
 
         public string? PreferredDoctorId { get; set; }
-        public RegisterUser PreferredDoctor { get; set; }
-
         [Required]
         public TimeSlot PreferredTimeSlot { get; set; }
 
         public string? Concerns { get; set; }
         public string? Medications { get; set; }
-
+        public string CreatedBy { get; set; }
         public DateTime SubmittedAt { get; set; } = DateTime.Now;
     }
     public class Ingredient

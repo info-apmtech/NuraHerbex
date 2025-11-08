@@ -307,12 +307,6 @@ namespace NuraHerbex.Controllers
 
             return View(vm);
         }
-
-
-        public IActionResult Consultation()
-        {
-            return View();
-        }
         public IActionResult OrderSummary()
         {
             return View();
@@ -421,6 +415,73 @@ namespace NuraHerbex.Controllers
         {
             return View();
         }
+
+        [HttpGet]
+        public async Task<IActionResult> Consultation()
+        {
+            var response = await _httpClient.GetAsync("AdminAPI/users/Doctor");
+
+            List<RegisterUser> doctors = new List<RegisterUser>();
+            if (response.IsSuccessStatusCode)
+            {
+                doctors = await response.Content.ReadFromJsonAsync<List<RegisterUser>>();
+            }
+
+            var doctorListItems = doctors.Select(d => new SelectListItem
+            {
+                Value = d.Id,
+                Text = d.UserName ?? d.Email
+            }).ToList();
+
+            ViewBag.DoctorList = doctorListItems;
+
+            return View(new ConsultationBookingViewModel());
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Consultation(ConsultationBookingViewModel model)
+        {
+            if (!ModelState.IsValid)
+                return View(model);
+
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+            {
+                TempData["ConsultationMessage"] = "Please login to book a consultation.";
+                return RedirectToAction("Index");
+            }
+
+            var booking = new
+            {
+                model.FirstName,
+                model.LastName,
+                model.Email,
+                model.Phone,
+                model.ConsultationType,
+                model.PreferredDoctorId,
+                model.PreferredTimeSlot,
+                model.Concerns,
+                model.Medications,
+                CreatedBy = userId,              
+                SubmittedAt = DateTime.Now
+            };
+
+            var response = await _httpClient.PostAsJsonAsync("AdminAPI/consultationbooking", booking);
+
+            if (response.IsSuccessStatusCode)
+            {
+                TempData["ConsultationMessage"] = "Consultation booked successfully.";
+                return RedirectToAction("MyConsultation");
+            }
+
+            var errorMsg = await response.Content.ReadAsStringAsync();
+            ModelState.AddModelError(string.Empty, "Failed to book consultation: " + errorMsg);
+            return View(model);
+        }
+
+
+
         //        [HttpPost]
         //        [ValidateAntiForgeryToken]
         //        public async Task<IActionResult> Subscribe(string email)
