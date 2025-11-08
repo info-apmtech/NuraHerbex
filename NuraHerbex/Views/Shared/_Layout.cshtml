@@ -360,7 +360,8 @@
 
         window.onload = generateCaptcha;
     </script>
-  
+    @RenderSection("Scripts", required: false)
+
     @await Html.PartialAsync("_FloatingActions")
     @await Component.InvokeAsync("Notyf")
 </body>

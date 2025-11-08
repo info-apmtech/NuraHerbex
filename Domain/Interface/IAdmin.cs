@@ -86,4 +86,9 @@ namespace Domain.Interface
         Task<NewsletterSubscriptionResult> SaveNewsletterSubscriptionAsync(string rawEmail);
         Task<List<NewsletterSubscription>> GetAllSubscription();
     }
+		//Cart
+		Task<List<CartItem>> GetCartByUserAsync(string userId);
+		Task<IdentityResult> AddOrUpdateCartAsync(CartItem item);
+		Task<IdentityResult> DeleteCartAsync(int id);
+	}
 }

@@ -19,9 +19,15 @@
         </svg>
     </button>
 </div>
-<div id="cartModal" class="modal-overlay" style="display:none;">
+
+<div id="cartModal"
+     class="modal-overlay"
+     style="display:none;"
+     data-partial-url="@Url.Action("_ShoppingCartPartial", "Home")"
+     data-add-url="@Url.Action("Cartlist", "Home")">
     <div class="modal-content" id="cartPopupContent"></div>
 </div>
+
 <style>
     .modal-overlay {
         position: fixed;
@@ -46,39 +52,8 @@
         font-family: 'Arial', sans-serif;
         position: relative;
     }
-
 </style>
-<script>
-    $(document).ready(function () {
 
-        // Reusable function to open the cart popup
-        function openCartModal() {
-            $.get('/Home/_ShoppingCartPartial', function (data) {
-                $('#cartPopupContent').html(data);
-                $('#cartModal').fadeIn(200);
-            });
-        }
-
-        // When floating cart button is clicked
-        $('.floating-btn[aria-label="Cart"]').on('click', function () {
-            openCartModal();
-        });
-
-        // When "Add to Cart" button is clicked
-        $(document).on('click', '.btn-add-cart', function () {
-            openCartModal();
-        });
-
-        // Close popup when clicking outside modal content
-        $('#cartModal').on('click', function (e) {
-            if (!$(e.target).closest('.modal-content').length) {
-                $('#cartModal').fadeOut(200);
-            }
-        });
-
-        // Close popup when clicking close button (if exists)
-        $(document).on('click', '.close-btn', function () {
-            $('#cartModal').fadeOut(200);
-        });
-    });
-</script>
+@section Scripts {
+    <script src="~/js/cart.js"></script>
+}

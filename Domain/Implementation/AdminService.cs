@@ -850,8 +850,46 @@ namespace Domain.Implementation
                 .ToListAsync();
         }
 
+		//Cart
+		public async Task<List<CartItem>> GetCartByUserAsync(string userId)
+		{
+			return await _db.CartItems.Where(x => x.UserId == userId).ToListAsync();
+		}
 
-    }
+		public async Task<IdentityResult> AddOrUpdateCartAsync(CartItem item)
+		{
+			var productExists = await _db.ProductDetails.AnyAsync(p => p.Id == item.ProductId);
+			if (!productExists)
+				return IdentityResult.Failed(new IdentityError { Description = "Product does not exist." });
+
+			var existing = await _db.CartItems
+				.FirstOrDefaultAsync(x => x.UserId == item.UserId && x.ProductId == item.ProductId);
+
+			if (existing == null)
+			{
+				await _db.CartItems.AddAsync(item);
+			}
+			else
+			{
+				// Optionally update fields if needed; for now, do nothing for duplicates
+				return IdentityResult.Success;
+			}
+
+			await _db.SaveChangesAsync();
+			return IdentityResult.Success;
+		}
+
+		public async Task<IdentityResult> DeleteCartAsync(int id)
+		{
+			var existing = await _db.CartItems.FindAsync(id);
+			if (existing == null)
+				return IdentityResult.Failed(new IdentityError { Description = "Wishlist item not found" });
+
+			_db.CartItems.Remove(existing);
+			await _db.SaveChangesAsync();
+			return IdentityResult.Success;
+		}
+	}
 }
 
 

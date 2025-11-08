@@ -1,24 +1,39 @@
-﻿
+﻿@using Domain.Models
+@model List<Product>
+
 <div class="cart-popup">
     <div class="cart-header">
-        <span>Shopping Cart (1)</span>
+        <span>Shopping Cart (@(Model?.Count ?? 0))</span>
         <span class="close-btn">&times;</span>
     </div>
-    <div class="cart-content">
-        <img src="~/image/shop/Stamix1.png" class="cart-product-img" alt="Product Image" />
-        <div class="cart-product-details">
-            <div class="product-title">Level 1 Activate</div>
-            <div class="product-qty">Quantity : 1</div>
-            <div class="product-price">$ 49</div>
-            <a href="#" class="remove-link">Remove</a>
-        </div>
-    </div>
+
+    @if (Model != null && Model.Any())
+    {
+        foreach (var product in Model)
+        {
+            <div class="cart-content" data-productid="@product.Id">
+                <img src="@product.ProductImages" class="cart-product-img" alt="@product.ProductName" />
+                <div class="cart-product-details">
+                    <div class="product-title">@product.ProductName</div>
+                    <div class="product-qty">Quantity : 1</div>
+                    <div class="product-price">₹@product.Amount</div>
+                    <a href="#" class="remove-link">Remove</a>
+                </div>
+            </div>
+        }
+    }
+    else
+    {
+        <div class="cart-content" style="padding:18px;color:#777">Your cart is empty.</div>
+    }
+
     <div class="cart-footer">
         <span>Sub Total :</span>
-        <span class="subtotal-value">$ 49.00</span>
+        <span class="subtotal-value">₹@((Model?.Sum(p => p.Amount) ?? 0M).ToString("0.00"))</span>
     </div>
     <button class="checkout-btn">Proceed to Check Out</button>
 </div>
+
 <style>
     .cart-popup {
         width: 400px;
@@ -88,7 +103,7 @@
     .cart-footer {
         display: flex;
         justify-content: space-between;
-        padding: 13px 18px 13px 18px;
+        padding: 13px 18px;
         font-size: 17px;
         color: #666;
     }
@@ -100,7 +115,7 @@
 
     .checkout-btn {
         width: 90%;
-        margin: 16px 5% 18px 5%;
+        margin: 16px 5% 18px;
         padding: 12px;
         background: #f26b3a;
         color: #fff;
@@ -113,82 +128,82 @@
         .checkout-btn:hover {
             background: #d75c27;
         }
-    /* Responsive adjustments */
+
     @@media (max-width: 480px) {
-        .cart-popup
+        .cart-popup {
+            width: 90vw;
+        }
 
-    {
-        width: 90vw; /* Use 90% of viewport width on small devices */
-    }
+        .cart-content {
+            flex-direction: column;
+            padding: 15px 10px;
+        }
 
-    .cart-content {
-        flex-direction: column;
-        padding: 15px 10px;
-    }
+        .cart-product-img {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 10px;
+        }
 
-    .cart-product-img {
-        width: 80px;
-        height: 80px;
-        margin: 0 auto 10px auto;
-    }
+        .cart-product-details {
+            flex: unset;
+            text-align: center;
+        }
 
-    .cart-product-details {
-        flex: unset;
-        text-align: center;
-    }
+        .cart-header {
+            padding: 15px 10px 8px;
+            font-size: 18px;
+        }
 
-    .cart-header {
-        padding: 15px 10px 8px 10px;
-        font-size: 18px;
-    }
+        .cart-footer {
+            padding: 10px;
+            font-size: 15px;
+        }
 
-    .cart-footer {
-        padding: 10px;
-        font-size: 15px;
-    }
-
-    .checkout-btn {
-        width: 95%;
-        margin: 12px auto 15px auto;
-        padding: 10px;
-        font-size: 14px;
-    }
-
+        .checkout-btn {
+            width: 95%;
+            margin: 12px auto 15px;
+            padding: 10px;
+            font-size: 14px;
+        }
     }
 
     @@media (min-width: 481px) and (max-width: 768px) {
-        .cart-popup
+        .cart-popup {
+            width: 350px;
+        }
 
-    {
-        width: 350px; /* Medium device width */
-    }
+        .cart-content {
+            padding: 18px 15px;
+        }
 
-    .cart-content {
-        padding: 18px 15px;
-    }
+        .cart-product-img {
+            width: 90px;
+            height: 90px;
+            margin-right: 15px;
+        }
 
-    .cart-product-img {
-        width: 90px;
-        height: 90px;
-        margin-right: 15px;
-    }
+        .cart-header {
+            font-size: 19px;
+            padding: 17px 15px 8px;
+        }
 
-    .cart-header {
-        font-size: 19px;
-        padding: 17px 15px 8px 15px;
-    }
+        .cart-footer {
+            padding: 12px 15px;
+            font-size: 16px;
+        }
 
-    .cart-footer {
-        padding: 12px 15px;
-        font-size: 16px;
-    }
-
-    .checkout-btn {
-        width: 90%;
-        margin: 15px 5% 18px 5%;
-        padding: 11px;
-        font-size: 15px;
-    }
-
+        .checkout-btn {
+            width: 90%;
+            margin: 15px 5% 18px 5%;
+            padding: 11px;
+            font-size: 15px;
+        }
     }
 </style>
+
+@section Scripts {
+    <script src="~/js/cart.js"></script>
+}
+
+
