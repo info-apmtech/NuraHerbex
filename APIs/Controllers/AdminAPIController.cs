@@ -566,12 +566,16 @@ namespace APIs.Controllers
 			var items = await _adminservice.GetCartByUserAsync(userId);
 			return Ok(items);
 		}
+
 		[AllowAnonymous]
 		[HttpPost("Cart")]
 		public async Task<IActionResult> AddOrUpdateCart([FromBody] CartItem item)
 		{
-			if (item == null || string.IsNullOrEmpty(item.UserId) || item.ProductId == 0)
+			if (item == null || string.IsNullOrEmpty(item.UserId) || item.ProductId <= 0)
 				return BadRequest("Invalid Cart item.");
+
+			// Default quantity when caller didn't set it
+			if (item.Quantity <= 0) item.Quantity = 1;
 
 			var result = await _adminservice.AddOrUpdateCartAsync(item);
 			if (result.Succeeded)
@@ -579,8 +583,9 @@ namespace APIs.Controllers
 
 			return BadRequest(result.Errors);
 		}
+
 		[AllowAnonymous]
-		[HttpDelete("Cart/{id}")]
+		[HttpDelete("Cart/{id:int}")]
 		public async Task<IActionResult> DeleteCart(int id)
 		{
 			var result = await _adminservice.DeleteCartAsync(id);
@@ -589,9 +594,10 @@ namespace APIs.Controllers
 
 			return BadRequest(result.Errors);
 		}
-	
 
-        [AllowAnonymous]
+
+
+		[AllowAnonymous]
         [HttpPost("consultationbooking")]
         public async Task<IActionResult> BookConsultation([FromBody] ConsultationBooking consultation)
         {

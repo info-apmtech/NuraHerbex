@@ -853,26 +853,46 @@ namespace Domain.Implementation
 		//Cart
 		public async Task<List<CartItem>> GetCartByUserAsync(string userId)
 		{
-			return await _db.CartItems.Where(x => x.UserId == userId).ToListAsync();
+			return await _db.CartItems
+							.Where(x => x.UserId == userId)
+							.OrderByDescending(x => x.Id)
+							.ToListAsync();
 		}
 
 		public async Task<IdentityResult> AddOrUpdateCartAsync(CartItem item)
 		{
-			var productExists = await _db.ProductDetails.AnyAsync(p => p.Id == item.ProductId);
-			if (!productExists)
+			// 1) Validate product exists (use the correct DbSet name!)
+			// If your table is actually ProductDetails, keep that. If your entity class is Product, use _db.Products.
+			var product = await _db.ProductDetails.FirstOrDefaultAsync(p => p.Id == item.ProductId); // <-- IMPORTANT
+			if (product == null)
 				return IdentityResult.Failed(new IdentityError { Description = "Product does not exist." });
 
+			// 2) Find existing line
 			var existing = await _db.CartItems
 				.FirstOrDefaultAsync(x => x.UserId == item.UserId && x.ProductId == item.ProductId);
 
 			if (existing == null)
 			{
-				await _db.CartItems.AddAsync(item);
+				// New line → set snapshot price and qty
+				var toAdd = new CartItem
+				{
+					UserId    = item.UserId,
+					ProductId = item.ProductId,
+					Quantity  = item.Quantity > 0 ? item.Quantity : 1,
+					Price     = product.Amount           // snapshot current price (unit price)
+				};
+				await _db.CartItems.AddAsync(toAdd);
 			}
 			else
 			{
-				// Optionally update fields if needed; for now, do nothing for duplicates
-				return IdentityResult.Success;
+				// Existing line → increment quantity
+				existing.Quantity += (item.Quantity > 0 ? item.Quantity : 1);
+
+				// Optional rule: If you want to keep the very first price snapshot, do nothing.
+				// If you want "latest price" policy, uncomment:
+				// existing.Price = product.Amount;
+
+				_db.CartItems.Update(existing);
 			}
 
 			await _db.SaveChangesAsync();
@@ -883,15 +903,16 @@ namespace Domain.Implementation
 		{
 			var existing = await _db.CartItems.FindAsync(id);
 			if (existing == null)
-				return IdentityResult.Failed(new IdentityError { Description = "Wishlist item not found" });
+				return IdentityResult.Failed(new IdentityError { Description = "Cart item not found" });
 
 			_db.CartItems.Remove(existing);
 			await _db.SaveChangesAsync();
 			return IdentityResult.Success;
 		}
 
-       
-    }
+
+
+	}
 }
 
 

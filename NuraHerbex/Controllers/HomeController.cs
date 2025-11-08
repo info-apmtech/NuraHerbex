@@ -588,12 +588,41 @@ namespace NuraHerbex.Controllers
 
             return RedirectToAction("Index");
         }
-		[AllowAnonymous]   // <-- change this
-		public ActionResult _ShoppingCartPartial()
-        {
-            return PartialView("_ShoppingCartPartial");
-        }
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+		// Make sure you have an HttpClient (e.g., injected as _httpClient or an AuthorizedClient that carries auth headers)
+		[AllowAnonymous]   // allow guests to see an empty cart; switch to [Authorize] if you prefer
+		public async Task<IActionResult> _ShoppingCartPartial()
+		{
+			// 1) If the user isn't signed in, return an empty model so the partial renders safely
+			var userId = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+			if (string.IsNullOrEmpty(userId))
+				return PartialView("_ShoppingCartPartial", new List<Product>());
+
+			// 2) Use your API client to call AdminAPI (reuse AuthorizedClient if it adds tokens/headers)
+			var client = AuthorizedClient ?? _httpClient;
+
+			// 3) Get cart items for this user
+			var cartResp = await client.GetAsync($"AdminAPI/Cart/{userId}");
+			var cartItems = cartResp.IsSuccessStatusCode
+				? await cartResp.Content.ReadFromJsonAsync<List<CartItem>>()
+				: new List<CartItem>();
+
+			if (cartItems.Count == 0)
+				return PartialView("_ShoppingCartPartial", new List<Product>());
+
+			// 4) Get products once and join locally (your partial currently expects List<Product>)
+			var prodResp = await client.GetAsync("AdminAPI/products");
+			var products = prodResp.IsSuccessStatusCode
+				? await prodResp.Content.ReadFromJsonAsync<List<Product>>()
+				: new List<Product>();
+
+			var productIds = cartItems.Select(c => c.ProductId).ToHashSet();
+			var cartProducts = products.Where(p => productIds.Contains(p.Id)).ToList();
+
+			// 5) Return the expected model to the partial
+			return PartialView("_ShoppingCartPartial", cartProducts);
+		}
+
+		[ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
@@ -700,79 +729,56 @@ namespace NuraHerbex.Controllers
             return RedirectToAction(nameof(MyProfile));
         }
 		[HttpPost]
+		[IgnoreAntiforgeryToken] // keep if you aren't sending an anti-forgery token from JS
 		public async Task<IActionResult> Cartlist(int productId)
 		{
 			var userId = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
 			if (string.IsNullOrEmpty(userId))
-			{
-				TempData["CartMessage"] = "Please login to modify Cart.";
-				return RedirectToAction("Index");
-			}
+				return Unauthorized(new { message = "Please login to modify Cart." });
 
 			try
 			{
-				// 1?? Get current wishlist
-				var cartResponse = await _httpClient.GetAsync($"AdminAPI/Cart/{userId}");
-				var cartItems = cartResponse.IsSuccessStatusCode
-					? await cartResponse.Content.ReadFromJsonAsync<List<CartItem>>()
-					: new List<CartItem>();
+				// Ask AdminAPI to upsert (add/increment) this item
+				var postData = new { UserId = userId, ProductId = productId, Quantity = 1 };
+				var postResponse = await _httpClient.PostAsJsonAsync("AdminAPI/Cart", postData);
 
-				// 2?? Check if product already in wishlist
-				var existingItem = cartItems.FirstOrDefault(x => x.ProductId == productId);
+				if (postResponse.IsSuccessStatusCode)
+					return Ok(new { success = true, message = "Cart updated." });
 
-				if (existingItem != null)
-				{
-					// ? Remove from wishlist
-					var deleteResponse = await _httpClient.DeleteAsync($"AdminAPI/Cart/{existingItem.Id}");
-					if (deleteResponse.IsSuccessStatusCode)
-						TempData["CartMessage"] = "Product removed from Cart.";
-					else
-						TempData["CartMessage"] = "Failed to remove product from Cart.";
-				}
-				else
-				{
-					// ? Add to wishlist
-					var postData = new { UserId = userId, ProductId = productId };
-					var postResponse = await _httpClient.PostAsJsonAsync("AdminAPI/Cart", postData);
-					if (postResponse.IsSuccessStatusCode)
-						TempData["CartMessage"] = "Product added to Cart.";
-					else
-						TempData["CartMessage"] = "Failed to add product to Cart.";
-				}
+				var err = await postResponse.Content.ReadAsStringAsync();
+				return BadRequest(new { success = false, message = string.IsNullOrWhiteSpace(err) ? "Failed to add product to Cart." : err });
 			}
 			catch (Exception ex)
 			{
-				TempData["CartMessage"] = $"Unexpected error: {ex.Message}";
+				return StatusCode(500, new { success = false, message = $"Unexpected error: {ex.Message}" });
 			}
-
-			return RedirectToAction("Index");
 		}
 
 
-		public async Task<IActionResult> Cart()
-		{
-			var userId = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-			if (string.IsNullOrEmpty(userId))
-				return RedirectToAction("SignIn", "Authentication");
 
-			var client = AuthorizedClient;
+		//public async Task<IActionResult> Cart()
+		//{
+		//	var userId = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+		//	if (string.IsNullOrEmpty(userId))
+		//		return RedirectToAction("SignIn", "Authentication");
 
-			var cartResponse = await client.GetAsync($"AdminAPI/Cart/{userId}");
-			var cartItems = cartResponse.IsSuccessStatusCode
-				? await cartResponse.Content.ReadFromJsonAsync<List<CartItem>>()
-				: new List<CartItem>();
+		//	var client = AuthorizedClient;
 
-			var productsResponse = await client.GetAsync("AdminAPI/products");
-			var products = productsResponse.IsSuccessStatusCode
-				? await productsResponse.Content.ReadFromJsonAsync<List<Product>>()
-				: new List<Product>();
+		//	var cartResponse = await client.GetAsync($"AdminAPI/Cart/{userId}");
+		//	var cartItems = cartResponse.IsSuccessStatusCode
+		//		? await cartResponse.Content.ReadFromJsonAsync<List<CartItem>>()
+		//		: new List<CartItem>();
 
-			var cartProducts = from wish in cartItems
-								   join prod in products on wish.ProductId equals prod.Id
-								   select prod;
+		//	var productsResponse = await client.GetAsync("AdminAPI/products");
+		//	var products = productsResponse.IsSuccessStatusCode
+		//		? await productsResponse.Content.ReadFromJsonAsync<List<Product>>()
+		//		: new List<Product>();
 
-			return View(cartProducts.ToList());
-		}
+		//	var cartProducts = from wish in cartItems
+		//						   join prod in products on wish.ProductId equals prod.Id
+		//						   select prod;
+
+		//	return View(cartProducts.ToList());
+		//}
 	}
 }
