@@ -51,16 +51,27 @@ namespace Domain.Models
         public bool? isWorking { get; set; } = true; // need to check doctor availability
         public string FirstName { get; set; }
         public string? LastName { get; set; }
+        [NotMapped]
+        public string FullName => string.IsNullOrEmpty(LastName) ? FirstName : $"{FirstName} {LastName}";
+
         //public string? MobileNo { get; set; }
     }
-
+    public class DoctorSpeciality
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public bool IsActive { get; set; } = true;
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
+    }
     public class DoctorDetail
     {
         public int Id { get; set; }
         public string DoctorId { get; set; }
         public string PrimarySpecality { get; set; }
         public string? Remark { get; set; }
-        public string? SpecalityId { get; set; }
+        [NotMapped]
+        public List<int> SelectedSpecialityIds { get; set; } = new();
+        public string? SpecalityIds { get; set; }
         public bool IsWorking { get; set; } = true;
         public TimeOnly? MondayStartTime { get; set; }
         public TimeOnly? MondayEndTime { get; set; }

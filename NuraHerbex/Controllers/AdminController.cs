@@ -744,5 +744,158 @@ namespace NuraHerbex.Controllers
             return View(vm);
         }
 
+        // Speciality
+        [HttpGet]
+        public async Task<IActionResult> AdminDoctorSpeciality(int id = 0)
+        {
+            var response = await AuthorizedClient.GetAsync("AdminAPI/doctorspecialities");
+            var specialities = response.IsSuccessStatusCode
+                ? JsonConvert.DeserializeObject<List<DoctorSpeciality>>(await response.Content.ReadAsStringAsync()) ?? new List<DoctorSpeciality>()
+                : new List<DoctorSpeciality>();
+
+            var vm = new DoctorSpecialityViewModel
+            {
+                SpecialityList = specialities,
+                NewSpeciality = new DoctorSpeciality()
+            };
+
+            if (id > 0)
+            {
+                var specResp = await AuthorizedClient.GetAsync($"AdminAPI/doctorspeciality/{id}");
+                if (specResp.IsSuccessStatusCode)
+                {
+                    var speciality = JsonConvert.DeserializeObject<DoctorSpeciality>(await specResp.Content.ReadAsStringAsync());
+                    if (speciality != null)
+                        vm.NewSpeciality = speciality;
+                }
+            }
+
+            return View(vm);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AdminDoctorSpeciality(DoctorSpecialityViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                TempData["Error"] = "Validation failed";
+                return View(model);
+            }
+
+            var response = await AuthorizedClient.PostAsJsonAsync("AdminAPI/doctorspeciality", model.NewSpeciality);
+
+            if (response.IsSuccessStatusCode)
+            {
+                TempData["Success"] = model.NewSpeciality.Id > 0 ? "Speciality updated successfully" : "Speciality added successfully";
+                return RedirectToAction(nameof(AdminDoctorSpeciality), new { id = 0 });
+            }
+
+            var error = await response.Content.ReadAsStringAsync();
+            TempData["Error"] = $"Error: {error}";
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteDoctorSpeciality(int id)
+        {
+            var response = await AuthorizedClient.DeleteAsync($"AdminAPI/doctorspeciality/{id}");
+            if (response.IsSuccessStatusCode)
+                TempData["Success"] = "Speciality deleted successfully!";
+            else
+                TempData["Error"] = $"Delete failed: {await response.Content.ReadAsStringAsync()}";
+
+            return RedirectToAction(nameof(AdminDoctorSpeciality));
+        }
+
+        //DoctorDetails
+        [HttpGet]
+        public async Task<IActionResult> AdminDoctorDetail(int id = 0)
+        {
+            // Get doctors (only where Role == Doctor)
+            var doctorsResp = await AuthorizedClient.GetAsync("AdminAPI/users"); // adjust endpoint to get all users
+            var users = doctorsResp.IsSuccessStatusCode
+                ? JsonConvert.DeserializeObject<List<RegisterUser>>(await doctorsResp.Content.ReadAsStringAsync()) ?? new List<RegisterUser>()
+                : new List<RegisterUser>();
+
+            var doctors = users.Where(u => u.Role == UserRole.Doctor).ToList();
+
+            // Get specialities
+            var specResp = await AuthorizedClient.GetAsync("AdminAPI/doctorspecialities");
+            var specialities = specResp.IsSuccessStatusCode
+                ? JsonConvert.DeserializeObject<List<DoctorSpeciality>>(await specResp.Content.ReadAsStringAsync()) ?? new List<DoctorSpeciality>()
+                : new List<DoctorSpeciality>();
+
+            // Get doctor details
+            var detailsResp = await AuthorizedClient.GetAsync("AdminAPI/doctordetails");
+            var details = detailsResp.IsSuccessStatusCode
+                ? JsonConvert.DeserializeObject<List<DoctorDetail>>(await detailsResp.Content.ReadAsStringAsync()) ?? new List<DoctorDetail>()
+                : new List<DoctorDetail>();
+
+            var vm = new DoctorDetailViewModel
+            {
+                DoctorDetailList = details ?? new List<DoctorDetail>(),
+                DoctorDetail = new DoctorDetail(), 
+                Doctors = doctors ?? new List<RegisterUser>(),
+                Specialities = specialities ?? new List<DoctorSpeciality>()
+            };
+
+
+            if (id > 0)
+            {
+                var detailResp = await AuthorizedClient.GetAsync($"AdminAPI/doctordetail/{id}");
+                if (detailResp.IsSuccessStatusCode)
+                {
+                    var detail = JsonConvert.DeserializeObject<DoctorDetail>(await detailResp.Content.ReadAsStringAsync());
+                    if (detail != null)
+                    {
+                        if (!string.IsNullOrEmpty(detail.SpecalityIds))
+                            detail.SelectedSpecialityIds = detail.SpecalityIds.Split(',').Select(int.Parse).ToList();
+                        vm.DoctorDetail = detail;
+                    }
+                }
+            }
+
+            return View(vm);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AdminDoctorDetail(DoctorDetailViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                TempData["Error"] = "Validation failed";
+                return View(model);
+            }
+
+            model.DoctorDetail.SpecalityIds = string.Join(",", model.DoctorDetail.SelectedSpecialityIds ?? new List<int>());
+
+            var response = await AuthorizedClient.PostAsJsonAsync("AdminAPI/doctordetail", model.DoctorDetail);
+
+            if (response.IsSuccessStatusCode)
+            {
+                TempData["Success"] = model.DoctorDetail.Id > 0 ? "Doctor detail updated successfully" : "Doctor detail added successfully";
+                return RedirectToAction(nameof(AdminDoctorDetail), new { id = 0 });
+            }
+
+            TempData["Error"] = "Error while saving doctor detail";
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteDoctorDetail(int id)
+        {
+            var response = await AuthorizedClient.DeleteAsync($"AdminAPI/doctordetail/{id}");
+            if (response.IsSuccessStatusCode)
+                TempData["Success"] = "Doctor detail deleted successfully!";
+            else
+                TempData["Error"] = $"Delete failed: {await response.Content.ReadAsStringAsync()}";
+
+            return RedirectToAction(nameof(AdminDoctorDetail));
+        }
+
     }
 }

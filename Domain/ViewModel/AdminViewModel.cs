@@ -256,4 +256,18 @@ namespace Domain.ViewModel
         public string Concerns { get; set; }
         public string Medications { get; set; }
     }
+    public class DoctorSpecialityViewModel
+    {
+        public List<DoctorSpeciality> SpecialityList { get; set; } = new List<DoctorSpeciality>();
+        public DoctorSpeciality NewSpeciality { get; set; } = new DoctorSpeciality();
+    }
+    public class DoctorDetailViewModel
+    {
+        public DoctorDetail DoctorDetail { get; set; } = new DoctorDetail();
+        public List<DoctorDetail> DoctorDetailList { get; set; } = new List<DoctorDetail>();
+        public List<RegisterUser> Doctors { get; set; } = new List<RegisterUser>();
+        public List<DoctorSpeciality> Specialities { get; set; } = new List<DoctorSpeciality>();
+        public SelectList DoctorSelectList => new SelectList(Doctors, "Id", "FullName", DoctorDetail?.DoctorId);
+
+    }
 }

@@ -23,9 +23,7 @@ namespace Domain.Models
 		public DbSet<State> States { get; set; }
 		public DbSet<Country> Countries { get; set; }
         public DbSet<NewsletterSubscription> SubscriptionsDetails { get; set; }
-
-        
-
+        public DbSet<DoctorSpeciality> DoctorSpecialities { get; set; }
 		public DbSet<PricingPlan> PricingPlans { get; set; }
 		public DbSet<CartItem> CartItems { get; set; }
         public DbSet<WishlistItem> WishlistItems { get; set; }

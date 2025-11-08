@@ -4,6 +4,7 @@ using Domain.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Domain.Migrations
 {
     [DbContext(typeof(NuraDbContext))]
-    partial class NuraDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251108075123_stringtointForSpecialityid")]
+    partial class stringtointForSpecialityid
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -290,8 +293,8 @@ namespace Domain.Migrations
                     b.Property<TimeOnly?>("SaturdayStartTime")
                         .HasColumnType("time");
 
-                    b.Property<string>("SpecalityIds")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int?>("SpecalityId")
+                        .HasColumnType("int");
 
                     b.Property<TimeOnly?>("SundayEndTime")
                         .HasColumnType("time");

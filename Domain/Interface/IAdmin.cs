@@ -89,5 +89,17 @@ namespace Domain.Interface
 		Task<List<CartItem>> GetCartByUserAsync(string userId);
 		Task<IdentityResult> AddOrUpdateCartAsync(CartItem item);
 		Task<IdentityResult> DeleteCartAsync(int id);
-	}
+
+        //specialities
+        Task<List<DoctorSpeciality>> GetDoctorSpecialitiesAsync();
+        Task<DoctorSpeciality> GetDoctorSpecialityByIdAsync(int id);
+        Task<IdentityResult> AddOrUpdateDoctorSpecialityAsync(DoctorSpeciality speciality);
+        Task<IdentityResult> DeleteDoctorSpecialityAsync(int id);
+
+        //DoctorDetails
+        Task<List<DoctorDetail>> GetDoctorDetailsAsync();
+        Task<DoctorDetail> GetDoctorDetailByIdAsync(int id);
+        Task<IdentityResult> AddOrUpdateDoctorDetailAsync(DoctorDetail detail);
+        Task<IdentityResult> DeleteDoctorDetailAsync(int id);
+    }
 }
