@@ -148,6 +148,7 @@ namespace Domain.ViewModel
         public IFormFile ImageFile { get; set; }
         public List<int> SelectedCategoryIds { get; set; } = new List<int>();
         public int CategoryId { get; set; }
+        public List<DoctorViewModel> Doctors { get; set; }
     }
     public class IngredientViewModel
     {
@@ -300,6 +301,13 @@ namespace Domain.ViewModel
     }
 
 
+    public class DoctorViewModel
+    {
+        public string Id { get; set; }
+        public string FullName { get; set; }
+        public string PrimarySpeciality { get; set; }
+        public string? PhotoPath { get; set; }
+    }
 
 
 }

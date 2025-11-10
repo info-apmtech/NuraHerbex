@@ -101,6 +101,7 @@ namespace NuraHerbex.Controllers
         }
         public async Task<IActionResult> Blog()
         {
+            // 1️⃣ Get blogs
             var blogsResponse = await _httpClient.GetAsync("AdminAPI/blogs");
             var categoriesResponse = await _httpClient.GetAsync("AdminAPI/blogcategories");
 
@@ -119,10 +120,48 @@ namespace NuraHerbex.Controllers
                 categories = JsonConvert.DeserializeObject<List<BlogCategory>>(json);
             }
 
+            // 2️⃣ Get doctors
+            var doctorResponse = await _httpClient.GetAsync("AdminAPI/users/doctor");
+            var doctors = new List<RegisterUser>();
+            if (doctorResponse.IsSuccessStatusCode)
+            {
+                var json = await doctorResponse.Content.ReadAsStringAsync();
+                doctors = JsonConvert.DeserializeObject<List<RegisterUser>>(json);
+            }
+
+            // 3️⃣ Get doctor details
+            var doctorDetailResponse = await _httpClient.GetAsync("AdminAPI/doctordetails");
+            var doctorDetails = new List<DoctorDetail>();
+            if (doctorDetailResponse.IsSuccessStatusCode)
+            {
+                var json = await doctorDetailResponse.Content.ReadAsStringAsync();
+                doctorDetails = JsonConvert.DeserializeObject<List<DoctorDetail>>(json);
+            }
+
+            // 4️⃣ Merge doctors with details and filter only active
+            var doctorViewModels = doctors
+                .Select(d =>
+                {
+                    var detail = doctorDetails.FirstOrDefault(dd => dd.DoctorId == d.Id && dd.IsWorking);
+                    if (detail == null) return null; 
+
+                    return new DoctorViewModel
+                    {
+                        Id = d.Id,
+                        FullName = $"{d.FirstName} {d.LastName}",
+                        PhotoPath = detail.PhotoPath,
+                        PrimarySpeciality = detail.PrimarySpecality ?? "General"
+                    };
+                })
+                .Where(d => d != null) 
+                .ToList()!;
+
+            // 5️⃣ Create ViewModel
             var vm = new BlogViewModel
             {
                 BlogList = blogs,
-                Categories = categories
+                Categories = categories,
+                Doctors = doctorViewModels
             };
 
             return View(vm);
