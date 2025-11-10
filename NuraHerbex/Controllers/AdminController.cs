@@ -680,6 +680,8 @@ namespace NuraHerbex.Controllers
             var gstList = response.IsSuccessStatusCode
                 ? JsonConvert.DeserializeObject<List<GST>>(await response.Content.ReadAsStringAsync()) ?? new List<GST>()
                 : new List<GST>();
+            vm.GSTDetails = gstList;
+
             if (id > 0)
             {
                 var prodRes = await AuthorizedClient.GetAsync($"AdminAPI/product/{id}");
@@ -751,6 +753,10 @@ namespace NuraHerbex.Controllers
             model.ProductList = productResponse.IsSuccessStatusCode
                 ? JsonConvert.DeserializeObject<List<Product>>(await productResponse.Content.ReadAsStringAsync())
                 : new List<Product>();
+            var gstResponse = await AuthorizedClient.GetAsync("AdminAPI/gstentries");
+            model.GSTDetails = gstResponse.IsSuccessStatusCode
+                ? JsonConvert.DeserializeObject<List<GST>>(await gstResponse.Content.ReadAsStringAsync())
+                : new List<GST>();
 
             return View(model);
         }
