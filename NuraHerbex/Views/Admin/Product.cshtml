@@ -164,6 +164,9 @@
                                             <label asp-for="NewProduct.DiscountPercentage">Discount Percentage</label>
                                             <input type="number" asp-for="NewProduct.DiscountPercentage" class="form-control" step="0.01" />
                                         </div>
+                                        
+                                    </div>
+                                    <div class="row mb-3">
                                         <div class="col-md-4">
                                             <label>Product Images</label>
                                             <input asp-for="ProductFiles" type="file" class="form-control" multiple />
@@ -175,6 +178,10 @@
                                             }
 
                                             <span asp-validation-for="NewProduct.ProductImages" class="text-danger"></span>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label asp-for="NewProduct.DisplayOrder"> Display Order</label>
+                                            <input type="text" asp-for="NewProduct.DisplayOrder" class="form-control" step="0.01" />
                                         </div>
                                     </div>
                                     <h5 class="mt-5"><i class="feather icon-align-justify"></i>&nbsp;&nbsp; Key Benefits</h5>
