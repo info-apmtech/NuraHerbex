@@ -825,6 +825,8 @@ namespace Domain.Implementation
             await _db.SaveChangesAsync();
             return IdentityResult.Success;
         }
+        //consultation
+
         public async Task<IdentityResult> SaveConsultationAsync(ConsultationBooking consultation)
         {
             await _db.ConsultationBookingDetails.AddAsync(consultation);
@@ -849,9 +851,15 @@ namespace Domain.Implementation
                 .OrderByDescending(c => c.SubmittedAt)
                 .ToListAsync();
         }
+        public async Task<List<ConsultationBooking>> GetAllConsultationsAsync()
+        {
+            return await _db.ConsultationBookingDetails
+                .OrderByDescending(c => c.SubmittedAt)
+                .ToListAsync();
+        }
 
-		//Cart
-		public async Task<List<CartItem>> GetCartByUserAsync(string userId)
+        //Cart
+        public async Task<List<CartItem>> GetCartByUserAsync(string userId)
 		{
 			return await _db.CartItems.Where(x => x.UserId == userId).ToListAsync();
 		}
@@ -890,7 +898,110 @@ namespace Domain.Implementation
 			return IdentityResult.Success;
 		}
 
-       
+        //Specialities
+        // Get all specialities
+        public async Task<List<DoctorSpeciality>> GetDoctorSpecialitiesAsync()
+        {
+            return await _db.DoctorSpecialities.OrderByDescending(s => s.CreatedAt).ToListAsync();
+        }
+
+        // Get speciality by Id
+        public async Task<DoctorSpeciality> GetDoctorSpecialityByIdAsync(int id)
+        {
+            return await _db.DoctorSpecialities.FindAsync(id);
+        }
+
+        // Add or update speciality
+        public async Task<IdentityResult> AddOrUpdateDoctorSpecialityAsync(DoctorSpeciality speciality)
+        {
+            if (speciality == null)
+                return IdentityResult.Failed(new IdentityError { Description = "Speciality cannot be null" });
+
+            if (speciality.Id > 0)
+            {
+                var existing = await _db.DoctorSpecialities.FindAsync(speciality.Id);
+                if (existing == null)
+                    return IdentityResult.Failed(new IdentityError { Description = "Speciality not found" });
+
+                existing.Name = speciality.Name;
+                existing.IsActive = speciality.IsActive;
+                _db.DoctorSpecialities.Update(existing);
+            }
+            else
+            {
+                speciality.CreatedAt = DateTime.UtcNow;
+                await _db.DoctorSpecialities.AddAsync(speciality);
+            }
+
+            await _db.SaveChangesAsync();
+            return IdentityResult.Success;
+        }
+
+        // Delete speciality
+        public async Task<IdentityResult> DeleteDoctorSpecialityAsync(int id)
+        {
+            var existing = await _db.DoctorSpecialities.FindAsync(id);
+            if (existing == null)
+                return IdentityResult.Failed(new IdentityError { Description = "Speciality not found" });
+
+            _db.DoctorSpecialities.Remove(existing);
+            await _db.SaveChangesAsync();
+            return IdentityResult.Success;
+        }
+
+        //DoctorDetails
+        // Get all doctor details
+        public async Task<List<DoctorDetail>> GetDoctorDetailsAsync()
+        {
+            return await _db.DoctorDetails.OrderByDescending(d => d.CreatedAt).ToListAsync();
+        }
+
+        // Get by ID
+        public async Task<DoctorDetail> GetDoctorDetailByIdAsync(int id)
+        {
+            return await _db.DoctorDetails.FindAsync(id);
+        }
+
+        // Add or update doctor detail
+        public async Task<IdentityResult> AddOrUpdateDoctorDetailAsync(DoctorDetail detail)
+        {
+            if (detail == null)
+                return IdentityResult.Failed(new IdentityError { Description = "Doctor detail cannot be null" });
+
+            // Convert list to comma-separated string
+            if (detail.SelectedSpecialityIds != null && detail.SelectedSpecialityIds.Any())
+                detail.SpecalityIds = string.Join(",", detail.SelectedSpecialityIds);
+
+            if (detail.Id > 0)
+            {
+                var existing = await _db.DoctorDetails.FindAsync(detail.Id);
+                if (existing == null)
+                    return IdentityResult.Failed(new IdentityError { Description = "Doctor detail not found" });
+
+                _db.Entry(existing).CurrentValues.SetValues(detail);
+            }
+            else
+            {
+                await _db.DoctorDetails.AddAsync(detail);
+            }
+
+            await _db.SaveChangesAsync();
+            return IdentityResult.Success;
+        }
+
+        // Delete
+        public async Task<IdentityResult> DeleteDoctorDetailAsync(int id)
+        {
+            var existing = await _db.DoctorDetails.FindAsync(id);
+            if (existing == null)
+                return IdentityResult.Failed(new IdentityError { Description = "Doctor detail not found" });
+
+            _db.DoctorDetails.Remove(existing);
+            await _db.SaveChangesAsync();
+            return IdentityResult.Success;
+        }
+
+
     }
 }
 

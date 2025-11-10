@@ -1,8 +1,158 @@
-﻿@{
-    Layout = "~/Views/Shared/_Layout.cshtml";
-    ViewData["Title"] = "My Consultation";
-}
-<!-- ✅ Add Font Awesome (for icons if needed) -->
+﻿@using Domain.ViewModel
+@model MyConsultationViewModel
+
+<div class="profile-layout">
+    @Html.Partial("_UserSidebar")
+
+    <div class="profile-main-content" style="max-width: 1286px;">
+        <div class="consultation-header">
+            <div>
+                <h2 class="profile-title">My Consultations</h2>
+                <p class="profile-subtitle">Manage your doctor appointments and sessions</p>
+            </div>
+            <button onclick="location.href='@Url.Action("Consultation", "Home")'" class="orange-btn book-session">Book New Session</button>
+        </div>
+
+        <!-- Filter Tabs -->
+        <div class="consultation-filters">
+            <button class="filter-btn active" data-filter="all">All</button>
+            <button class="filter-btn" data-filter="upcoming">Upcoming</button>
+            <button class="filter-btn" data-filter="completed">Completed</button>
+        </div>
+
+        <!-- Consultations -->
+        <div id="consultation-cards">
+            @foreach (var item in Model.Consultations)
+            {
+                var status = item.Consultation.PreferredDate >= DateOnly.FromDateTime(DateTime.Now) ? "upcoming" : "completed";
+                <div class="consultation-cardss @status">
+                    <div class="doctor-info">
+                        <img src="@(item.DoctorDetail?.PhotoPath ?? "https://cdn-icons-png.flaticon.com/512/4140/4140048.png")" alt="Doctor">
+                        <div class="doctor-details">
+                            <h4>@(item.Doctor?.FullName ?? "Unknown Doctor")</h4>
+                            <p class="speciality">@item.DoctorDetail?.PrimarySpecality</p>
+                            <span class="status">@status.First().ToString().ToUpper()@status.Substring(1)</span>
+                        </div>
+                    </div>
+
+                    <div class="consultation-details">
+                        <p>
+                            <img src="~/image/consultation/calendar.png" /> @item.Consultation.PreferredDate.ToString("yyyy-MM-dd") &nbsp;&nbsp;
+                            <img src="~/image/consultation/Clock.png" /> @item.Consultation.PreferredTimeSlot
+                        </p>
+                        <p><img src="~/image/consultation/videocam.png" /> Video Call</p>
+                        <p>Reason: @item.Consultation.Concerns</p>
+                        <div class="buttons">
+                            @if (status == "upcoming")
+                            {
+                                <button class="join-btn"><img src="~/image/consultation/videocam.png" /> Join Session</button>
+                                <button class="cancel-btn">Cancel</button>
+                            }
+                            else
+                            {
+                                <button onclick="location.href='@Url.Action("Consultation", "Home")'"  class="book-again-btn">Book Again</button>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+    <script>
+        // Tab filter functionality
+        const filterButtons = document.querySelectorAll('.filter-btn');
+        const cards = document.querySelectorAll('.consultation-cardss');
+
+        filterButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                // Remove active class from all buttons
+                filterButtons.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+
+                const filter = btn.dataset.filter;
+
+                cards.forEach(card => {
+                    if (filter === 'all') {
+                        card.style.display = 'flex';
+                    } else if (card.classList.contains(filter)) {
+                        card.style.display = 'flex';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+            });
+        });
+    </script>
+
+
+
+@* <div class="profile-layout">
+    @Html.Partial("_UserSidebar")
+
+    <div class="profile-main-content" style="max-width: 1286px;">
+        <div class="consultation-header">
+            <div>
+                <h2 class="profile-title">My Consultations</h2>
+                <p class="profile-subtitle">Manage your doctor appointments and sessions</p>
+            </div>
+            <button class="orange-btn book-session">Book New Session</button>
+        </div>
+
+        <div class="consultation-filters">
+            <button class="filter-btn active">All</button>
+            <button class="filter-btn">Upcoming</button>
+            <button class="filter-btn">Completed</button>
+        </div>
+
+        <!-- Upcoming Session -->
+        <h3 class="session-title">Upcoming Session</h3>
+        <div class="consultation-cardss upcoming">
+            <div class="doctor-info">
+                <img src="https://cdn-icons-png.flaticon.com/512/4140/4140048.png" alt="Doctor">
+                <div class="doctor-details">
+                    <h4>Dr. Michael Chen</h4>
+                    <p class="speciality">Sports Medicine</p>
+                    <span class="status">Upcoming</span>
+                </div>
+            </div>
+
+            <div class="consultation-details">
+                <p><img src="~/image/consultation/calendar.png" /> 2025-04-15 &nbsp;&nbsp; <img src="~/image/consultation/Clock.png" /> 10:00 AM (30 mins)</p>
+                <p><img src="~/image/consultation/videocam.png" /> Video Call</p>
+                <p>Reason: Performance optimization consultation</p>
+                <div class="buttons">
+                    <button class="join-btn"><img src="~/image/consultation/videocam.png" /> Join Session</button>
+                    <button class="cancel-btn">Cancel</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Completed Sessions -->
+        <h3 class="session-title">Completed Sessions</h3>
+        <div class="consultation-cardss completed">
+            <div class="doctor-info">
+                <img src="https://cdn-icons-png.flaticon.com/512/4140/4140048.png" alt="Doctor">
+                <div class="doctor-details">
+                    <h4>Dr. Michael Chen</h4>
+                    <p class="speciality">Sports Medicine</p>
+                    <span class="status">Completed</span>
+                </div>
+            </div>
+
+            <div class="consultation-details">
+                <p><img src="~/image/consultation/calendar.png" /> 2025-04-15 &nbsp;&nbsp; <img src="~/image/consultation/Clock.png" /> 10:00 AM (30 mins)</p>
+                <p><img src="~/image/consultation/videocam.png" /> Video Call</p>
+                <p>Reason: Performance optimization consultation</p>
+                <div class="buttons">
+                    <button class="book-again-btn">Book Again</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+ *@
 
 <style>
     /* Base Layout */
@@ -237,144 +387,70 @@
 
     /* 📱 Responsive Fixes */
     @@media (max-width: 992px) {
-        .profile-layout
-
-    {
-        flex-direction: column;
-        padding: 0 10px;
-    }
-
+        .profile-layout {
+            flex-direction: column;
+            padding: 0 10px;
+        }
     }
 
     @@media (max-width: 768px) {
-        .consultation-cardss
-
-    {
-        flex-direction: row;
-        align-items: flex-start;
-        padding: 18px;
-    }
-
-    .doctor-info {
-        width: 100%;
-    }
-
-        .doctor-info img {
-            width: 65px;
-            height: 65px;
+        .consultation-cardss {
+            flex-direction: row;
+            align-items: flex-start;
+            padding: 18px;
         }
 
-    .consultation-details {
-        width: 100%;
-        margin-top: 10px;
-    }
+        .doctor-info {
+            width: 100%;
+        }
 
-    .buttons {
-        justify-content: flex-start;
-        width: 100%;
-    }
+            .doctor-info img {
+                width: 65px;
+                height: 65px;
+            }
 
-    .join-btn,
-    .cancel-btn,
-    .book-again-btn {
-        width: 100%;
-        justify-content: center;
-        text-align: center;
-    }
+        .consultation-details {
+            width: 100%;
+            margin-top: 10px;
+        }
 
+        .buttons {
+            justify-content: flex-start;
+            width: 100%;
+        }
+
+        .join-btn,
+        .cancel-btn,
+        .book-again-btn {
+            width: 100%;
+            justify-content: center;
+            text-align: center;
+        }
     }
 
     @@media (max-width: 480px) {
-        .profile-title
+        .profile-title {
+            font-size: 1.1rem;
+        }
 
-    {
-        font-size: 1.1rem;
-    }
+        .profile-subtitle {
+            font-size: 0.9rem;
+        }
 
-    .profile-subtitle {
-        font-size: 0.9rem;
-    }
+        .consultation-cardss {
+            padding: 14px;
+        }
 
-    .consultation-cardss {
-        padding: 14px;
-    }
+        .doctor-details h4 {
+            font-size: 1rem;
+        }
 
-    .doctor-details h4 {
-        font-size: 1rem;
-    }
+        .speciality {
+            font-size: 0.9rem;
+        }
 
-    .speciality {
-        font-size: 0.9rem;
-    }
-
-    .consultation-details p {
-        font-size: 0.9rem;
-    }
-
+        .consultation-details p {
+            font-size: 0.9rem;
+        }
     }
 </style>
-
-<div class="profile-layout">
-    @Html.Partial("_UserSidebar")
-
-    <div class="profile-main-content" style="max-width: 1286px;">
-        <div class="consultation-header">
-            <div>
-                <h2 class="profile-title">My Consultations</h2>
-                <p class="profile-subtitle">Manage your doctor appointments and sessions</p>
-            </div>
-            <button class="orange-btn book-session">Book New Session</button>
-        </div>
-
-        <div class="consultation-filters">
-            <button class="filter-btn active">All</button>
-            <button class="filter-btn">Upcoming</button>
-            <button class="filter-btn">Completed</button>
-        </div>
-
-        <!-- Upcoming Session -->
-        <h3 class="session-title">Upcoming Session</h3>
-        <div class="consultation-cardss upcoming">
-            <div class="doctor-info">
-                <img src="https://cdn-icons-png.flaticon.com/512/4140/4140048.png" alt="Doctor">
-                <div class="doctor-details">
-                    <h4>Dr. Michael Chen</h4>
-                    <p class="speciality">Sports Medicine</p>
-                    <span class="status">Upcoming</span>
-                </div>
-            </div>
-
-            <div class="consultation-details">
-                <p><img src="~/image/consultation/calendar.png" /> 2025-04-15 &nbsp;&nbsp; <img src="~/image/consultation/Clock.png" /> 10:00 AM (30 mins)</p>
-                <p><img src="~/image/consultation/videocam.png" /> Video Call</p>
-                <p>Reason: Performance optimization consultation</p>
-                <div class="buttons">
-                    <button class="join-btn"><img src="~/image/consultation/videocam.png" /> Join Session</button>
-                    <button class="cancel-btn">Cancel</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Completed Sessions -->
-        <h3 class="session-title">Completed Sessions</h3>
-        <div class="consultation-cardss completed">
-            <div class="doctor-info">
-                <img src="https://cdn-icons-png.flaticon.com/512/4140/4140048.png" alt="Doctor">
-                <div class="doctor-details">
-                    <h4>Dr. Michael Chen</h4>
-                    <p class="speciality">Sports Medicine</p>
-                    <span class="status">Completed</span>
-                </div>
-            </div>
-
-            <div class="consultation-details">
-                <p><img src="~/image/consultation/calendar.png" /> 2025-04-15 &nbsp;&nbsp; <img src="~/image/consultation/Clock.png" /> 10:00 AM (30 mins)</p>
-                <p><img src="~/image/consultation/videocam.png" /> Video Call</p>
-                <p>Reason: Performance optimization consultation</p>
-                <div class="buttons">
-                    <button class="book-again-btn">Book Again</button>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>

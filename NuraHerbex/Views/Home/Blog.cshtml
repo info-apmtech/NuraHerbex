@@ -155,7 +155,7 @@
 </section>
 
 <!-- Expert Panel Section -->
-<section class="expert-panel-section">
+@* <section class="expert-panel-section">
     <div class="expert-panel-container">
         <h2 class="expert-panel-title">All articles are Curated and reviewed by Our Expert Panel</h2>
 
@@ -174,7 +174,36 @@
             }
         </div>
     </div>
+</section> *@
+<section class="expert-panel-section">
+    <div class="expert-panel-container">
+        <h2 class="expert-panel-title">All articles are Curated and reviewed by Our Expert Panel</h2>
+
+        <div class="experts-grid">
+            @if (Model.Doctors != null && Model.Doctors.Any())
+            {
+                foreach (var doctor in Model.Doctors)
+                {
+                    <div class="expert-card">
+                        <div class="expert-image">
+                            <img src="@(!string.IsNullOrEmpty(doctor.PhotoPath) ? doctor.PhotoPath : "~/image/blog/doctor-with-his-arms-crossed-white-background.png")"
+                                 alt="@doctor.FullName" />
+                        </div>
+                        <div class="expert-info">
+                            <h3 class="expert-name">@doctor.FullName</h3>
+                            <p class="expert-title">@doctor.PrimarySpeciality</p>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <p>No experts found.</p>
+            }
+        </div>
+    </div>
 </section>
+
 
 <!-- Recommended Reading Section -->
 <section class="recommended-reading-section">

@@ -148,6 +148,7 @@ namespace Domain.ViewModel
         public IFormFile ImageFile { get; set; }
         public List<int> SelectedCategoryIds { get; set; } = new List<int>();
         public int CategoryId { get; set; }
+        public List<DoctorViewModel> Doctors { get; set; }
     }
     public class IngredientViewModel
     {
@@ -256,4 +257,57 @@ namespace Domain.ViewModel
         public string Concerns { get; set; }
         public string Medications { get; set; }
     }
+    public class DoctorSpecialityViewModel
+    {
+        public List<DoctorSpeciality> SpecialityList { get; set; } = new List<DoctorSpeciality>();
+        public DoctorSpeciality NewSpeciality { get; set; } = new DoctorSpeciality();
+    }
+    public class DoctorDetailViewModel
+    {
+        public DoctorDetail DoctorDetail { get; set; } = new DoctorDetail();
+        public List<DoctorDetail> DoctorDetailList { get; set; } = new List<DoctorDetail>();
+        public List<RegisterUser> Doctors { get; set; } = new List<RegisterUser>();
+        public List<DoctorSpeciality> Specialities { get; set; } = new List<DoctorSpeciality>();
+        public SelectList DoctorSelectList => new SelectList(Doctors, "Id", "FullName", DoctorDetail?.DoctorId);
+        public IFormFile? PhotoFile { get; set; }
+
+    }
+    public class ConsultationPageViewModel
+    {
+        public ConsultationBookingViewModel BookingModel { get; set; } = new ConsultationBookingViewModel();
+        [ValidateNever]
+        public DoctorDetailViewModel DoctorDetailsModel { get; set; } = new DoctorDetailViewModel();
+    }
+    public class MyConsultationViewModel
+    {
+        public List<ConsultationWithDoctorViewModel> Consultations { get; set; } = new();
+    }
+
+    public class ConsultationWithDoctorViewModel
+    {
+        public ConsultationBooking Consultation { get; set; }
+        public RegisterUser Doctor { get; set; }
+        public DoctorDetail DoctorDetail { get; set; }
+    }
+    public class ConsultationWithAssignedDoctorViewModel
+    {
+        public ConsultationBooking Consultation { get; set; }
+        public RegisterUser? Doctor { get; set; } 
+    }
+
+    public class ConsultationListViewModel
+    {
+        public List<ConsultationWithAssignedDoctorViewModel> Consultations { get; set; } = new();
+    }
+
+
+    public class DoctorViewModel
+    {
+        public string Id { get; set; }
+        public string FullName { get; set; }
+        public string PrimarySpeciality { get; set; }
+        public string? PhotoPath { get; set; }
+    }
+
+
 }

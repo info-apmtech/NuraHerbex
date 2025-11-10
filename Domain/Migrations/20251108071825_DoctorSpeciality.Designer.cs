@@ -4,6 +4,7 @@ using Domain.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Domain.Migrations
 {
     [DbContext(typeof(NuraDbContext))]
-    partial class NuraDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251108071825_DoctorSpeciality")]
+    partial class DoctorSpeciality
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -277,9 +280,6 @@ namespace Domain.Migrations
                     b.Property<TimeOnly?>("MondayStartTime")
                         .HasColumnType("time");
 
-                    b.Property<string>("PhotoPath")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("PrimarySpecality")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -293,7 +293,7 @@ namespace Domain.Migrations
                     b.Property<TimeOnly?>("SaturdayStartTime")
                         .HasColumnType("time");
 
-                    b.Property<string>("SpecalityIds")
+                    b.Property<string>("SpecalityId")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<TimeOnly?>("SundayEndTime")
@@ -319,9 +319,6 @@ namespace Domain.Migrations
 
                     b.Property<TimeOnly?>("WednesdayStartTime")
                         .HasColumnType("time");
-
-                    b.Property<int>("YearsOfExperience")
-                        .HasColumnType("int");
 
                     b.HasKey("Id");
 

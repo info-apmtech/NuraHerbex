@@ -3,6 +3,7 @@ using Domain.Interface;
 using Domain.Models;
 using Domain.ViewModel;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace APIs.Controllers
@@ -623,6 +624,105 @@ namespace APIs.Controllers
         {
             var consultations = await _adminservice.GetConsultationsByCreatorAsync(userId);
             return Ok(consultations);
+        }
+        [AllowAnonymous]
+        [HttpGet("consultationbooking/all")]
+        public async Task<IActionResult> GetAllConsultations()
+        {
+            var consultations = await _adminservice.GetAllConsultationsAsync();
+            return Ok(consultations);
+        }
+
+        //Specialities
+        [AllowAnonymous]
+        [HttpGet("doctorspecialities")]
+        public async Task<IActionResult> GetDoctorSpecialities()
+        {
+            var specialities = await _adminservice.GetDoctorSpecialitiesAsync();
+            return Ok(specialities);
+        }
+
+        [AllowAnonymous]
+        [HttpGet("doctorspeciality/{id}")]
+        public async Task<IActionResult> GetDoctorSpeciality(int id)
+        {
+            var speciality = await _adminservice.GetDoctorSpecialityByIdAsync(id);
+            if (speciality == null)
+                return NotFound();
+
+            return Ok(speciality);
+        }
+
+        [AllowAnonymous]
+        [HttpPost("doctorspeciality")]
+        public async Task<IActionResult> AddOrUpdateDoctorSpeciality([FromBody] DoctorSpeciality speciality)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var result = await _adminservice.AddOrUpdateDoctorSpecialityAsync(speciality);
+
+            if (result.Succeeded)
+                return Ok(new { success = true, message = "Doctor speciality saved successfully" });
+
+            return BadRequest(result.Errors);
+        }
+
+        [AllowAnonymous]
+        [HttpDelete("doctorspeciality/{id}")]
+        public async Task<IActionResult> DeleteDoctorSpeciality(int id)
+        {
+            var result = await _adminservice.DeleteDoctorSpecialityAsync(id);
+            if (result.Succeeded)
+                return Ok(new { success = true, message = "Doctor speciality deleted successfully" });
+
+            return BadRequest(result.Errors);
+        }
+
+        //DoctorDetails
+        [AllowAnonymous]
+        [HttpGet("doctordetails")]
+        public async Task<IActionResult> GetDoctorDetails()
+        {
+            var list = await _adminservice.GetDoctorDetailsAsync();
+            return Ok(list);
+        }
+
+        [AllowAnonymous]
+        [HttpGet("doctordetail/{id}")]
+        public async Task<IActionResult> GetDoctorDetail(int id)
+        {
+            var detail = await _adminservice.GetDoctorDetailByIdAsync(id);
+            if (detail == null)
+                return NotFound();
+
+            return Ok(detail);
+        }
+
+        [AllowAnonymous]
+        [HttpPost("doctordetail")]
+        public async Task<IActionResult> AddOrUpdateDoctorDetail([FromBody] DoctorDetail detail)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var result = await _adminservice.AddOrUpdateDoctorDetailAsync(detail);
+
+            if (result.Succeeded)
+                return Ok(new { success = true, message = "Doctor detail saved successfully" });
+
+            return BadRequest(result.Errors);
+        }
+
+        [AllowAnonymous]
+        [HttpDelete("doctordetail/{id}")]
+        public async Task<IActionResult> DeleteDoctorDetail(int id)
+        {
+            var result = await _adminservice.DeleteDoctorDetailAsync(id);
+            if (result.Succeeded)
+                return Ok(new { success = true, message = "Doctor detail deleted successfully" });
+
+            return BadRequest(result.Errors);
         }
 
     }

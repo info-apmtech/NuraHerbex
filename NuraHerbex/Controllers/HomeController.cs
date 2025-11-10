@@ -20,6 +20,8 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Mail;
 using System.Security.Claims;
+using System.Text.Json.Serialization;
+using System.Text.Json;
 using SmtpClient = MailKit.Net.Smtp.SmtpClient;
 //using static ServiceStack.Diagnostics.Events;
 
@@ -99,6 +101,7 @@ namespace NuraHerbex.Controllers
         }
         public async Task<IActionResult> Blog()
         {
+            // 1️⃣ Get blogs
             var blogsResponse = await _httpClient.GetAsync("AdminAPI/blogs");
             var categoriesResponse = await _httpClient.GetAsync("AdminAPI/blogcategories");
 
@@ -117,10 +120,48 @@ namespace NuraHerbex.Controllers
                 categories = JsonConvert.DeserializeObject<List<BlogCategory>>(json);
             }
 
+            // 2️⃣ Get doctors
+            var doctorResponse = await _httpClient.GetAsync("AdminAPI/users/doctor");
+            var doctors = new List<RegisterUser>();
+            if (doctorResponse.IsSuccessStatusCode)
+            {
+                var json = await doctorResponse.Content.ReadAsStringAsync();
+                doctors = JsonConvert.DeserializeObject<List<RegisterUser>>(json);
+            }
+
+            // 3️⃣ Get doctor details
+            var doctorDetailResponse = await _httpClient.GetAsync("AdminAPI/doctordetails");
+            var doctorDetails = new List<DoctorDetail>();
+            if (doctorDetailResponse.IsSuccessStatusCode)
+            {
+                var json = await doctorDetailResponse.Content.ReadAsStringAsync();
+                doctorDetails = JsonConvert.DeserializeObject<List<DoctorDetail>>(json);
+            }
+
+            // 4️⃣ Merge doctors with details and filter only active
+            var doctorViewModels = doctors
+                .Select(d =>
+                {
+                    var detail = doctorDetails.FirstOrDefault(dd => dd.DoctorId == d.Id && dd.IsWorking);
+                    if (detail == null) return null; 
+
+                    return new DoctorViewModel
+                    {
+                        Id = d.Id,
+                        FullName = $"{d.FirstName} {d.LastName}",
+                        PhotoPath = detail.PhotoPath,
+                        PrimarySpeciality = detail.PrimarySpecality ?? "General"
+                    };
+                })
+                .Where(d => d != null) 
+                .ToList()!;
+
+            // 5️⃣ Create ViewModel
             var vm = new BlogViewModel
             {
                 BlogList = blogs,
-                Categories = categories
+                Categories = categories,
+                Doctors = doctorViewModels
             };
 
             return View(vm);
@@ -456,39 +497,182 @@ namespace NuraHerbex.Controllers
         {
             return View();
         }
-        public IActionResult MyConsultation()
+        public async Task<IActionResult> MyConsultation()
         {
-            return View();
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                TempData["ConsultationMessage"] = "Please login to view consultations.";
+                return RedirectToAction("Index");
+            }
+
+            var jsonOptions = new JsonSerializerOptions
+            {
+                Converters = { new JsonStringEnumConverter() }
+            };
+
+            // ✅ Get consultations created by this user (patient)
+            var consultationResponse = await _httpClient.GetAsync($"AdminAPI/consultationbooking/user/{userId}");
+            List<ConsultationBooking> consultations = new List<ConsultationBooking>();
+            if (consultationResponse.IsSuccessStatusCode)
+                consultations = await consultationResponse.Content.ReadFromJsonAsync<List<ConsultationBooking>>(jsonOptions);
+
+            // ✅ Get all doctors
+            var doctorResponse = await _httpClient.GetAsync("AdminAPI/users");
+            List<RegisterUser> doctors = new List<RegisterUser>();
+            if (doctorResponse.IsSuccessStatusCode)
+                doctors = await doctorResponse.Content.ReadFromJsonAsync<List<RegisterUser>>(jsonOptions);
+
+            // ✅ Get doctor details
+            var doctorDetailResponse = await _httpClient.GetAsync("AdminAPI/doctordetails");
+            List<DoctorDetail> doctorDetails = new List<DoctorDetail>();
+            if (doctorDetailResponse.IsSuccessStatusCode)
+                doctorDetails = await doctorDetailResponse.Content.ReadFromJsonAsync<List<DoctorDetail>>(jsonOptions);
+
+            // ✅ Build ViewModel
+            var model = new MyConsultationViewModel();
+
+            foreach (var c in consultations)
+            {
+                var doctor = doctors.FirstOrDefault(d => d.Id == c.PreferredDoctorId);
+                var detail = doctorDetails.FirstOrDefault(dd => dd.DoctorId == c.PreferredDoctorId);
+
+                model.Consultations.Add(new ConsultationWithDoctorViewModel
+                {
+                    Consultation = c,
+                    Doctor = doctor,
+                    DoctorDetail = detail
+                });
+            }
+
+            return View(model);
         }
 
         [HttpGet]
-        public async Task<IActionResult> Consultation()
+        public async Task<IActionResult> Consultation(DateOnly? date = null)
         {
-            var response = await _httpClient.GetAsync("AdminAPI/users/Doctor");
+            var doctorsResponse = await _httpClient.GetAsync("AdminAPI/users/Doctor");
+            var doctorDetailsResponse = await _httpClient.GetAsync("AdminAPI/doctordetails");
+            var specialitiesResponse = await _httpClient.GetAsync("AdminAPI/doctorspecialities");
 
-            List<RegisterUser> doctors = new List<RegisterUser>();
-            if (response.IsSuccessStatusCode)
+            var doctors = doctorsResponse.IsSuccessStatusCode ?
+                await doctorsResponse.Content.ReadFromJsonAsync<List<RegisterUser>>() : new List<RegisterUser>();
+
+            var doctorDetails = doctorDetailsResponse.IsSuccessStatusCode ?
+                await doctorDetailsResponse.Content.ReadFromJsonAsync<List<DoctorDetail>>() : new List<DoctorDetail>();
+
+            var specialities = specialitiesResponse.IsSuccessStatusCode ?
+                await specialitiesResponse.Content.ReadFromJsonAsync<List<DoctorSpeciality>>() : new List<DoctorSpeciality>();
+
+            // Convert CSV speciality IDs
+            foreach (var detail in doctorDetails)
             {
-                doctors = await response.Content.ReadFromJsonAsync<List<RegisterUser>>();
+                if (!string.IsNullOrEmpty(detail.SpecalityIds))
+                {
+                    detail.SelectedSpecialityIds = detail.SpecalityIds
+                        .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                        .Select(int.Parse)
+                        .ToList();
+                }
             }
 
-            var doctorListItems = doctors.Select(d => new SelectListItem
+            // Only working doctors
+            doctorDetails = doctorDetails.Where(d => d.IsWorking).ToList();
+
+            // Determine available doctors based on the selected date
+            List<string> availableDoctorIds;
+
+            if (date.HasValue)
             {
-                Value = d.Id,
-                Text = d.UserName ?? d.Email
-            }).ToList();
+                string dayName = date.Value.DayOfWeek.ToString(); // e.g. Monday, Tuesday
+                availableDoctorIds = doctorDetails
+                    .Where(d => IsDoctorAvailableOnDay(d, dayName))
+                    .Select(d => d.DoctorId)
+                    .Distinct()
+                    .ToList();
+            }
+            else
+            {
+                // Default: show all working doctors
+                availableDoctorIds = doctorDetails.Select(d => d.DoctorId).Distinct().ToList();
+            }
 
-            ViewBag.DoctorList = doctorListItems;
+            var filteredDoctors = doctors.Where(d => availableDoctorIds.Contains(d.Id)).ToList();
 
-            return View(new ConsultationBookingViewModel());
+            var viewModel = new ConsultationPageViewModel
+            {
+                BookingModel = new ConsultationBookingViewModel
+                {
+                    PreferredDate = date ?? DateOnly.FromDateTime(DateTime.Today)
+                },
+                DoctorDetailsModel = new DoctorDetailViewModel
+                {
+                    Doctors = filteredDoctors,
+                    DoctorDetailList = doctorDetails,
+                    Specialities = specialities
+                }
+            };
+
+            // ✅ Populate dropdown
+            ViewBag.DoctorList = new SelectList(
+                filteredDoctors.Select(d => new
+                {
+                    Id = d.Id,
+                    Name = d.FullName ?? $"{d.FirstName} {d.LastName}"
+                }),
+                "Id",
+                "Name"
+            );
+
+            return View(viewModel);
+        }
+
+        // helper function
+        private bool IsDoctorAvailableOnDay(DoctorDetail detail, string day)
+        {
+            return day switch
+            {
+                "Monday" => detail.MondayStartTime.HasValue && detail.MondayEndTime.HasValue,
+                "Tuesday" => detail.TuesdayStartTime.HasValue && detail.TuesdayEndTime.HasValue,
+                "Wednesday" => detail.WednesdayStartTime.HasValue && detail.WednesdayEndTime.HasValue,
+                "Thursday" => detail.ThursdayStartTime.HasValue && detail.ThursdayEndTime.HasValue,
+                "Friday" => detail.FridayStartTime.HasValue && detail.FridayEndTime.HasValue,
+                "Saturday" => detail.SaturdayStartTime.HasValue && detail.SaturdayEndTime.HasValue,
+                "Sunday" => detail.SundayStartTime.HasValue && detail.SundayEndTime.HasValue,
+                _ => false
+            };
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Consultation(ConsultationBookingViewModel model)
+        public async Task<IActionResult> Consultation(ConsultationPageViewModel model)
         {
-            if (!ModelState.IsValid)
+            // explicitly clear validation for DoctorDetailsModel
+            ModelState.ClearValidationState(nameof(model.DoctorDetailsModel));
+
+            var booking = model.BookingModel;
+
+            if (!TryValidateModel(booking, nameof(model.BookingModel)))
+            {
+                // reload doctor list for view
+                var doctorsResponse = await _httpClient.GetAsync("AdminAPI/users/Doctor");
+                var doctors = doctorsResponse.IsSuccessStatusCode
+                    ? await doctorsResponse.Content.ReadFromJsonAsync<List<RegisterUser>>()
+                    : new List<RegisterUser>();
+
+                ViewBag.DoctorList = new SelectList(
+                    doctors.Select(d => new
+                    {
+                        Id = d.Id,
+                        Name = d.FullName ?? $"{d.FirstName} {d.LastName}"
+                    }),
+                    "Id",
+                    "Name"
+                );
+
                 return View(model);
+            }
 
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId))
@@ -497,23 +681,23 @@ namespace NuraHerbex.Controllers
                 return RedirectToAction("Index");
             }
 
-            var booking = new
+            var bookingEntity = new ConsultationBooking
             {
-                model.FirstName,
-                model.LastName,
-                model.Email,
-                model.Phone,
-                model.ConsultationType,
-                model.PreferredDoctorId,
-                model.PreferredTimeSlot,
-                model.PreferredDate,
-                model.Concerns,
-                model.Medications,
-                CreatedBy = userId,              
+                FirstName = booking.FirstName,
+                LastName = booking.LastName,
+                Email = booking.Email,
+                Phone = booking.Phone,
+                ConsultationType = (ConsultationType)booking.ConsultationType,
+                PreferredDoctorId = booking.PreferredDoctorId,
+                PreferredTimeSlot = (TimeSlot)booking.PreferredTimeSlot,
+                PreferredDate = booking.PreferredDate,
+                Concerns = booking.Concerns,
+                Medications = booking.Medications,
+                CreatedBy = userId,
                 SubmittedAt = DateTime.Now
             };
 
-            var response = await _httpClient.PostAsJsonAsync("AdminAPI/consultationbooking", booking);
+            var response = await _httpClient.PostAsJsonAsync("AdminAPI/consultationbooking", bookingEntity);
 
             if (response.IsSuccessStatusCode)
             {
@@ -523,9 +707,56 @@ namespace NuraHerbex.Controllers
 
             var errorMsg = await response.Content.ReadAsStringAsync();
             ModelState.AddModelError(string.Empty, "Failed to book consultation: " + errorMsg);
+
             return View(model);
         }
 
+        [HttpGet]
+        public async Task<IActionResult> GetAvailableDoctors(DateOnly date)
+        {
+            var doctorsResponse = await _httpClient.GetAsync("AdminAPI/users/Doctor");
+            var doctorDetailsResponse = await _httpClient.GetAsync("AdminAPI/doctordetails");
+
+            var doctors = doctorsResponse.IsSuccessStatusCode
+                ? await doctorsResponse.Content.ReadFromJsonAsync<List<RegisterUser>>()
+                : new List<RegisterUser>();
+
+            var doctorDetails = doctorDetailsResponse.IsSuccessStatusCode
+                ? await doctorDetailsResponse.Content.ReadFromJsonAsync<List<DoctorDetail>>()
+                : new List<DoctorDetail>();
+
+            // Convert CSV speciality IDs
+            foreach (var detail in doctorDetails)
+            {
+                if (!string.IsNullOrEmpty(detail.SpecalityIds))
+                {
+                    detail.SelectedSpecialityIds = detail.SpecalityIds
+                        .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                        .Select(int.Parse)
+                        .ToList();
+                }
+            }
+
+            doctorDetails = doctorDetails.Where(d => d.IsWorking).ToList();
+
+            string dayName = date.DayOfWeek.ToString();
+            var availableDoctorIds = doctorDetails
+                .Where(d => IsDoctorAvailableOnDay(d, dayName))
+                .Select(d => d.DoctorId)
+                .Distinct()
+                .ToList();
+
+            var filteredDoctors = doctors
+                .Where(d => availableDoctorIds.Contains(d.Id))
+                .Select(d => new
+                {
+                    id = d.Id,
+                    name = d.FullName ?? $"{d.FirstName} {d.LastName}"
+                })
+                .ToList();
+
+            return Json(filteredDoctors);
+        }
 
 
         //        [HttpPost]

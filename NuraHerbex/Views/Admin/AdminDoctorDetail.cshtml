@@ -1,0 +1,201 @@
+﻿@model Domain.ViewModel.DoctorDetailViewModel
+
+@{
+    var isEdit = Model.DoctorDetail.Id > 0;
+    ViewData["Title"] = "Doctor Details Management";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="pcoded-main-container">
+    <div class="pcoded-content">
+
+        <div class="row heading-bg mb-3">
+            <div class="col-12">
+                <h4>Doctor Details</h4>
+            </div>
+        </div>
+
+        <ul class="nav nav-tabs mb-3" id="doctorTab" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link text-uppercase @(isEdit ? "" : "active")" id="doctor-list-tab" data-toggle="tab" href="#doctor-list" role="tab">List</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-uppercase @(isEdit ? "active" : "")" id="add-doctor-tab" data-toggle="tab" href="#add-doctor" role="tab">
+                    @(!isEdit ? "Add Doctor Detail" : "Edit Doctor Detail")
+                </a>
+            </li>
+        </ul>
+
+        <div class="tab-content" id="doctorTabContent">
+
+            <!-- List -->
+            <div class="tab-pane fade @(isEdit ? "" : "show active")" id="doctor-list" role="tabpanel">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-white border-bottom-0">
+                        <h5 class="mb-0">Doctor Details List</h5>
+                    </div>
+                    <div class="card-body p-3">
+                        <table class="table table-bordered table-striped mb-0 w-100">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>#</th>
+                                    <th>Doctor</th>
+                                    <th>Primary Specialty</th>
+                                    <th>Working</th>
+                                    <th>Created At</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model.DoctorDetailList.Any())
+                                {
+                                    int sno = 1;
+                                    foreach (var item in Model.DoctorDetailList)
+                                    {
+                                        var doctor = Model.Doctors.FirstOrDefault(d => d.Id == item.DoctorId);
+                                        <tr>
+                                            <td>@sno</td>
+                                            <td>@(doctor != null ? doctor.FirstName + " " + doctor.LastName : item.DoctorId)</td>
+                                            <td>@item.PrimarySpecality</td>
+                                            <td>
+                                                <span class="badge @(item.IsWorking ? "bg-success" : "bg-secondary")">
+                                                    @(item.IsWorking ? "Yes" : "No")
+                                                </span>
+                                            </td>
+                                            <td>@item.CreatedAt.ToString("dd MMM yyyy")</td>
+                                            <td>
+                                                <form method="get" asp-action="AdminDoctorDetail" asp-route-id="@item.Id" style="display:inline;">
+                                                    <button type="submit" class="btn btn-sm btn-warning">Edit</button>
+                                                </form>
+
+                                                <form method="post" asp-action="DeleteDoctorDetail" asp-route-id="@item.Id" style="display:inline" onsubmit="return confirm('Are you sure?');">
+                                                    @Html.AntiForgeryToken()
+                                                    <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                        sno++;
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="7" class="text-center">No doctor details found</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Add/Edit -->
+            <div class="tab-pane fade @(isEdit ? "show active" : "")" id="add-doctor" role="tabpanel">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-white border-bottom-0">
+                        <h5 class="mb-0">@(!isEdit ? "Add Doctor Detail" : "Edit Doctor Detail")</h5>
+                    </div>
+                    <div class="card-body">
+                        <form asp-action="AdminDoctorDetail" asp-controller="Admin" method="post" enctype="multipart/form-data">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" asp-for="DoctorDetail.Id" />
+
+                            <!-- Row 1: Doctor and Years of Experience -->
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Doctor</label>
+                                    <select asp-for="DoctorDetail.DoctorId" asp-items="Model.DoctorSelectList" class="form-control" required>
+                                        <option value="">-- Select Doctor --</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label asp-for="DoctorDetail.YearsOfExperience" class="form-label">Years of Experience</label>
+                                    <input asp-for="DoctorDetail.YearsOfExperience" class="form-control" type="number" min="0" required />
+                                    <span asp-validation-for="DoctorDetail.YearsOfExperience" class="text-danger"></span>
+                                </div>
+                            </div>
+
+                            <!-- Row 2: Primary Specialty and Specialities -->
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Primary Specialty</label>
+                                    <input asp-for="DoctorDetail.PrimarySpecality" class="form-control" required />
+                                </div>
+                                <div class="col-md-6">
+                                    <label asp-for="DoctorDetail.SelectedSpecialityIds">Specialities</label>
+                                    <select asp-for="DoctorDetail.SelectedSpecialityIds"
+                                            asp-items="@(new MultiSelectList(Model.Specialities, "Id", "Name", Model.DoctorDetail.SelectedSpecialityIds))"
+                                            multiple
+                                            class="form-control selectpicker"
+                                            data-live-search="true"
+                                            required>
+                                    </select>
+                                    <span asp-validation-for="DoctorDetail.SelectedSpecialityIds" class="text-danger"></span>
+                                </div>
+                            </div>
+
+                            <!-- Row 3: Remark and Photo -->
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label asp-for="DoctorDetail.Remark" class="form-label">Remark</label>
+                                    <textarea asp-for="DoctorDetail.Remark" class="form-control"></textarea>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Photo</label>
+                                    <input asp-for="PhotoFile" type="file" class="form-control" accept="image/*" />
+                                    @if (!string.IsNullOrEmpty(Model.DoctorDetail.PhotoPath))
+                                    {
+                                        <img src="~/uploads/doctors/@Model.DoctorDetail.PhotoPath" alt="Doctor Photo" class="img-thumbnail mt-2" style="max-width:150px;" />
+                                    }
+                                </div>
+                            </div>
+
+                            <!-- Row 4: Is Working -->
+                            <div class="mb-3 form-check">
+                                <input asp-for="DoctorDetail.IsWorking" class="form-check-input" />
+                                <label asp-for="DoctorDetail.IsWorking" class="form-check-label">Is Working</label>
+                            </div>
+
+                            <!-- Row 5: Weekly Schedule -->
+                            <div class="mb-3">
+                                <h6 class="mb-2">Weekly Schedule</h6>
+                                <div class="row g-2">
+                                    @foreach (var day in new[] { "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday" })
+                                    {
+                                        var startProp = typeof(Domain.Models.DoctorDetail).GetProperty(day + "StartTime");
+                                        var endProp = typeof(Domain.Models.DoctorDetail).GetProperty(day + "EndTime");
+
+                                        var startValue = startProp?.GetValue(Model.DoctorDetail) is TimeOnly ts ? ts.ToString("HH:mm") : "";
+                                        var endValue = endProp?.GetValue(Model.DoctorDetail) is TimeOnly te ? te.ToString("HH:mm") : "";
+
+                                        <div class="col-md-6 mb-2">
+                                            <label class="form-label">@day</label>
+                                            <div class="input-group">
+                                                <input type="time"
+                                                       name="DoctorDetail.@(day)StartTime"
+                                                       value="@startValue"
+                                                       class="form-control" />
+                                                <span class="input-group-text">to</span>
+                                                <input type="time"
+                                                       name="DoctorDetail.@(day)EndTime"
+                                                       value="@endValue"
+                                                       class="form-control" />
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+
+                            <!-- Submit Buttons -->
+                            <button type="submit" class="btn btn-primary">@(!isEdit ? "Add Detail" : "Update Detail")</button>
+                            <a asp-action="AdminDoctorDetail" asp-route-id="0" class="btn btn-secondary ms-2">Clear</a>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+
+        </div>
+
+    </div>
+</div>
