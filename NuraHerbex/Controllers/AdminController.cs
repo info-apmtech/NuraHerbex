@@ -639,7 +639,10 @@ namespace NuraHerbex.Controllers
             {
                 vm.ProductList = new List<Product>();
             }
-
+            var response = await AuthorizedClient.GetAsync("AdminAPI/gstentries");
+            var gstList = response.IsSuccessStatusCode
+                ? JsonConvert.DeserializeObject<List<GST>>(await response.Content.ReadAsStringAsync()) ?? new List<GST>()
+                : new List<GST>();
             if (id > 0)
             {
                 var prodRes = await AuthorizedClient.GetAsync($"AdminAPI/product/{id}");

@@ -155,7 +155,10 @@
                                         </div>
                                         <div class="col-md-4">
                                             <label asp-for="NewProduct.GSTId">GST</label>
-                                            <input type="number" asp-for="NewProduct.GSTId" class="form-control" required />
+                                            <select asp-for="NewProduct.GSTId" class="form-control"
+                                                    asp-items="@(new SelectList(Model.GSTDetails, "Id", "Name", Model.NewProduct.GSTId))">
+                                                <option value="">Select Gst</option>
+                                            </select>
                                         </div>
                                         <div class="col-md-4">
                                             <label asp-for="NewProduct.DiscountPercentage">Discount Percentage</label>

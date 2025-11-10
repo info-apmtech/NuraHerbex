@@ -276,6 +276,49 @@ namespace NuraHerbex.Controllers
 
             return View(vm);
         }
+        [HttpGet]
+        public async Task<IActionResult> GetProduct(int id)
+        {
+            // call the AdminAPI endpoint from MVC
+            var res = await _httpClient.GetAsync($"AdminAPI/product/{id}");
+            if (!res.IsSuccessStatusCode)
+                return NotFound();
+
+            var json = await res.Content.ReadAsStringAsync();
+            var p = JsonConvert.DeserializeObject<Product>(json);
+            if (p == null)
+                return NotFound();
+
+            // split images and prepare front-end fields
+            var imgs = (p.ProductImages ?? string.Empty)
+                .Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .ToList();
+
+            var inr = new System.Globalization.CultureInfo("en-IN");
+            var amount = p.Amount;
+            var disc = p.DiscountPercentage;
+            var final = amount - (amount * (disc / 100m));
+
+            
+
+            return Json(new
+            {
+                id = p.Id,
+                productName = p.ProductName,
+                description = !string.IsNullOrWhiteSpace(p.Description) ? p.Description : p.SubTitle,
+                amount = p.Amount,
+                discountPercentage = p.DiscountPercentage,
+                productImages = p.ProductImages,
+                keyBenefits1 = p.KeyBenefits1,
+                keyBenefits2 = p.KeyBenefits2,
+                keyBenefits3 = p.KeyBenefits3,
+                keyBenefits4 = p.KeyBenefits4,
+                forThis1 = p.ForThis1,
+                forThis2 = p.ForThis2,
+                forThis3 = p.ForThis3,
+                forThis4 = p.ForThis4
+            });
+        }
 
         public IActionResult Quiz()
         {

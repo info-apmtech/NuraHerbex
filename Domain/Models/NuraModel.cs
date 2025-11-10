@@ -205,6 +205,7 @@ namespace Domain.Models
         public DateTime? CreatedAt { get; set; } = DateTime.Now;
         public string CreatedBy { get; set; }
         public bool ForIndex { get; set; } = false;
+        //public int? DisplayOrder { get; set; }
 
     }
     public class Blog
