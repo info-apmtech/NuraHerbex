@@ -268,6 +268,38 @@ namespace Domain.ViewModel
         public List<RegisterUser> Doctors { get; set; } = new List<RegisterUser>();
         public List<DoctorSpeciality> Specialities { get; set; } = new List<DoctorSpeciality>();
         public SelectList DoctorSelectList => new SelectList(Doctors, "Id", "FullName", DoctorDetail?.DoctorId);
+        public IFormFile? PhotoFile { get; set; }
 
     }
+    public class ConsultationPageViewModel
+    {
+        public ConsultationBookingViewModel BookingModel { get; set; } = new ConsultationBookingViewModel();
+        [ValidateNever]
+        public DoctorDetailViewModel DoctorDetailsModel { get; set; } = new DoctorDetailViewModel();
+    }
+    public class MyConsultationViewModel
+    {
+        public List<ConsultationWithDoctorViewModel> Consultations { get; set; } = new();
+    }
+
+    public class ConsultationWithDoctorViewModel
+    {
+        public ConsultationBooking Consultation { get; set; }
+        public RegisterUser Doctor { get; set; }
+        public DoctorDetail DoctorDetail { get; set; }
+    }
+    public class ConsultationWithAssignedDoctorViewModel
+    {
+        public ConsultationBooking Consultation { get; set; }
+        public RegisterUser? Doctor { get; set; } 
+    }
+
+    public class ConsultationListViewModel
+    {
+        public List<ConsultationWithAssignedDoctorViewModel> Consultations { get; set; } = new();
+    }
+
+
+
+
 }

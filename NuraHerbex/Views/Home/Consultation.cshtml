@@ -1,6 +1,6 @@
 ﻿@using Domain.Models
 @using Domain.ViewModel
- @model ConsultationBookingViewModel
+ @model ConsultationPageViewModel
 @{
     ViewData["Title"] = "Consultation";
 }
@@ -119,195 +119,226 @@
         </div>
     </div>
 </section>
+
 <!-- Doctor Cards Section -->
 <section class="doctors-section">
     <div class="quality-safety-container">
         <div class="quality-header">
             <h2 class="quality-title">Meet Your <span class="highlight-orange"> Expert Team</span></h2>
-            <p class="quality-subtitle" style="max-width:none;">
-                Certified medical professionals Dedicated to you health and performance optimization.
+            <p class="quality-subtitle">
+                Certified medical professionals dedicated to your health and performance optimization.
             </p>
         </div>
     </div>
+
     <div class="doctors-grid">
-        <!-- Doctor Card 1 -->
-        <div class="doctor-card">
-            <span class="badge">15+ Years</span>
-            <div class="doctor-image">
-                <img src="~/image/consultation/doctor.png" alt="Dr. Marcus Chen">
-            </div>
-            <div class="doctor-info">
-                <h3 class="doctor-name">Dr. Marcus Chen</h3>
-                <p class="doctor-specialty">Men's Health Specialist</p>
-                <div class="rating">
-                    <span class="star">★</span>
-                    <span class="rating-value">4.9</span>
-                    <span class="rating-count">(324)</span>
-                </div>
-            </div>
-            <div class="doctor-details">
-                <div class="specialties">
-                    <h4>Specialties</h4>
-                    <div class="specialty-tags">
-                        <span class="tag">Hormone Optimization</span>
-                        <span class="tag">Performance Enhancement</span>
-                        <span class="tag">Stress Management</span>
-                    </div>
-                </div>
-                <div class="availability">
-                    <h4>Available:</h4>
-                    <p>Mon-Fri 8:00 -17:00</p>
-                    <p>Sat: 10:00 -14:00</p>
-                </div>
-            </div>
-            <button class="book-button">Book With Marcus</button>
-        </div>
+        @foreach (var doctorDetail in Model.DoctorDetailsModel.DoctorDetailList)
+        {
+            var doctor = Model.DoctorDetailsModel.Doctors.FirstOrDefault(d => d.Id == doctorDetail.DoctorId);
+            if (doctor != null)
+            {
+                <div class="doctor-card">
+                    <span class="badge">@doctorDetail.YearsOfExperience Years</span>
 
-        <!-- Doctor Card 2 -->
-        <div class="doctor-card">
-            <span class="badge">15+ Years</span>
-            <div class="doctor-image">
-                <img src="~/image/consultation/doctor.png" alt="Dr. Marcus Chen">
-            </div>
-            <div class="doctor-info">
-                <h3 class="doctor-name">Dr. Marcus Chen</h3>
-                <p class="doctor-specialty">Men's Health Specialist</p>
-                <div class="rating">
-                    <span class="star">★</span>
-                    <span class="rating-value">4.9</span>
-                    <span class="rating-count">(324)</span>
-                </div>
-            </div>
-            <div class="doctor-details">
-                <div class="specialties">
-                    <h4>Specialties</h4>
-                    <div class="specialty-tags">
-                        <span class="tag">Hormone Optimization</span>
-                        <span class="tag">Performance Enhancement</span>
-                        <span class="tag">Stress Management</span>
-                    </div>
-                </div>
-                <div class="availability">
-                    <h4>Available:</h4>
-                    <p>Mon-Fri 8:00 -17:00</p>
-                    <p>Sat: 10:00 -14:00</p>
-                </div>
-            </div>
-            <button class="book-button">Book With Marcus</button>
-        </div>
+                    <div class="doctor-image">
+                        <img src="@(string.IsNullOrEmpty(doctorDetail.PhotoPath)
+                                ? Url.Content("~/image/consultation/doctor.png")
+                                : Url.Content(doctorDetail.PhotoPath))"
+                             alt="@doctor.FullName" class="doctor-photo" />
 
-        <!-- Doctor Card 3 -->
-        <div class="doctor-card">
-            <span class="badge">15+ Years</span>
-            <div class="doctor-image">
-                <img src="~/image/consultation/doctor.png" alt="Dr. Marcus Chen">
-            </div>
-            <div class="doctor-info">
-                <h3 class="doctor-name">Dr. Marcus Chen</h3>
-                <p class="doctor-specialty">Men's Health Specialist</p>
-                <div class="rating">
-                    <span class="star">★</span>
-                    <span class="rating-value">4.9</span>
-                    <span class="rating-count">(324)</span>
-                </div>
-            </div>
-            <div class="doctor-details">
-                <div class="specialties">
-                    <h4>Specialties</h4>
-                    <div class="specialty-tags">
-                        <span class="tag">Hormone Optimization</span>
-                        <span class="tag">Performance Enhancement</span>
-                        <span class="tag">Stress Management</span>
                     </div>
+
+                    <div class="doctor-info">
+                        <h3 class="doctor-name">@doctor.FullName</h3>
+                        <p class="doctor-specialty">@doctorDetail.PrimarySpecality</p>
+                        <div class="rating">
+                            <span class="star">★</span>
+                            <span class="rating-value">4.9</span>
+                            <span class="rating-count">(324)</span>
+                        </div>
+                    </div>
+
+                    <div class="doctor-details">
+                        <div class="specialties">
+                            <h4>Specialties</h4>
+                            <div class="specialty-tags">
+                                @if (doctorDetail.SelectedSpecialityIds != null && doctorDetail.SelectedSpecialityIds.Any())
+                                {
+                                    foreach (var specialtyId in doctorDetail.SelectedSpecialityIds)
+                                    {
+                                        var specialty = Model.DoctorDetailsModel.Specialities
+                                        .FirstOrDefault(s => s.Id == specialtyId);
+                                        if (specialty != null)
+                                        {
+                                            <span class="tag">@specialty.Name</span>
+                                        }
+                                    }
+                                }
+                            </div>
+                        </div>
+
+                        <div class="availability">
+                            <h4>Availability</h4>
+                            @{
+                                var weekDays = new Dictionary<string, (TimeOnly? Start, TimeOnly? End)>
+                                  {
+                                  { "Monday", (doctorDetail.MondayStartTime, doctorDetail.MondayEndTime) },
+                                  { "Tuesday", (doctorDetail.TuesdayStartTime, doctorDetail.TuesdayEndTime) },
+                                  { "Wednesday", (doctorDetail.WednesdayStartTime, doctorDetail.WednesdayEndTime) },
+                                  { "Thursday", (doctorDetail.ThursdayStartTime, doctorDetail.ThursdayEndTime) },
+                                  { "Friday", (doctorDetail.FridayStartTime, doctorDetail.FridayEndTime) },
+                                  { "Saturday", (doctorDetail.SaturdayStartTime, doctorDetail.SaturdayEndTime) },
+                                  { "Sunday", (doctorDetail.SundayStartTime, doctorDetail.SundayEndTime) }
+                                  };
+
+                                foreach (var day in weekDays)
+                                {
+                                    if (day.Value.Start.HasValue && day.Value.End.HasValue)
+                                    {
+                                        <p>
+                                            @day.Key:
+                                            @day.Value.Start.Value.ToString("hh:mm tt", System.Globalization.CultureInfo.InvariantCulture)
+                                            -
+                                            @day.Value.End.Value.ToString("hh:mm tt", System.Globalization.CultureInfo.InvariantCulture)
+                                        </p>
+                                    }
+                                }
+                            }
+                        </div>
+                    </div>
+
+                    <button class="book-button" onclick="bookConsultation('@doctor.Id', '@doctor.FullName')">
+                        Book With @doctor.FullName
+                    </button>
                 </div>
-                <div class="availability">
-                    <h4>Available:</h4>
-                    <p>Mon-Fri 8:00 -17:00</p>
-                    <p>Sat: 10:00 -14:00</p>
-                </div>
-            </div>
-            <button class="book-button">Book With Marcus</button>
-        </div>
+            }
+        }
     </div>
 </section>
 
 <!-- Consultation Form Section -->
 
-    <section class="consultation-section">
-        <div class="consultation-header">
-            <h2>Book Your <span class="highlight">Consultation</span></h2>
-            <p>Schedule your personalized wellness consultation in just a few steps.</p>
-        </div>
+<section class="consultation-section">
+    <div class="consultation-header">
+        <h2>Book Your <span class="highlight">Consultation</span></h2>
+        <p>Schedule your personalized wellness consultation in just a few steps.</p>
+    </div>
 
-        <div class="form-container">
-            <form asp-action="Consultation" method="post" class="consultation-form">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label asp-for="Email"></label>
-                        <input asp-for="Email" placeholder="email@example.com" class="form-control" />
-                        <span asp-validation-for="Email" class="text-danger"></span>
-                    </div>
-                    <div class="form-group">
-                        <label asp-for="Phone"></label>
-                        <input asp-for="Phone" placeholder="+91 0000000000" class="form-control" />
-                        <span asp-validation-for="Phone" class="text-danger"></span>
-                    </div>
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label asp-for="FirstName"></label>
-                        <input asp-for="FirstName" placeholder="Enter Your First Name" class="form-control" />
-                        <span asp-validation-for="FirstName" class="text-danger"></span>
-                    </div>
-                    <div class="form-group">
-                        <label asp-for="LastName"></label>
-                        <input asp-for="LastName" placeholder="Enter Your Last Name" class="form-control" />
-                        <span asp-validation-for="LastName" class="text-danger"></span>
-                    </div>
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label asp-for="ConsultationType"></label>
-                        <select asp-for="ConsultationType" asp-items="Html.GetEnumSelectList<ConsultationType>()" class="form-control">
-                            <option value="">Select Consultation Type</option>
-                        </select>
-                        <span asp-validation-for="ConsultationType" class="text-danger"></span>
-                    </div>
-                    <div class="form-group">
-                        <label asp-for="PreferredDoctorId">Preferred Doctor</label>
-                        <select asp-for="PreferredDoctorId" class="form-control" asp-items="ViewBag.DoctorList">
-                            <option value="">Choose a Doctor</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="form-row">
+    <div class="form-container">
+        <form asp-action="Consultation" method="post" class="consultation-form">
+            @Html.AntiForgeryToken()
+
+            <div class="form-row">
                 <div class="form-group">
-                    <label asp-for="PreferredDate"></label>
-                    <input asp-for="PreferredDate" type="date" class="form-control" />
-                    <span asp-validation-for="PreferredDate" class="text-danger"></span>
+                    <label asp-for="BookingModel.Email"></label>
+                    <input asp-for="BookingModel.Email" class="form-control" placeholder="email@example.com" />
+                    <span asp-validation-for="BookingModel.Email" class="text-danger"></span>
                 </div>
 
-                    <div class="form-group">
-                        <label asp-for="PreferredTimeSlot"></label>
-                        <select asp-for="PreferredTimeSlot" asp-items="Html.GetEnumSelectList<TimeSlot>()" class="form-control">
-                            <option value="">Select Time Slot</option>
-                        </select>
-                        <span asp-validation-for="PreferredTimeSlot" class="text-danger"></span>
-                    </div>
-                </div>
                 <div class="form-group">
-                    <label asp-for="Concerns"></label>
-                    <textarea asp-for="Concerns" rows="4" placeholder="Describe Your Health Concerns" class="form-control"></textarea>
+                    <label asp-for="BookingModel.Phone"></label>
+                    <input asp-for="BookingModel.Phone" class="form-control" placeholder="+91 0000000000" />
+                    <span asp-validation-for="BookingModel.Phone" class="text-danger"></span>
                 </div>
+            </div>
+
+            <div class="form-row">
                 <div class="form-group">
-                    <label asp-for="Medications"></label>
-                    <textarea asp-for="Medications" rows="4" placeholder="List medications" class="form-control"></textarea>
+                    <label asp-for="BookingModel.FirstName"></label>
+                    <input asp-for="BookingModel.FirstName" class="form-control" placeholder="Enter Your First Name" />
+                    <span asp-validation-for="BookingModel.FirstName" class="text-danger"></span>
                 </div>
 
-                <button type="submit" class="submit-button">Book My Free Consultation</button>
-            </form>
-        </div>
-    </section>
+                <div class="form-group">
+                    <label asp-for="BookingModel.LastName"></label>
+                    <input asp-for="BookingModel.LastName" class="form-control" placeholder="Enter Your Last Name" />
+                    <span asp-validation-for="BookingModel.LastName" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label asp-for="BookingModel.ConsultationType"></label>
+                    <select asp-for="BookingModel.ConsultationType" asp-items="Html.GetEnumSelectList<ConsultationType>()" class="form-control">
+                        <option value="">Select Consultation Type</option>
+                    </select>
+                    <span asp-validation-for="BookingModel.ConsultationType" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="BookingModel.PreferredDate"></label>
+                    <input asp-for="BookingModel.PreferredDate"
+                           type="date"
+                           class="form-control"
+                           id="PreferredDate" />
+                    <span asp-validation-for="BookingModel.PreferredDate" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label asp-for="BookingModel.PreferredDoctorId">Preferred Doctor</label>
+                    <select asp-for="BookingModel.PreferredDoctorId"
+                            class="form-control"
+                            id="PreferredDoctorId"
+                            asp-items="ViewBag.DoctorList">
+                        <option value="">Choose a Doctor</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="BookingModel.PreferredTimeSlot"></label>
+                    <select asp-for="BookingModel.PreferredTimeSlot" asp-items="Html.GetEnumSelectList<TimeSlot>()" class="form-control">
+                        <option value="">Select Time Slot</option>
+                    </select>
+                    <span asp-validation-for="BookingModel.PreferredTimeSlot" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="BookingModel.Concerns"></label>
+                <textarea asp-for="BookingModel.Concerns" rows="4" class="form-control" placeholder="Describe Your Health Concerns"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="BookingModel.Medications"></label>
+                <textarea asp-for="BookingModel.Medications" rows="4" class="form-control" placeholder="List medications"></textarea>
+            </div>
+
+            <button type="submit" class="submit-button">Book My Free Consultation</button>
+        </form>
+    </div>
+</section>
+    <script>
+        document.getElementById('PreferredDate').addEventListener('change', function () {
+            const dateValue = this.value;
+            const doctorDropdown = document.getElementById('PreferredDoctorId');
+
+            if (!dateValue) return;
+
+            // Disable dropdown while loading
+            doctorDropdown.disabled = true;
+            doctorDropdown.innerHTML = '<option>Loading...</option>';
+
+            fetch(`/Home/GetAvailableDoctors?date=${dateValue}`)
+                .then(response => response.json())
+                .then(doctors => {
+                    doctorDropdown.innerHTML = '<option value="">Choose a Doctor</option>';
+                    doctors.forEach(d => {
+                        const option = document.createElement('option');
+                        option.value = d.id;
+                        option.textContent = d.name;
+                        doctorDropdown.appendChild(option);
+                    });
+                    doctorDropdown.disabled = false;
+                })
+                .catch(err => {
+                    console.error('Error fetching doctors:', err);
+                    doctorDropdown.innerHTML = '<option>Error loading doctors</option>';
+                });
+        });
+    </script>
+
 
 <!-- Process Section -->
 <section class="process-section">

@@ -389,6 +389,13 @@
     padding: 20px;
     position: relative;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
+    /* ✅ Make flex column layout to keep button at bottom */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    /* Optional: equal height for all cards */
+    height: 100%;
+    min-height: 520px;
 }
 
     .doctor-card:hover {
@@ -468,7 +475,8 @@
     display: grid;
     grid-template-columns: 1fr;
     gap: 16px;
-    margin-bottom: 16px;
+    /* ✅ Let this section expand naturally while pushing button down */
+    flex-grow: 1;
 }
 
 .specialties h4,
@@ -500,6 +508,7 @@
     margin: 2px 0;
 }
 
+/* ✅ Button stays pinned to bottom */
 .book-button {
     width: 100%;
     background: #ff5722;
@@ -511,6 +520,7 @@
     font-weight: 600;
     cursor: pointer;
     transition: background 0.3s ease;
+    margin-top: auto; /* ✅ ensures it sits at the bottom */
 }
 
     .book-button:hover {

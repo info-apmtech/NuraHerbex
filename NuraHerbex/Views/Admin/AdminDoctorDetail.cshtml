@@ -96,51 +96,67 @@
                         <h5 class="mb-0">@(!isEdit ? "Add Doctor Detail" : "Edit Doctor Detail")</h5>
                     </div>
                     <div class="card-body">
-                        <form asp-action="AdminDoctorDetail" asp-controller="Admin" method="post">
+                        <form asp-action="AdminDoctorDetail" asp-controller="Admin" method="post" enctype="multipart/form-data">
                             @Html.AntiForgeryToken()
                             <input type="hidden" asp-for="DoctorDetail.Id" />
 
-                            <!-- Doctor -->
-                            <div class="mb-3">
-                                <label class="form-label">Doctor</label>
-                                <select asp-for="DoctorDetail.DoctorId" asp-items="Model.DoctorSelectList" class="form-control" required>
-                                    <option value="">-- Select Doctor --</option>
-                                </select>
+                            <!-- Row 1: Doctor and Years of Experience -->
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Doctor</label>
+                                    <select asp-for="DoctorDetail.DoctorId" asp-items="Model.DoctorSelectList" class="form-control" required>
+                                        <option value="">-- Select Doctor --</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label asp-for="DoctorDetail.YearsOfExperience" class="form-label">Years of Experience</label>
+                                    <input asp-for="DoctorDetail.YearsOfExperience" class="form-control" type="number" min="0" required />
+                                    <span asp-validation-for="DoctorDetail.YearsOfExperience" class="text-danger"></span>
+                                </div>
                             </div>
 
-
-                            <!-- Primary Specialty -->
-                            <div class="mb-3">
-                                <label class="form-label">Primary Specialty</label>
-                                <input asp-for="DoctorDetail.PrimarySpecality" class="form-control" required />
+                            <!-- Row 2: Primary Specialty and Specialities -->
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Primary Specialty</label>
+                                    <input asp-for="DoctorDetail.PrimarySpecality" class="form-control" required />
+                                </div>
+                                <div class="col-md-6">
+                                    <label asp-for="DoctorDetail.SelectedSpecialityIds">Specialities</label>
+                                    <select asp-for="DoctorDetail.SelectedSpecialityIds"
+                                            asp-items="@(new MultiSelectList(Model.Specialities, "Id", "Name", Model.DoctorDetail.SelectedSpecialityIds))"
+                                            multiple
+                                            class="form-control selectpicker"
+                                            data-live-search="true"
+                                            required>
+                                    </select>
+                                    <span asp-validation-for="DoctorDetail.SelectedSpecialityIds" class="text-danger"></span>
+                                </div>
                             </div>
 
-                            <!-- Specialities (Multi-select) -->
-                            <div class="mb-3">
-                                <label asp-for="DoctorDetail.SelectedSpecialityIds">Specialities</label>
-                                <select asp-for="DoctorDetail.SelectedSpecialityIds"
-                                        asp-items="@(new MultiSelectList(Model.Specialities, "Id", "Name", Model.DoctorDetail.SelectedSpecialityIds))"
-                                        multiple
-                                        class="form-control selectpicker"
-                                        data-live-search="true"
-                                        required>
-                                </select>
-                                <span asp-validation-for="DoctorDetail.SelectedSpecialityIds" class="text-danger"></span>
+                            <!-- Row 3: Remark and Photo -->
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label asp-for="DoctorDetail.Remark" class="form-label">Remark</label>
+                                    <textarea asp-for="DoctorDetail.Remark" class="form-control"></textarea>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Photo</label>
+                                    <input asp-for="PhotoFile" type="file" class="form-control" accept="image/*" />
+                                    @if (!string.IsNullOrEmpty(Model.DoctorDetail.PhotoPath))
+                                    {
+                                        <img src="~/uploads/doctors/@Model.DoctorDetail.PhotoPath" alt="Doctor Photo" class="img-thumbnail mt-2" style="max-width:150px;" />
+                                    }
+                                </div>
                             </div>
 
-                            <!-- Remark -->
-                            <div class="mb-3">
-                                <label asp-for="DoctorDetail.Remark" class="form-label"></label>
-                                <textarea asp-for="DoctorDetail.Remark" class="form-control"></textarea>
-                            </div>
-
-                            <!-- Is Working -->
+                            <!-- Row 4: Is Working -->
                             <div class="mb-3 form-check">
                                 <input asp-for="DoctorDetail.IsWorking" class="form-check-input" />
                                 <label asp-for="DoctorDetail.IsWorking" class="form-check-label">Is Working</label>
                             </div>
 
-                            <!-- Weekly Schedule -->
+                            <!-- Row 5: Weekly Schedule -->
                             <div class="mb-3">
                                 <h6 class="mb-2">Weekly Schedule</h6>
                                 <div class="row g-2">
@@ -169,7 +185,6 @@
                                     }
                                 </div>
                             </div>
-
 
                             <!-- Submit Buttons -->
                             <button type="submit" class="btn btn-primary">@(!isEdit ? "Add Detail" : "Update Detail")</button>

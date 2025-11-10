@@ -3,6 +3,7 @@ using Domain.Interface;
 using Domain.Models;
 using Domain.ViewModel;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace APIs.Controllers
@@ -624,6 +625,14 @@ namespace APIs.Controllers
             var consultations = await _adminservice.GetConsultationsByCreatorAsync(userId);
             return Ok(consultations);
         }
+        [AllowAnonymous]
+        [HttpGet("consultationbooking/all")]
+        public async Task<IActionResult> GetAllConsultations()
+        {
+            var consultations = await _adminservice.GetAllConsultationsAsync();
+            return Ok(consultations);
+        }
+
         //Specialities
         [AllowAnonymous]
         [HttpGet("doctorspecialities")]

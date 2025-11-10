@@ -5,9 +5,12 @@ using Domain.ViewModel;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
+using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Text;
+using System.Text.Json.Serialization;
+using System.Text.Json;
 using static ServiceStack.Diagnostics.Events;
 
 namespace NuraHerbex.Controllers
@@ -525,9 +528,43 @@ namespace NuraHerbex.Controllers
 
             return RedirectToAction(nameof(AdminPricingPlan));
         }
-        public IActionResult DoctorConsultation()
+        public async Task<IActionResult> DoctorConsultation()
         {
-            return View();
+            var jsonOptions = new JsonSerializerOptions
+            {
+                Converters = { new JsonStringEnumConverter() } 
+            };
+
+            // 1️⃣ Get all consultations from API
+            var consultationResponse = await AuthorizedClient.GetAsync("AdminAPI/consultationbooking/all");
+            List<ConsultationBooking> consultations = new();
+            if (consultationResponse.IsSuccessStatusCode)
+                consultations = await consultationResponse.Content.ReadFromJsonAsync<List<ConsultationBooking>>(jsonOptions);
+
+            // 2️⃣ Get all doctors from API
+            var doctorResponse = await AuthorizedClient.GetAsync("AdminAPI/users/doctor");
+            List<RegisterUser> doctors = new();
+            if (doctorResponse.IsSuccessStatusCode)
+                doctors = await doctorResponse.Content.ReadFromJsonAsync<List<RegisterUser>>(jsonOptions);
+
+            // 3️⃣ Map consultations with doctors
+            var consultationWithDoctors = consultations.Select(c => new ConsultationWithAssignedDoctorViewModel
+            {
+                Consultation = c,
+                Doctor = doctors.FirstOrDefault(d =>
+                    !string.IsNullOrEmpty(d.Id) &&
+                    !string.IsNullOrEmpty(c.PreferredDoctorId) &&
+                    d.Id.Trim() == c.PreferredDoctorId.Trim())
+            }).ToList();
+
+
+            // 4️⃣ Create view model
+            var model = new ConsultationListViewModel
+            {
+                Consultations = consultationWithDoctors
+            };
+
+            return View(model);
         }
 
         [HttpGet]
@@ -870,19 +907,40 @@ namespace NuraHerbex.Controllers
                 return View(model);
             }
 
+            // Handle file upload
+            if (model.PhotoFile != null && model.PhotoFile.Length > 0)
+            {
+                var fileName = $"{Guid.NewGuid()}{Path.GetExtension(model.PhotoFile.FileName)}";
+                var uploadFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads/doctors");
+                Directory.CreateDirectory(uploadFolder);
+
+                var filePath = Path.Combine(uploadFolder, fileName);
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await model.PhotoFile.CopyToAsync(stream);
+                }
+
+                // ✅ Save relative path instead of just filename
+                model.DoctorDetail.PhotoPath = $"/uploads/doctors/{fileName}";
+            }
+
+            // Convert selected specialties to comma-separated string
             model.DoctorDetail.SpecalityIds = string.Join(",", model.DoctorDetail.SelectedSpecialityIds ?? new List<int>());
 
             var response = await AuthorizedClient.PostAsJsonAsync("AdminAPI/doctordetail", model.DoctorDetail);
 
             if (response.IsSuccessStatusCode)
             {
-                TempData["Success"] = model.DoctorDetail.Id > 0 ? "Doctor detail updated successfully" : "Doctor detail added successfully";
+                TempData["Success"] = model.DoctorDetail.Id > 0
+                    ? "Doctor detail updated successfully"
+                    : "Doctor detail added successfully";
                 return RedirectToAction(nameof(AdminDoctorDetail), new { id = 0 });
             }
 
             TempData["Error"] = "Error while saving doctor detail";
             return View(model);
         }
+
 
         [HttpPost]
         [ValidateAntiForgeryToken]

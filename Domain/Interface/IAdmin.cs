@@ -81,6 +81,7 @@ namespace Domain.Interface
         Task<IdentityResult> SaveConsultationAsync(ConsultationBooking consultation);
         Task<List<ConsultationBooking>> GetConsultationsByUserAsync(string userId);
         Task<List<ConsultationBooking>> GetConsultationsByCreatorAsync(string userId);
+        Task<List<ConsultationBooking>> GetAllConsultationsAsync();
         //subscription
         Task<NewsletterSubscriptionResult> SaveNewsletterSubscriptionAsync(string rawEmail);
         Task<List<NewsletterSubscription>> GetAllSubscription();

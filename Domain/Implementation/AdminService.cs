@@ -825,6 +825,8 @@ namespace Domain.Implementation
             await _db.SaveChangesAsync();
             return IdentityResult.Success;
         }
+        //consultation
+
         public async Task<IdentityResult> SaveConsultationAsync(ConsultationBooking consultation)
         {
             await _db.ConsultationBookingDetails.AddAsync(consultation);
@@ -849,9 +851,15 @@ namespace Domain.Implementation
                 .OrderByDescending(c => c.SubmittedAt)
                 .ToListAsync();
         }
+        public async Task<List<ConsultationBooking>> GetAllConsultationsAsync()
+        {
+            return await _db.ConsultationBookingDetails
+                .OrderByDescending(c => c.SubmittedAt)
+                .ToListAsync();
+        }
 
-		//Cart
-		public async Task<List<CartItem>> GetCartByUserAsync(string userId)
+        //Cart
+        public async Task<List<CartItem>> GetCartByUserAsync(string userId)
 		{
 			return await _db.CartItems.Where(x => x.UserId == userId).ToListAsync();
 		}
