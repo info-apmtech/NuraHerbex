@@ -1,209 +1,292 @@
-﻿@using Domain.Models
-@model List<Product>
+﻿@* @model List<CartLineVm> *@
+@model Domain.ViewModel.CartViewModel
+<style>
+	.cart-popup {
+		width: 400px;
+		background: #fff;
+		border-radius: 6px;
+		box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+		padding: 0;
+		margin: auto;
+		font-family: 'Arial', sans-serif;
+	}
 
+	.cart-header {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		border-bottom: 1px solid #e0e0e0;
+		padding: 18px 18px 8px 18px;
+		font-size: 20px;
+	}
+
+	.close-btn {
+		font-size: 24px;
+		cursor: pointer;
+	}
+
+	.cart-content {
+		display: flex;
+		align-items: flex-start;
+		padding: 20px 18px;
+		border-bottom: 1px solid #e0e0e0;
+	}
+
+	.cart-product-img {
+		width: 100px;
+		height: 100px;
+		object-fit: cover;
+		margin-right: 18px;
+	}
+
+	.cart-product-details {
+		flex: 1;
+	}
+
+	.product-title {
+		font-weight: 600;
+		margin-bottom: 3px;
+	}
+
+	.product-qty, .remove-link {
+		color: #888;
+		font-size: 13px;
+		margin-bottom: 2px;
+	}
+
+	.product-price {
+		color: orange;
+		font-size: 18px;
+		margin: 4px 0;
+	}
+
+	.remove-link {
+		color: #f26b3a;
+		cursor: pointer;
+		text-decoration: none;
+	}
+
+	.cart-footer {
+		display: flex;
+		justify-content: space-between;
+		padding: 13px 18px;
+		font-size: 17px;
+		color: #666;
+	}
+
+	.subtotal-value {
+		color: orange;
+		font-weight: 600;
+	}
+
+	.checkout-btn {
+		width: 90%;
+		margin: 16px 5% 18px;
+		padding: 12px;
+		background: #f26b3a;
+		color: #fff;
+		border: none;
+		border-radius: 4px;
+		font-size: 16px;
+		cursor: pointer;
+	}
+
+		.checkout-btn:hover {
+			background: #d75c27;
+		}
+
+	@@media (max-width: 480px) {
+		.cart-popup {
+			width: 90vw;
+		}
+
+		.cart-content {
+			flex-direction: column;
+			padding: 15px 10px;
+		}
+
+		.cart-product-img {
+			width: 80px;
+			height: 80px;
+			margin: 0 auto 10px;
+		}
+
+		.cart-product-details {
+			flex: unset;
+			text-align: center;
+		}
+
+		.cart-header {
+			padding: 15px 10px 8px;
+			font-size: 18px;
+		}
+
+		.cart-footer {
+			padding: 10px;
+			font-size: 15px;
+		}
+
+		.checkout-btn {
+			width: 95%;
+			margin: 12px auto 15px;
+			padding: 10px;
+			font-size: 14px;
+		}
+	}
+
+	@@media (min-width: 481px) and (max-width: 768px) {
+		.cart-popup {
+			width: 350px;
+		}
+
+		.cart-content {
+			padding: 18px 15px;
+		}
+
+		.cart-product-img {
+			width: 90px;
+			height: 90px;
+			margin-right: 15px;
+		}
+
+		.cart-header {
+			font-size: 19px;
+			padding: 17px 15px 8px;
+		}
+
+		.cart-footer {
+			padding: 12px 15px;
+			font-size: 16px;
+		}
+
+		.checkout-btn {
+			width: 90%;
+			margin: 15px 5% 18px 5%;
+			padding: 11px;
+			font-size: 15px;
+		}
+	}
+
+	/* .qty-controls {
+		display: inline-flex;
+		align-items: center;
+		gap: 8px;
+		margin: 6px 0 10px;
+	}
+
+	.qty-btn {
+		width: 28px;
+		height: 28px;
+		border-radius: 6px;
+		border: 1px solid #ddd;
+		background: #fafafa;
+		cursor: pointer;
+		font-size: 18px;
+		line-height: 26px;
+	}
+
+		.qty-btn:active {
+			transform: scale(0.98);
+		}
+
+	.qty-val {
+		min-width: 24px;
+		text-align: center;
+		font-weight: 600;
+	} */
+
+	.qty-controls {
+		display: inline-flex;
+		align-items: center;
+		gap: 8px;
+		margin: 6px 0 10px;
+	}
+
+	.qty-btn {
+		width: 28px;
+		height: 28px;
+		border-radius: 6px;
+		border: 1px solid #ddd;
+		background: #fafafa;
+		cursor: pointer;
+		font-size: 16px;
+	}
+
+		.qty-btn.delete {
+			width: auto;
+			padding: 0 8px;
+			font-size: 14px;
+		}
+	/* so the 🗑 fits nicely */
+
+
+</style>
 <div class="cart-popup">
-    <div class="cart-header">
-        <span>Shopping Cart (@(Model?.Count ?? 0))</span>
-        <span class="close-btn">&times;</span>
-    </div>
+	<div class="cart-header">
+		<span>Shopping Cart (@Model.Items.Count)</span>
+		<span class="close-btn">&times;</span>
+	</div>
 
-    @if (Model != null && Model.Any())
-    {
-        foreach (var product in Model)
-        {
-            <div class="cart-content" data-productid="@product.Id">
-                <img src="@product.ProductImages" class="cart-product-img" alt="@product.ProductName" />
-                <div class="cart-product-details">
-                    <div class="product-title">@product.ProductName</div>
-                    <div class="product-qty">Quantity : 1</div>
-                    <div class="product-price">₹@product.Amount</div>
-                    <a href="#" class="remove-link">Remove</a>
-                </div>
-            </div>
-        }
-    }
-    else
-    {
-        <div class="cart-content" style="padding:18px;color:#777">Your cart is empty.</div>
-    }
+	@if (Model.Items.Any())
+	{
+		foreach (var item in Model.Items)
+		{
+			<div class="cart-content" data-cartid="@item.CartItemId" data-productid="@item.ProductId">
+				<img src="@item.ProductImages" class="cart-product-img" alt="@item.ProductName" />
+				<div class="cart-product-details">
+					<div class="product-title">@item.ProductName</div>
+					@* <div class="product-qty">Quantity : @item.Quantity</div> *@
+					<!-- qty controls -->
+					<div class="qty-controls">
+						@if (item.Quantity > 1)
+						{
+							<button class="qty-btn minus"
+									aria-label="Decrease"
+									data-cartid="@item.CartItemId"
+									data-productid="@item.ProductId">
+								−
+							</button>
+						}
+						else
+						{
+							<button class="qty-btn delete"
+									aria-label="Remove"
+									data-cartid="@item.CartItemId"
+									data-productid="@item.ProductId">
+								🗑
+							</button>
+						}
 
-    <div class="cart-footer">
-        <span>Sub Total :</span>
-        <span class="subtotal-value">₹@((Model?.Sum(p => p.Amount) ?? 0M).ToString("0.00"))</span>
-    </div>
-    <button class="checkout-btn">Proceed to Check Out</button>
+						<span class="qty-val">@item.Quantity</span>
+
+						<button class="qty-btn plus"
+								aria-label="Increase"
+								data-cartid="@item.CartItemId"
+								data-productid="@item.ProductId">
+							+
+						</button>
+					</div>
+					<div class="product-price">₹@item.UnitPrice</div>
+					@* <a href="#" class="remove-link" data-cartid="@item.CartItemId">Remove</a> *@
+				</div>
+			</div>
+		}
+	}
+	else
+	{
+		<div class="cart-content" style="padding:18px;color:#777">Your cart is empty.</div>
+	}
+
+	<div class="cart-footer">
+		<span>Sub Total :</span>
+		<span class="subtotal-value">₹@Model.SubTotal.ToString("0.00")</span>
+	</div>
+
+	<button class="checkout-btn">Proceed to Check Out</button>
 </div>
 
-<style>
-    .cart-popup {
-        width: 400px;
-        background: #fff;
-        border-radius: 6px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        padding: 0;
-        margin: auto;
-        font-family: 'Arial', sans-serif;
-    }
-
-    .cart-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        border-bottom: 1px solid #e0e0e0;
-        padding: 18px 18px 8px 18px;
-        font-size: 20px;
-    }
-
-    .close-btn {
-        font-size: 24px;
-        cursor: pointer;
-    }
-
-    .cart-content {
-        display: flex;
-        align-items: flex-start;
-        padding: 20px 18px;
-        border-bottom: 1px solid #e0e0e0;
-    }
-
-    .cart-product-img {
-        width: 100px;
-        height: 100px;
-        object-fit: cover;
-        margin-right: 18px;
-    }
-
-    .cart-product-details {
-        flex: 1;
-    }
-
-    .product-title {
-        font-weight: 600;
-        margin-bottom: 3px;
-    }
-
-    .product-qty, .remove-link {
-        color: #888;
-        font-size: 13px;
-        margin-bottom: 2px;
-    }
-
-    .product-price {
-        color: orange;
-        font-size: 18px;
-        margin: 4px 0;
-    }
-
-    .remove-link {
-        color: #f26b3a;
-        cursor: pointer;
-        text-decoration: none;
-    }
-
-    .cart-footer {
-        display: flex;
-        justify-content: space-between;
-        padding: 13px 18px;
-        font-size: 17px;
-        color: #666;
-    }
-
-    .subtotal-value {
-        color: orange;
-        font-weight: 600;
-    }
-
-    .checkout-btn {
-        width: 90%;
-        margin: 16px 5% 18px;
-        padding: 12px;
-        background: #f26b3a;
-        color: #fff;
-        border: none;
-        border-radius: 4px;
-        font-size: 16px;
-        cursor: pointer;
-    }
-
-        .checkout-btn:hover {
-            background: #d75c27;
-        }
-
-    @@media (max-width: 480px) {
-        .cart-popup {
-            width: 90vw;
-        }
-
-        .cart-content {
-            flex-direction: column;
-            padding: 15px 10px;
-        }
-
-        .cart-product-img {
-            width: 80px;
-            height: 80px;
-            margin: 0 auto 10px;
-        }
-
-        .cart-product-details {
-            flex: unset;
-            text-align: center;
-        }
-
-        .cart-header {
-            padding: 15px 10px 8px;
-            font-size: 18px;
-        }
-
-        .cart-footer {
-            padding: 10px;
-            font-size: 15px;
-        }
-
-        .checkout-btn {
-            width: 95%;
-            margin: 12px auto 15px;
-            padding: 10px;
-            font-size: 14px;
-        }
-    }
-
-    @@media (min-width: 481px) and (max-width: 768px) {
-        .cart-popup {
-            width: 350px;
-        }
-
-        .cart-content {
-            padding: 18px 15px;
-        }
-
-        .cart-product-img {
-            width: 90px;
-            height: 90px;
-            margin-right: 15px;
-        }
-
-        .cart-header {
-            font-size: 19px;
-            padding: 17px 15px 8px;
-        }
-
-        .cart-footer {
-            padding: 12px 15px;
-            font-size: 16px;
-        }
-
-        .checkout-btn {
-            width: 90%;
-            margin: 15px 5% 18px 5%;
-            padding: 11px;
-            font-size: 15px;
-        }
-    }
-</style>
-
 @section Scripts {
-    <script src="~/js/cart.js"></script>
+	<script src="~/js/cart.js"></script>
 }
 
 

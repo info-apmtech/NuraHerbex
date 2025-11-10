@@ -595,7 +595,31 @@ namespace APIs.Controllers
 			return BadRequest(result.Errors);
 		}
 
+		// NEW: change qty by delta (vm.Quantity is used as delta)
+		[AllowAnonymous]
+		[HttpPost("Cart/quantity/change")]
+		public async Task<IActionResult> ChangeQuantity([FromBody] CartItemViewModel vm)
+		{
+			if (vm == null || vm.CartItemId <= 0 || vm.Quantity == 0)
+				return BadRequest("Invalid payload.");
 
+			var result = await _adminservice.ChangeCartQuantityAsync(vm.CartItemId, vm.Quantity);
+			if (result.Succeeded) return Ok(new { success = true });
+			return BadRequest(new { success = false, message = "Failed to change quantity." });
+		}
+
+		// NEW: set absolute qty (vm.Quantity is the new value)
+		[AllowAnonymous]
+		[HttpPut("Cart/quantity/set")]
+		public async Task<IActionResult> SetQuantity([FromBody] CartItemViewModel vm)
+		{
+			if (vm == null || vm.CartItemId <= 0)
+				return BadRequest("Invalid payload.");
+
+			var result = await _adminservice.SetCartQuantityAsync(vm.CartItemId, vm.Quantity);
+			if (result.Succeeded) return Ok(new { success = true });
+			return BadRequest(new { success = false, message = "Failed to set quantity." });
+		}
 
 		[AllowAnonymous]
         [HttpPost("consultationbooking")]
