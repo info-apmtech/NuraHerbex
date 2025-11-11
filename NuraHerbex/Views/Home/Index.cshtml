@@ -4,6 +4,7 @@
 	ViewData["Title"] = "Home";
 }
 
+
 <!-- Hero Section -->
 <section class="hero-section">
 	<div class="hero-container">
@@ -223,7 +224,13 @@
 
 		<div class="journey-grid">
 			@{
-				// Mapping product IDs or indices to design details
+				// 1) Sort by DisplayOrderId; nulls last
+				//    If your property is DisplayOrder (not DisplayOrderId), replace below accordingly.
+				var featured = (Model?.FeaturedProducts ?? Enumerable.Empty<Product>())
+				.OrderBy(p => p.DisplayOrder ?? int.MaxValue)
+				.ToList();
+
+				// 2) CSS classes keyed by "level" (we'll derive level from DisplayOrderId)
 				var cardClasses = new Dictionary<int, string>
 						{
 						{ 1, "card-green card-featured" },
@@ -231,6 +238,7 @@
 						{ 3, "card-brown" }
 						};
 
+				// 3) Default images per level
 				var defaultImages = new Dictionary<int, string>
 						{
 						{ 1, "~/image/HomePage/STAMIX Activate.png" },
@@ -238,15 +246,36 @@
 						{ 3, "~/image/HomePage/STAMIX Unleash.png" }
 						};
 
-				decimal FinalPrice(Product p) => p.Amount * (1 - p.DiscountPercentage / 100);
-				string GetImage(Product p, int id) => string.IsNullOrWhiteSpace(p.ProductImages) ? defaultImages[id] : p.ProductImages.Split(';')[0];
+				// 4) Helpers
+				//    If Amount/DiscountPercentage are nullable in your model, use '?? 0m' below.
+				decimal FinalPrice(Product p)
+				{
+					var amount = p.Amount;                 // or: p.Amount ?? 0m
+					var disc = p.DiscountPercentage;     // or: p.DiscountPercentage ?? 0m
+					return amount * (1 - disc / 100m);
+				}
+
+				// Return the first product image or a default image for the given level
+				string FirstImageOrDefault(Product p, int level)
+				{
+					var first = (p.ProductImages ?? string.Empty)
+					.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+					.FirstOrDefault();
+
+					if (!string.IsNullOrWhiteSpace(first))
+						return first;
+
+					return defaultImages.TryGetValue(level, out var fb) ? fb : defaultImages[1];
+				}
 			}
 
-			@foreach (var product in Model.FeaturedProducts)
+			@foreach (var product in featured)
 			{
-				int levelId = product.Id; // assuming Id 1,2,3 corresponds to levels
-				var cardClass = cardClasses.ContainsKey(levelId) ? cardClasses[levelId] : "journey-card";
-				var image = GetImage(product, levelId);
+				// 5) Coalesce DisplayOrderId (int?) -> int to avoid CS1503
+				var level = product.DisplayOrder ?? 1;  // <-- key line; pick 1 as default if null
+
+				var cardClass = cardClasses.ContainsKey(level) ? cardClasses[level] : "journey-card";
+				var imagePath = FirstImageOrDefault(product, level);
 				var finalPrice = FinalPrice(product);
 
 				<div class="journey-card @cardClass" data-product-id="@product.Id">
@@ -271,13 +300,13 @@
 					</form>
 
 					<div class="card-product-image">
-						<img src="@Url.Content(image)" alt="Level @levelId: @product.ProductName" />
+						<img src="@Url.Content(imagePath)" alt="Level @level: @product.ProductName" />
 					</div>
 
 					<div class="card-info">
-						<h3 class="card-level-title">Level @levelId: @product.ProductName</h3>
+						<h3 class="card-level-title">Level @level: @product.ProductName</h3>
 						<p class="card-level-description">@product.Description</p>
-						<p class="card-price">₹@finalPrice.ToString("F0")</p>
+						<p class="card-price">₹@finalPrice.ToString("N0")</p>
 						<div class="card-buttons">
 							<button class="btn-buy-now" onclick="location.href='@Url.Action("Shop", "Home", new { id = product.Id })'">Buy Now</button>
 							<button type="button" class="btn-add-cart" data-product-id="@product.Id">Add to Cart</button>
@@ -286,6 +315,7 @@
 				</div>
 			}
 		</div>
+
 	</div>
 </section>
 <script>

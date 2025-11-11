@@ -13,50 +13,50 @@ using System.Threading.Tasks;
 
 namespace Domain.Models
 {
-        public class RegisterUser : IdentityUser
-        {
-            public string Password { get; set; }
-            [NotMapped]
-            [Required(ErrorMessage = "Confirm Password is required")]
-            [DataType(DataType.Password)]
-            [Compare("Password", ErrorMessage = "Password and Confirm Password must match.")]
-            [Display(Name = "Confirm Password")]
-            public string? NMConfirmPassword { get; set; }
-            [JsonConverter(typeof(JsonStringEnumConverter))]
-            public UserRole Role { get; set; }
-            //public Specialities? Specialties { get; set; } // time slot need to discuss
-            public DateTime CreatedAt { get; set; }
-            public string? CreatedBy { get; set; }
-            public string? UpdatedBy { get; set; }
-            public DateTime UpdatedAt { get; set; } = DateTime.Now;
-            [NotMapped]
-            public string? NMAdminName { get; set; }
-            [NotMapped]
-            public string? NMDoctorName { get; set; }
-            [NotMapped]
-            public string? NMPatient { get; set; }
-            [NotMapped]
-            public string? NMCountry { get; set; }
-            [NotMapped]
-            public string? NMState { get; set; }
-            [Display(Name = "Country")]
-            public int Country { get; set; }
-            [Display(Name = "State")]
-            public int? State { get; set; }
-            [Display(Name = "Address")]
-            public string? Address { get; set; }
-            [Display(Name = "Pincode")]
-            public string? Pincode { get; set; }
-            public string? Experience { get; set; }// for doctor
-            public bool isActive { get; set; } = true; //need to check user active
-            public bool? isWorking { get; set; } = true; // need to check doctor availability
-            public string FirstName { get; set; }
-            public string? LastName { get; set; }
-            [NotMapped]
-            public string FullName => string.IsNullOrEmpty(LastName) ? FirstName : $"{FirstName} {LastName}";
+    public class RegisterUser : IdentityUser
+    {
+        public string Password { get; set; }
+        [NotMapped]
+        [Required(ErrorMessage = "Confirm Password is required")]
+        [DataType(DataType.Password)]
+        [Compare("Password", ErrorMessage = "Password and Confirm Password must match.")]
+        [Display(Name = "Confirm Password")]
+        public string? NMConfirmPassword { get; set; }
+        [JsonConverter(typeof(JsonStringEnumConverter))]
+        public UserRole Role { get; set; }
+        //public Specialities? Specialties { get; set; } // time slot need to discuss
+        public DateTime CreatedAt { get; set; }
+        public string? CreatedBy { get; set; }
+        public string? UpdatedBy { get; set; }
+        public DateTime UpdatedAt { get; set; } = DateTime.Now;
+        [NotMapped]
+        public string? NMAdminName { get; set; }
+        [NotMapped]
+        public string? NMDoctorName { get; set; }
+        [NotMapped]
+        public string? NMPatient { get; set; }
+        [NotMapped]
+        public string? NMCountry { get; set; }
+        [NotMapped]
+        public string? NMState { get; set; }
+        [Display(Name = "Country")]
+        public int Country { get; set; }
+        [Display(Name = "State")]
+        public int? State { get; set; }
+        [Display(Name = "Address")]
+        public string? Address { get; set; }
+        [Display(Name = "Pincode")]
+        public string? Pincode { get; set; }
+        public string? Experience { get; set; }// for doctor
+        public bool isActive { get; set; } = true; //need to check user active
+        public bool? isWorking { get; set; } = true; // need to check doctor availability
+        public string FirstName { get; set; }
+        public string? LastName { get; set; }
+        [NotMapped]
+        public string FullName => string.IsNullOrEmpty(LastName) ? FirstName : $"{FirstName} {LastName}";
 
-            //public string? MobileNo { get; set; }
-        }
+        //public string? MobileNo { get; set; }
+    }
     public class DoctorSpeciality
     {
         public int Id { get; set; }
@@ -157,9 +157,9 @@ namespace Domain.Models
         public string PlanName { get; set; }
         public string PlanSubtitle { get; set; }
         public string PlanDescription { get; set; }
-        public decimal PriceAmount { get; set; }      
-        public string Duration { get; set; }   
-        public string PlanFeatures { get; set; } 
+        public decimal PriceAmount { get; set; }
+        public string Duration { get; set; }
+        public string PlanFeatures { get; set; }
         public bool IsMostPopular { get; set; }
         public DateTime UpdatedAt { get; set; }
 
@@ -276,6 +276,15 @@ namespace Domain.Models
         public string Email { get; set; } = default!;
         public DateTime SubscribedAt { get; set; }
 
+    }
+    public class FeedBack
+    {
+        public int Id { get; set; }
+        public int OrderID { get; set; }
+        public int CustomerID { get; set; }
+        public int RatingCount { get; set; }
+        public string Message { get; set; }
+        public DateTime SubmittedAt { get; set; } = DateTime.Now;
     }
 
 }

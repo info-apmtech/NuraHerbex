@@ -28,6 +28,7 @@ namespace Domain.Models
 		public DbSet<CartItem> CartItems { get; set; }
         public DbSet<WishlistItem> WishlistItems { get; set; }
         public DbSet<DoctorDetail> DoctorDetails { get; set; }
+        public DbSet<FeedBack> FeedBack { get; set; }
 
 
     }
