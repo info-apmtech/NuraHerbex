@@ -119,6 +119,9 @@ namespace Domain.Models
         public string? Concerns { get; set; }
         public string? Medications { get; set; }
         public string CreatedBy { get; set; }
+        [JsonConverter(typeof(JsonStringEnumConverter))]
+        public ConsultationStatus Status { get; set; } = ConsultationStatus.Pending;
+        public string? MeetingLink { get; set; }
         public DateTime SubmittedAt { get; set; } = DateTime.Now;
     }
     public class State

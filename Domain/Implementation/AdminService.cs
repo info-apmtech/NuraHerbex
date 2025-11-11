@@ -20,6 +20,7 @@ using System.Reflection.Metadata;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
+using static Domain.ViewModel.CartItemViewModel;
 
 namespace Domain.Implementation
 {
@@ -856,6 +857,22 @@ namespace Domain.Implementation
             return await _db.ConsultationBookingDetails
                 .OrderByDescending(c => c.SubmittedAt)
                 .ToListAsync();
+        }
+        public async Task<bool> UpdateConsultationStatusAsync(int consultationId, ConsultationStatusUpdateModel updateModel)
+        {
+            var consultation = await _db.ConsultationBookingDetails.FindAsync(consultationId);
+            if (consultation == null)
+                return false;
+
+            consultation.Status = updateModel.Status;
+
+            if (updateModel.Status == ConsultationStatus.Accepted && !string.IsNullOrEmpty(updateModel.MeetingLink))
+                consultation.MeetingLink = updateModel.MeetingLink;
+            else
+                consultation.MeetingLink = null;
+
+            await _db.SaveChangesAsync();
+            return true;
         }
 
         //Cart

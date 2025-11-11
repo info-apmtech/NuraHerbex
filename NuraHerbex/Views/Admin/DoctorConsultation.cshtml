@@ -1,4 +1,5 @@
-﻿@using Domain.ViewModel
+﻿@using Domain.Models
+@using Domain.ViewModel
 @model ConsultationListViewModel
 @{ 
     ViewData["Title"] = "Doctor Consultation";
@@ -52,14 +53,31 @@
                                                 <td>@c.Consultation.PreferredTimeSlot</td>
                                                 <td>@c.Consultation.SubmittedAt.ToString("yyyy-MM-dd HH:mm")</td>
                                                 <td>@c.Consultation.PreferredDate.ToString("yyyy-MM-dd")</td>
-                                                <td>
-                                                    @if (c.CanJoin)
-                                                    {
-                                                        <a class="btn btn-primary" href="@Url.Action("JoinConsultation", "Admin", new { consultationId = c.Consultation.Id })">
-                                                            Join
-                                                        </a>
-                                                    }
-                                                </td>
+                                                @if (Model.UserRole == "Doctor")
+                                                {
+                                                    <td>
+                                                        @if (c.Consultation.Status == ConsultationStatus.Pending)
+                                                        {
+                                                            <form asp-action="AcceptConsultation" method="post" class="d-inline">
+                                                                @Html.AntiForgeryToken()
+                                                                <input type="hidden" name="consultationId" value="@c.Consultation.Id" />
+                                                                <input type="url" name="meetingLink" placeholder="Meeting link" required class="form-control d-inline-block" style="width: 250px; margin-right: 5px;" />
+                                                                <button type="submit" class="btn btn-success btn-sm">Accept</button>
+                                                            </form>
+
+                                                            <form asp-action="RejectConsultation" method="post" class="d-inline ms-2">
+                                                                @Html.AntiForgeryToken()
+                                                                <input type="hidden" name="consultationId" value="@c.Consultation.Id" />
+                                                                <button type="submit" class="btn btn-danger btn-sm">Reject</button>
+                                                            </form>
+                                                        }
+                                                        else
+                                                        {
+                                                            <span>@c.Consultation.Status.ToString()</span>
+                                                        }
+                                                    </td>
+                                                }
+
                                             </tr>
                                             counter++;
                                         }
@@ -75,6 +93,24 @@
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="acceptModal" tabindex="-1" aria-labelledby="acceptModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="acceptModalLabel">Accept Consultation</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <label for="meetingLinkInput">Meeting Link</label>
+                <input type="url" id="meetingLinkInput" class="form-control" placeholder="Enter the meeting link" />
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="confirmAcceptBtn">Accept</button>
             </div>
         </div>
     </div>

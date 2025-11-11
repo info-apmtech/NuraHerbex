@@ -5,6 +5,7 @@ using Domain.ViewModel;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using static Domain.ViewModel.CartItemViewModel;
 
 namespace APIs.Controllers
 {
@@ -33,8 +34,8 @@ namespace APIs.Controllers
 			var users = await _adminservice.GetUsersByRoleAsync(role);
 			return Ok(users);
 		}
-
-		[HttpGet("user/{id}")]
+        [AllowAnonymous]
+        [HttpGet("user/{id}")]
 		public async Task<IActionResult> GetUser(string id)
 		{
 			var user = await _adminservice.GetUserByIdAsync(id);
@@ -622,6 +623,7 @@ namespace APIs.Controllers
 			return BadRequest(new { success = false, message = "Failed to set quantity." });
 		}
 
+        //Consultation
 		[AllowAnonymous]
         [HttpPost("consultationbooking")]
         public async Task<IActionResult> BookConsultation([FromBody] ConsultationBooking consultation)
@@ -662,6 +664,17 @@ namespace APIs.Controllers
             var consultations = await _adminservice.GetAllConsultationsAsync();
             return Ok(consultations);
         }
+        [AllowAnonymous]
+        [HttpPost("consultationbooking/{consultationId}/status")]
+        public async Task<IActionResult> UpdateConsultationStatus(int consultationId, [FromBody] ConsultationStatusUpdateModel updateModel)
+        {
+            bool success = await _adminservice.UpdateConsultationStatusAsync(consultationId, updateModel);
+            if (!success)
+                return NotFound();
+
+            return Ok();
+        }
+
 
         //Specialities
         [AllowAnonymous]

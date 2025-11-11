@@ -1,4 +1,5 @@
-﻿@using Domain.ViewModel
+﻿@using Domain.Models
+@using Domain.ViewModel
 @model MyConsultationViewModel
 
 <div class="profile-layout">
@@ -43,15 +44,23 @@
                         <p><img src="~/image/consultation/videocam.png" /> Video Call</p>
                         <p>Reason: @item.Consultation.Concerns</p>
                         <div class="buttons">
-                            @if (status == "upcoming")
+                            @if (status == "upcoming" && item.Consultation.Status == ConsultationStatus.Accepted && !string.IsNullOrEmpty(item.Consultation.MeetingLink))
                             {
-                                <button class="join-btn"><img src="~/image/consultation/videocam.png" /> Join Session</button>
-                                <button class="cancel-btn">Cancel</button>
+                                <button class="join-btn" onclick="window.open('@item.Consultation.MeetingLink', '_blank')">
+                                    <img src="~/image/consultation/videocam.png" /> Join Session
+                                </button>
+                            }
+                            else if (status == "upcoming")
+                            {
+                                <button class="join-btn disabled" disabled>
+                                    <img src="~/image/consultation/videocam.png" /> Waiting for Approval
+                                </button>
                             }
                             else
                             {
-                                <button onclick="location.href='@Url.Action("Consultation", "Home")'"  class="book-again-btn">Book Again</button>
+                                <button onclick="location.href='@Url.Action("Consultation", "Home")'" class="book-again-btn">Book Again</button>
                             }
+
                         </div>
                     </div>
                 </div>

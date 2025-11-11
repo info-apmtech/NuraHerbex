@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static Domain.ViewModel.CartItemViewModel;
 
 namespace Domain.Interface
 {
@@ -82,6 +83,8 @@ namespace Domain.Interface
         Task<List<ConsultationBooking>> GetConsultationsByUserAsync(string userId);
         Task<List<ConsultationBooking>> GetConsultationsByCreatorAsync(string userId);
         Task<List<ConsultationBooking>> GetAllConsultationsAsync();
+        Task<bool> UpdateConsultationStatusAsync(int consultationId, ConsultationStatusUpdateModel updateModel);
+
         //subscription
         Task<NewsletterSubscriptionResult> SaveNewsletterSubscriptionAsync(string rawEmail);
         Task<List<NewsletterSubscription>> GetAllSubscription();
