@@ -195,6 +195,73 @@ a:visited {
         box-shadow: 0 2px 8px rgba(244, 73, 0, 0.3) !important;
     }
 
+
+
+
+/* === USER PROFILE (matches your header design) === */
+.user-profile {
+    position: relative;
+}
+
+.user-profile-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background-color: #fff6ef !important; /* soft peach tone */
+    border: none;
+    border-radius: 10.91px;
+    padding: 8px 14px;
+    cursor: pointer;
+    color: #364153;
+    transition: all 0.3s ease;
+}
+
+    .user-profile-btn:hover {
+        background-color: rgba(255, 249, 246, 0.7) !important;
+        box-shadow: 0 2px 6px rgba(244, 73, 0, 0.15);
+    }
+
+.user-icon {
+    width: 22px;
+    height: 22px;
+    color: #f44900;
+}
+
+/* ?? The key change — stack Welcome and username vertically */
+.user-text {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    line-height: 1.1;
+}
+
+.welcome-text {
+    font-size: 14px;
+    color: #364153;
+    margin: 0;
+}
+
+.user-name {
+    font-size: 15px;
+    font-weight: 600;
+    color: #f44900;
+    margin: 0;
+}
+
+.dropdown-icon {
+    width: 16px;
+    height: 16px;
+    color: #364153;
+}
+
+/* Align dropdown to right edge */
+.dropdown-menu-end {
+    right: 0;
+    left: auto;
+}
+.user-profile-btn.dropdown-toggle::after {
+    display: none !important;
+}
 /* Mobile Menu Action Buttons */
 .mobile-menu-actions {
     display: none;

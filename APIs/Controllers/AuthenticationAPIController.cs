@@ -114,29 +114,7 @@ namespace APIs.Controllers
 
 			return Ok(result);
 		}
-		//[HttpPost("VerifyPhoneOTP")]
-		//[AllowAnonymous]
-		//public async Task<IActionResult> VerifyPhoneOTP([FromForm] string phone)
-		//{
-		//	if (string.IsNullOrWhiteSpace(phone))
-		//		return BadRequest(new { success = false, message = "invalid phone number" });
 
-		//	const string ApiKey = "apm_forgetkey_nuraherbex";
-		//	var otp = await _notificationService.SendOtpSms(ApiKey, phone, SMSTemplateType.Registration);
-
-		//	if (string.IsNullOrWhiteSpace(otp)) // or use C#
-		//		return StatusCode(502, new { success = false, message = "failed to send otp" });
-
-		//	// For production, remove `otp` from response
-		//	return Ok(new
-		//	{
-		//		success = true,
-		//		mobileNumber = phone,
-		//		otp,
-		//		createdDate = DateTime.UtcNow,
-		//		isActive = true
-		//	});
-		//}
 
 	}
 }

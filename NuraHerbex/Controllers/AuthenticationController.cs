@@ -41,93 +41,75 @@ namespace NuraHerbex.Controllers
             return View();
         }
 
-		[HttpPost]
-		[AllowAnonymous]
-		[ValidateAntiForgeryToken]
-		public async Task<IActionResult> SignIn(RegisterUserViewModel model)
-		{
-			if (!ModelState.IsValid || string.IsNullOrWhiteSpace(model.Username) || string.IsNullOrWhiteSpace(model.Password))
-			{
-				ModelState.AddModelError(string.Empty, "Username and Password are required.");
-				return View(model);
-			}
-			var client = _httpClientFactory.CreateClient("NuraHerbexApi");
-			//var logininfo = new
-			//{
-			//	username = model.Username,
-			//	password = model.Password
-			//};
+        [HttpPost]
+        [AllowAnonymous]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SignIn(RegisterUserViewModel model)
+        {
+            if (!ModelState.IsValid || string.IsNullOrWhiteSpace(model.Username) || string.IsNullOrWhiteSpace(model.Password))
+            {
+                ModelState.AddModelError(string.Empty, "Username and Password are required.");
+                return View(model);
+            }
 
-			var response = await client.PostAsJsonAsync("AuthenticationAPI/SignIn", model);
+            var client = _httpClientFactory.CreateClient("NuraHerbexApi");
+            var response = await client.PostAsJsonAsync("AuthenticationAPI/SignIn", model);
 
-			//if (!response.IsSuccessStatusCode)
-			//{
-			//	return StatusCode((int)response.StatusCode, await response.Content.ReadAsStringAsync());
-			//	ModelState.AddModelError("", "Invalid username or password.");
-			//	return View(model);
-			//}
-			if (!response.IsSuccessStatusCode)
-			{
-				var msg = await response.Content.ReadAsStringAsync();
-			}
+            if (!response.IsSuccessStatusCode)
+            {
+                ModelState.AddModelError("", "Invalid username or password.");
+                return View(model);
+            }
 
-			var result = await response.Content.ReadFromJsonAsync<LoginResponseModel>();
-			if (result == null || string.IsNullOrEmpty(result.Token))
-			{
-				ModelState.AddModelError("", "Login failed. Token missing.");
-				return View(model);
-			}
+            var result = await response.Content.ReadFromJsonAsync<LoginResponseModel>();
+            if (result == null || string.IsNullOrEmpty(result.Token))
+            {
+                ModelState.AddModelError("", "Login failed. Token missing.");
+                return View(model);
+            }
 
-			// ✅ Step 5: Store token if needed
-			HttpContext.Session.SetString("JwtToken", result.Token);
+            HttpContext.Session.SetString("JwtToken", result.Token);
 
-			// ✅ Step 6: Build user claims
-			var roles = (result.Roles ?? Enumerable.Empty<string>())
-				.Where(r => !string.IsNullOrWhiteSpace(r))
-				.Select(r => r.Trim());
+            var roles = (result.Roles ?? Enumerable.Empty<string>())
+                .Where(r => !string.IsNullOrWhiteSpace(r))
+                .Select(r => r.Trim());
 
-			var claims = new List<Claim>
-		{
-			new Claim(ClaimTypes.NameIdentifier, result.User?.Id ?? string.Empty),
-			new Claim(ClaimTypes.Name, result.User?.UserName ?? string.Empty)
-		};
+            var claims = new List<Claim>
+        {
+            new Claim(ClaimTypes.NameIdentifier, result.User?.Id ?? string.Empty),
+            new Claim(ClaimTypes.Name, result.User?.UserName ?? string.Empty)
+        };
 
-			foreach (var role in roles)
-				claims.Add(new Claim(ClaimTypes.Role, role));
+            foreach (var role in roles)
+                claims.Add(new Claim(ClaimTypes.Role, role));
 
-			var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-			var principal = new ClaimsPrincipal(identity);
+            var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+            var principal = new ClaimsPrincipal(identity);
 
-			await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal, new AuthenticationProperties
-			{
-				IsPersistent = model.IsActive
-			});
+            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal,
+                new AuthenticationProperties { IsPersistent = model.IsActive });
 
-			HttpContext.User = principal;
-			if (User.IsInRole("Admin") || User.IsInRole("Employee") || User.IsInRole("Doctor"))
-				return RedirectToAction("UserCreation", "Admin");
-			else
-				return RedirectToAction("MyOrders", "Home");
-		}
+            HttpContext.User = principal;
 
+            // Redirect based on role; you can customize
+            if (principal.IsInRole("Admin") || principal.IsInRole("Employee") || principal.IsInRole("Doctor"))
+                return RedirectToAction("UserCreation", "Admin");
+            else
+                return RedirectToAction("MyOrders", "Home");
+        }
 
-		public async Task<IActionResult> LogOut()
-		{
-			var client = _httpClientFactory.CreateAuthorizedClient(_httpContextAccessor);
-			var response = await client.PostAsync("AuthenticationAPI/logout", null);
-			if (response.IsSuccessStatusCode)
-			{
-				// Clear server-side session (optional)
-				HttpContext.Session.Clear();
-
-				// Redirect to login page
-				return RedirectToAction("SignIn", "Authentication");
-			}
-
-			// Handle API failure
-			return RedirectToAction("Index", "Home");
-		}
-		[HttpGet]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> LogOut()
+        {
+            var client = _httpClientFactory.CreateAuthorizedClient(_httpContextAccessor);
+            await client.PostAsync("AuthenticationAPI/logout", null);
+            // Clear user authentication and session
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            HttpContext.Session.Clear();
+            return RedirectToAction("SignIn", "Authentication");
+        }
+        [HttpGet]
 		public IActionResult ForgotPassword()
         {
             return View();
