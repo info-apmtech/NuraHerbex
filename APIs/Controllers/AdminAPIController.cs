@@ -567,12 +567,16 @@ namespace APIs.Controllers
 			var items = await _adminservice.GetCartByUserAsync(userId);
 			return Ok(items);
 		}
+
 		[AllowAnonymous]
 		[HttpPost("Cart")]
 		public async Task<IActionResult> AddOrUpdateCart([FromBody] CartItem item)
 		{
-			if (item == null || string.IsNullOrEmpty(item.UserId) || item.ProductId == 0)
+			if (item == null || string.IsNullOrEmpty(item.UserId) || item.ProductId <= 0)
 				return BadRequest("Invalid Cart item.");
+
+			// Default quantity when caller didn't set it
+			if (item.Quantity <= 0) item.Quantity = 1;
 
 			var result = await _adminservice.AddOrUpdateCartAsync(item);
 			if (result.Succeeded)
@@ -580,8 +584,9 @@ namespace APIs.Controllers
 
 			return BadRequest(result.Errors);
 		}
+
 		[AllowAnonymous]
-		[HttpDelete("Cart/{id}")]
+		[HttpDelete("Cart/{id:int}")]
 		public async Task<IActionResult> DeleteCart(int id)
 		{
 			var result = await _adminservice.DeleteCartAsync(id);
@@ -590,9 +595,34 @@ namespace APIs.Controllers
 
 			return BadRequest(result.Errors);
 		}
-	
 
-        [AllowAnonymous]
+		// NEW: change qty by delta (vm.Quantity is used as delta)
+		[AllowAnonymous]
+		[HttpPost("Cart/quantity/change")]
+		public async Task<IActionResult> ChangeQuantity([FromBody] CartItemViewModel vm)
+		{
+			if (vm == null || vm.CartItemId <= 0 || vm.Quantity == 0)
+				return BadRequest("Invalid payload.");
+
+			var result = await _adminservice.ChangeCartQuantityAsync(vm.CartItemId, vm.Quantity);
+			if (result.Succeeded) return Ok(new { success = true });
+			return BadRequest(new { success = false, message = "Failed to change quantity." });
+		}
+
+		// NEW: set absolute qty (vm.Quantity is the new value)
+		[AllowAnonymous]
+		[HttpPut("Cart/quantity/set")]
+		public async Task<IActionResult> SetQuantity([FromBody] CartItemViewModel vm)
+		{
+			if (vm == null || vm.CartItemId <= 0)
+				return BadRequest("Invalid payload.");
+
+			var result = await _adminservice.SetCartQuantityAsync(vm.CartItemId, vm.Quantity);
+			if (result.Succeeded) return Ok(new { success = true });
+			return BadRequest(new { success = false, message = "Failed to set quantity." });
+		}
+
+		[AllowAnonymous]
         [HttpPost("consultationbooking")]
         public async Task<IActionResult> BookConsultation([FromBody] ConsultationBooking consultation)
         {

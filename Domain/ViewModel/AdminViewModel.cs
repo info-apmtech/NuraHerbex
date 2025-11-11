@@ -12,14 +12,14 @@ using System.Threading.Tasks;
 
 namespace Domain.ViewModel
 {
-    //public class LoginModel
-    //{
-    //    [Required]
-    //    public string Username { get; set; } = null!;
-    //    [Required]
-    //    [DataType(DataType.Password)]
-    //    public string Password { get; set; } = null!;
-    //}
+	//public class LoginModel
+	//{
+	//    [Required]
+	//    public string Username { get; set; } = null!;
+	//    [Required]
+	//    [DataType(DataType.Password)]
+	//    public string Password { get; set; } = null!;
+	//}
 	public class LoginResponseModel
 	{
 		public string Token { get; set; }
@@ -39,7 +39,7 @@ namespace Domain.ViewModel
 		public string Password { get; set; } = null!;
 
 		public bool IsActive { get; set; } = true;   // "Remember me" / persistent cookie
-		//public UserRole? role { get; set; }
+													 //public UserRole? role { get; set; }
 
 		[BindNever][ValidateNever] public RegisterUser? RegisteredUser { get; set; }
 		[BindNever][ValidateNever] public List<RegisterUser>? UserList { get; set; }
@@ -85,46 +85,46 @@ namespace Domain.ViewModel
 	}
 
 
-    //public class VerifyOtpViewModel
-    //{
-    //	[Required, EmailAddress]
-    //	public string Email { get; set; }
+	//public class VerifyOtpViewModel
+	//{
+	//	[Required, EmailAddress]
+	//	public string Email { get; set; }
 
-    //	[Required, StringLength(6, MinimumLength = 6)]
-    //	public string Otp { get; set; }
-    //}
+	//	[Required, StringLength(6, MinimumLength = 6)]
+	//	public string Otp { get; set; }
+	//}
 
-    //public class ResetPasswordViewModel
-    //{
-    //	//[Required, EmailAddress]
-    //	public string Email { get; set; }
-    //	public string Otp { get; set; } = string.Empty; // Used to validate before reset
+	//public class ResetPasswordViewModel
+	//{
+	//	//[Required, EmailAddress]
+	//	public string Email { get; set; }
+	//	public string Otp { get; set; } = string.Empty; // Used to validate before reset
 
-    //	//[Required]
-    //	[StringLength(100, MinimumLength = 6)]
-    //	public string NewPassword { get; set; }
+	//	//[Required]
+	//	[StringLength(100, MinimumLength = 6)]
+	//	public string NewPassword { get; set; }
 
-    //	//[Required]
-    //	[Compare("NewPassword", ErrorMessage = "Passwords do not match.")]
-    //	public string ConfirmPassword { get; set; }
-    //}
-    //public class ForgotPasswordViewModel
-    //{
-    //	// Step 1: Request OTP
-    //	[Required(ErrorMessage = "Email is required.")]
-    //	[EmailAddress(ErrorMessage = "Invalid email address.")]
-    //	public string Email { get; set; } = string.Empty;
+	//	//[Required]
+	//	[Compare("NewPassword", ErrorMessage = "Passwords do not match.")]
+	//	public string ConfirmPassword { get; set; }
+	//}
+	//public class ForgotPasswordViewModel
+	//{
+	//	// Step 1: Request OTP
+	//	[Required(ErrorMessage = "Email is required.")]
+	//	[EmailAddress(ErrorMessage = "Invalid email address.")]
+	//	public string Email { get; set; } = string.Empty;
 
-    //	// Step 2: Verify OTP
-    //	[StringLength(6, MinimumLength = 6, ErrorMessage = "OTP must be 6 digits.")]
-    //	public string Otp { get; set; } = string.Empty;
+	//	// Step 2: Verify OTP
+	//	[StringLength(6, MinimumLength = 6, ErrorMessage = "OTP must be 6 digits.")]
+	//	public string Otp { get; set; } = string.Empty;
 
-    //	// Step 3: Reset Password
-    //	[StringLength(100, MinimumLength = 6, ErrorMessage = "Password must be at least 6 characters.")]
-    //	public string NewPassword { get; set; } = string.Empty;
+	//	// Step 3: Reset Password
+	//	[StringLength(100, MinimumLength = 6, ErrorMessage = "Password must be at least 6 characters.")]
+	//	public string NewPassword { get; set; } = string.Empty;
 
-    //	[Compare("NewPassword", ErrorMessage = "Passwords do not match.")]
-    //	public string ConfirmPassword { get; set; } = string.Empty;
+	//	[Compare("NewPassword", ErrorMessage = "Passwords do not match.")]
+	//	public string ConfirmPassword { get; set; } = string.Empty;
 
     //}
     public class HomeViewModel
@@ -164,70 +164,70 @@ namespace Domain.ViewModel
     }
 	public class ProductViewModel
 	{
-        public List<Product> ProductList { get; set; } = new List<Product>();
-        public Product NewProduct { get; set; } = new Product();
-        public List<IFormFile> ProductFiles { get; set; } = new();
-        public List<GST> GSTDetails { get; set; } = new List<GST>();
-    }
-    public class GSTViewModel
-    {
-        public List<GST> GSTList { get; set; } = new();
-        public GST NewGST { get; set; } = new();
-    }
-    public class SubscriptionViewModel
-    {
-        public List<NewsletterSubscription> SubscriptionList { get; set; } = new List<NewsletterSubscription>();
-    }
-    public sealed class SubscribeRequest
-    {
-        public string Email { get; set; } = "";
-    }
+		public List<Product> ProductList { get; set; } = new List<Product>();
+		public Product NewProduct { get; set; } = new Product();
+		public List<IFormFile> ProductFiles { get; set; } = new();
+		public List<GST> GSTDetails { get; set; } = new List<GST>();
+	}
+	public class GSTViewModel
+	{
+		public List<GST> GSTList { get; set; } = new();
+		public GST NewGST { get; set; } = new();
+	}
+	public class SubscriptionViewModel
+	{
+		public List<NewsletterSubscription> SubscriptionList { get; set; } = new List<NewsletterSubscription>();
+	}
+	public sealed class SubscribeRequest
+	{
+		public string Email { get; set; } = "";
+	}
 
-    public class EmailSettings
-    {
-        public string FromAddress { get; set; }
-        public string Password { get; set; }
-        public string Host { get; set; }
-        public int Port { get; set; }
-        public bool UseSSL { get; set; }
-    }
-    
-   
-    public class NewsletterSubscriptionResult
-    {
-        public bool Succeeded { get; set; }
-        public string? Error { get; set; }
+	public class EmailSettings
+	{
+		public string FromAddress { get; set; }
+		public string Password { get; set; }
+		public string Host { get; set; }
+		public int Port { get; set; }
+		public bool UseSSL { get; set; }
+	}
 
-        public string Email { get; set; } = string.Empty;
-        public DateTime SubscribedAtUtc { get; set; }
 
-        // Admin notification
-        public string AdminSubject { get; set; } = string.Empty;
-        public string AdminBodyText { get; set; } = string.Empty;
-        public bool IsNew { get; set; }
-        // User auto-reply
-        public string UserSubject { get; set; } = string.Empty;
-        public string UserBodyHtml { get; set; } = string.Empty;
-    }
-    public class PricingPlanViewModel
-    {
-        public List<PricingPlan> PlanList { get; set; } = new List<PricingPlan>(); 
-        public PricingPlan NewPlan { get; set; } = new PricingPlan();
-    }
-	 public class SmsDataSet
-    {
-        public string UNIQUE_ID { get; set; }
-        public string MESSAGE { get; set; }
-        public string OA { get; set; }
-        public string MSISDN { get; set; }
-        public string CHANNEL { get; set; }
-        public string CAMPAIGN_NAME { get; set; }
-        public string DLT_CT_ID { get; set; }
-        public string DLT_PE_ID { get; set; }
-        public string DLT_TM_ID { get; set; }
-        public string CIRCLE_NAME { get; set; }
-        public string USER_NAME { get; set; }
-    }
+	public class NewsletterSubscriptionResult
+	{
+		public bool Succeeded { get; set; }
+		public string? Error { get; set; }
+
+		public string Email { get; set; } = string.Empty;
+		public DateTime SubscribedAtUtc { get; set; }
+
+		// Admin notification
+		public string AdminSubject { get; set; } = string.Empty;
+		public string AdminBodyText { get; set; } = string.Empty;
+		public bool IsNew { get; set; }
+		// User auto-reply
+		public string UserSubject { get; set; } = string.Empty;
+		public string UserBodyHtml { get; set; } = string.Empty;
+	}
+	public class PricingPlanViewModel
+	{
+		public List<PricingPlan> PlanList { get; set; } = new List<PricingPlan>();
+		public PricingPlan NewPlan { get; set; } = new PricingPlan();
+	}
+	public class SmsDataSet
+	{
+		public string UNIQUE_ID { get; set; }
+		public string MESSAGE { get; set; }
+		public string OA { get; set; }
+		public string MSISDN { get; set; }
+		public string CHANNEL { get; set; }
+		public string CAMPAIGN_NAME { get; set; }
+		public string DLT_CT_ID { get; set; }
+		public string DLT_PE_ID { get; set; }
+		public string DLT_TM_ID { get; set; }
+		public string CIRCLE_NAME { get; set; }
+		public string USER_NAME { get; set; }
+	}
 	public class SmsJson
 	{
 		public string keyword { get; set; }

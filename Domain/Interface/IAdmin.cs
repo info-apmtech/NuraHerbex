@@ -90,6 +90,11 @@ namespace Domain.Interface
 		Task<List<CartItem>> GetCartByUserAsync(string userId);
 		Task<IdentityResult> AddOrUpdateCartAsync(CartItem item);
 		Task<IdentityResult> DeleteCartAsync(int id);
+		// NEW:
+		Task<IdentityResult> ChangeCartQuantityAsync(int cartItemId, int delta);  // +1 / -1
+		Task<IdentityResult> SetCartQuantityAsync(int cartItemId, int quantity);  // absolute set
+
+	}
 
         //specialities
         Task<List<DoctorSpeciality>> GetDoctorSpecialitiesAsync();

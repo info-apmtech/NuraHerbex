@@ -1,0 +1,135 @@
+﻿@model Domain.ViewModel.RegisterUserViewModel
+
+<style>
+    .modal-overlay1 {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0, 0, 0, 0.4);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 10000;
+    }
+
+    .modal-content1 {
+        background: #1f2630;
+        color: #e9edf3; 
+        width: 420px;
+        max-width: 92vw;
+        border-radius: 12px;
+        box-shadow: 0 12px 40px rgba(0,0,0,.5);
+        padding: 24px 22px;
+        position: relative;
+    }
+
+    .modal-title {
+        font-size: 20px;
+        font-weight: 700;
+        margin: 0 0 6px
+    }
+
+    .modal-sub {
+        font-size: 13px;
+        color: #9fb0c5;
+        margin: 0 0 18px
+    }
+
+    .form-control {
+        width: 100%;
+        display: block;
+        border: 1px solid #334155;
+        border-radius: 10px;
+        background: #0f1720;
+        color: #e9edf3;
+        padding: 12px 12px;
+        font-size: 14px;
+        outline: none;
+    }
+
+        .form-control::placeholder {
+            color: #758393
+        }
+
+    .row-gap {
+        margin-bottom: 12px
+    }
+
+    .actions {
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+        margin-top: 6px
+    }
+
+    .btn {
+        border: 0;
+        border-radius: 10px;
+        padding: 10px 16px;
+        cursor: pointer
+    }
+
+    .btn-primary {
+        background: #f26b3a;
+        color: #fff
+    }
+
+        .btn-primary:hover {
+            filter: brightness(.95)
+        }
+
+    .btn-secondary {
+        background: #334155;
+        /* color: #e9edf3; */
+         color: #fff
+    }
+
+    .close-x {
+        position: absolute;
+        right: 10px;
+        top: 8px;
+        font-size: 20px;
+        line-height: 1;
+        cursor: pointer;
+        color: #9fb0c5;
+    }
+
+    #loginError {
+        display: none;
+        color: #ff7676;
+        margin-top: 10px;
+        font-size: 13px
+    }
+</style>
+
+<div id="loginModal" class="modal-overlay1" aria-hidden="true">
+    <div class="modal-content1" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
+        <span class="close-x" id="btnLoginCancel" aria-label="Close">×</span>
+
+        <h3 id="loginTitle" class="modal-title">Verify your account</h3>
+        <p class="modal-sub">Please log in to continue.</p>
+
+        <form id="loginForm" method="post" action="/Authentication/SignIn">
+            @Html.AntiForgeryToken()
+
+            <div class="row-gap">
+                <input asp-for="Username" class="form-control" placeholder="Email or Username" />
+                <span asp-validation-for="Username" class="text-danger"></span>
+            </div>
+
+            <div class="row-gap">
+                <input asp-for="Password" type="password" class="form-control" placeholder="Password" />
+                <span asp-validation-for="Password" class="text-danger"></span>
+            </div>
+
+            <div class="actions">
+                <button type="button" class="btn btn-secondary" id="btnLoginCancel2">Cancel</button>
+                <button type="submit" class="btn btn-primary" id="btnLoginSubmit">Login</button>
+            </div>
+        </form>
+
+        <div id="loginError">Invalid credentials.</div>
+    </div>
+</div>
