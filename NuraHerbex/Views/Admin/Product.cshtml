@@ -1,4 +1,5 @@
-﻿@model Domain.ViewModel.ProductViewModel
+﻿@using Domain.Models
+@model Domain.ViewModel.ProductViewModel
 @{
     var isEdit = Model.NewProduct.Id > 0;
     var activeTab = TempData["ActiveTab"]?.ToString() ?? (isEdit ? "newproduct" : "list");
@@ -156,7 +157,7 @@
                                         <div class="col-md-4">
                                             <label asp-for="NewProduct.GSTId">GST</label>
                                             <select asp-for="NewProduct.GSTId" class="form-control"
-                                                    asp-items="@(new SelectList(Model.GSTDetails, "Id", "Name", Model.NewProduct.GSTId))">
+                                                    asp-items="@(Model.GSTDetails != null && Model.GSTDetails.Any() ? new SelectList(Model.GSTDetails, "Id", "TaxName", Model.NewProduct.GSTId) : new SelectList(Enumerable.Empty<GST>()))">
                                                 <option value="">Select Gst</option>
                                             </select>
                                         </div>

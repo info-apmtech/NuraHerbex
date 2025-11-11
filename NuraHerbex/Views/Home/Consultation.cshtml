@@ -309,8 +309,13 @@
         </form>
     </div>
 </section>
-    <script>
-        document.getElementById('PreferredDate').addEventListener('change', function () {
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const dateInput = document.getElementById('PreferredDate');
+        const today = new Date().toISOString().split('T')[0];
+        dateInput.setAttribute('min', today);
+
+        dateInput.addEventListener('change', function () {
             const dateValue = this.value;
             const doctorDropdown = document.getElementById('PreferredDoctorId');
 
@@ -337,8 +342,8 @@
                     doctorDropdown.innerHTML = '<option>Error loading doctors</option>';
                 });
         });
-    </script>
-
+    });
+</script>
 
 <!-- Process Section -->
 <section class="process-section">

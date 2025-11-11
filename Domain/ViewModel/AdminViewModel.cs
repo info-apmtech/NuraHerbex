@@ -292,12 +292,14 @@ namespace Domain.ViewModel
     public class ConsultationWithAssignedDoctorViewModel
     {
         public ConsultationBooking Consultation { get; set; }
-        public RegisterUser? Doctor { get; set; } 
+        public RegisterUser? Doctor { get; set; }
+        public bool CanJoin { get; set; } = false;
     }
 
     public class ConsultationListViewModel
     {
         public List<ConsultationWithAssignedDoctorViewModel> Consultations { get; set; } = new();
+        public string UserRole { get; set; }
     }
 
 

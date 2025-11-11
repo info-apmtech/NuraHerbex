@@ -1,4 +1,5 @@
 ﻿using Domain.Extensions;
+using Domain.Models;
 using Domain.ViewModel;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -39,15 +40,16 @@ namespace NuraHerbex.Controllers
         {
             return View();
         }
+
 		[HttpPost]
 		[AllowAnonymous]
 		[ValidateAntiForgeryToken]
 		public async Task<IActionResult> SignIn(RegisterUserViewModel model)
 		{
-			if (!ModelState.IsValid || string.IsNullOrWhiteSpace(model.Username) ||string.IsNullOrWhiteSpace(model.Password))
+			if (!ModelState.IsValid || string.IsNullOrWhiteSpace(model.Username) || string.IsNullOrWhiteSpace(model.Password))
 			{
 				ModelState.AddModelError(string.Empty, "Username and Password are required.");
-				return View(model); 
+				return View(model);
 			}
 			var client = _httpClientFactory.CreateClient("NuraHerbexApi");
 			//var logininfo = new
@@ -85,10 +87,10 @@ namespace NuraHerbex.Controllers
 				.Select(r => r.Trim());
 
 			var claims = new List<Claim>
-	{
-		new Claim(ClaimTypes.NameIdentifier, result.User?.Id ?? string.Empty),
-		new Claim(ClaimTypes.Name, result.User?.UserName ?? string.Empty)
-	};
+		{
+			new Claim(ClaimTypes.NameIdentifier, result.User?.Id ?? string.Empty),
+			new Claim(ClaimTypes.Name, result.User?.UserName ?? string.Empty)
+		};
 
 			foreach (var role in roles)
 				claims.Add(new Claim(ClaimTypes.Role, role));
