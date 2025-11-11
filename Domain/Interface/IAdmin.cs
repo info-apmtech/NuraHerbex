@@ -94,7 +94,7 @@ namespace Domain.Interface
 		Task<IdentityResult> ChangeCartQuantityAsync(int cartItemId, int delta);  // +1 / -1
 		Task<IdentityResult> SetCartQuantityAsync(int cartItemId, int quantity);  // absolute set
 
-	}
+	
 
         //specialities
         Task<List<DoctorSpeciality>> GetDoctorSpecialitiesAsync();

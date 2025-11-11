@@ -311,5 +311,24 @@ namespace Domain.ViewModel
         public string? PhotoPath { get; set; }
     }
 
+    public class CartViewModel
+    {
+        public List<CartItemViewModel> Items { get; set; } = new();
 
+        public decimal SubTotal => Items.Sum(i => i.LineTotal);
+    }
+    public class CartItemViewModel
+    {
+        public int CartItemId { get; set; }
+        public int ProductId { get; set; }
+
+        // product display
+        public string ProductName { get; set; } = string.Empty;
+        public string? ProductImages { get; set; }
+
+        // cart math
+        public int Quantity { get; set; }
+        public decimal UnitPrice { get; set; }
+        public decimal LineTotal => Quantity * UnitPrice;
+    }
 }

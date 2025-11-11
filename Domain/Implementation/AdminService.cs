@@ -1012,7 +1012,42 @@ namespace Domain.Implementation
             await _db.SaveChangesAsync();
             return IdentityResult.Success;
         }
+        // NEW: change +/- by delta
+        public async Task<IdentityResult> ChangeCartQuantityAsync(int cartItemId, int delta)
+        {
+            var item = await _db.CartItems.FindAsync(cartItemId);
+            if (item == null)
+                return IdentityResult.Failed(new IdentityError { Description = "Cart item not found." });
 
+            item.Quantity += delta;
+
+            if (item.Quantity <= 0)
+                _db.CartItems.Remove(item);
+            else
+                _db.CartItems.Update(item);
+
+            await _db.SaveChangesAsync();
+            return IdentityResult.Success;
+        }
+
+        // NEW: set absolute quantity (0 → remove)
+        public async Task<IdentityResult> SetCartQuantityAsync(int cartItemId, int quantity)
+        {
+            var item = await _db.CartItems.FindAsync(cartItemId);
+            if (item == null)
+                return IdentityResult.Failed(new IdentityError { Description = "Cart item not found." });
+
+            if (quantity <= 0)
+                _db.CartItems.Remove(item);
+            else
+            {
+                item.Quantity = quantity;
+                _db.CartItems.Update(item);
+            }
+
+            await _db.SaveChangesAsync();
+            return IdentityResult.Success;
+        }
 
     }
 }
