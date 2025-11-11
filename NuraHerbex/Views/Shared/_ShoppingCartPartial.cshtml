@@ -282,7 +282,7 @@
 		<span class="subtotal-value">₹@Model.SubTotal.ToString("0.00")</span>
 	</div>
 
-	<button class="checkout-btn">Proceed to Check Out</button>
+	<a type="button" class="checkout-btn" asp-action="OrderSummary"asp-controller="Home">Proceed to Check Out</a>
 </div>
 
 @section Scripts {

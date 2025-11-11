@@ -353,4 +353,38 @@ $(document)
     });
 
 
+$(document)
+    .off("click.cart.open")
+    .on("click.cart.open", ".floating-btn[aria-label='Cart']", function (e) {
+        e.preventDefault();
+
+        var $modal = $("#cartModal");
+        var $content = $("#cartPopupContent");
+        var partialUrl = $modal.data("partial-url") || "/Home/_ShoppingCartPartial";
+
+        // Show modal overlay immediately
+        $modal.fadeIn(200);
+        $content.html('<div style="padding:20px;text-align:center;color:#666;">Loading...</div>');
+
+        // Load partial view from controller
+        $.get(partialUrl)
+            .done(function (html) {
+                $content.html(html);
+            })
+            .fail(function () {
+                $content.html('<div style="padding:20px;color:red;">Failed to load cart.</div>');
+            });
+    });
+
+//// Close modal when clicking outside or close button
+//$(document)
+//    .off("click.cart.close")
+//    .on("click.cart.close", function (e) {
+//        if ($(e.target).is("#cartModal") || $(e.target).hasClass("close-btn")) {
+//            $("#cartModal").fadeOut(200);
+//        }
+//    });
+
+
+
 

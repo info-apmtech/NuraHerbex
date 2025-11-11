@@ -1,4 +1,29 @@
-﻿<!-- Floating Action Buttons - Desktop Only -->
+﻿<style>
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0,0,0,0.4);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 10000;
+    }
+
+    .modal-content {
+        background: #fff;
+        border-radius: 8px;
+        width: 400px;
+        max-width: 90vw;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+        padding: 0;
+        font-family: 'Arial', sans-serif;
+        position: relative;
+    }
+</style>
+<!-- Floating Action Buttons - Desktop Only -->
 <div class="floating-actions">
     <button class="floating-btn" aria-label="Wishlist"
             onclick="location.href='@Url.Action("Wishlist", "Home")'">
@@ -28,53 +53,7 @@
     <div class="modal-content" id="cartPopupContent"></div>
 </div>
 
-<style>
-    .modal-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100vw;
-        height: 100vh;
-        background: rgba(0,0,0,0.4);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        z-index: 10000;
-    }
 
-    .modal-content {
-        background: #fff;
-        border-radius: 8px;
-        width: 400px;
-        max-width: 90vw;
-        box-shadow: 0 4px 16px rgba(0,0,0,0.3);
-        padding: 0;
-        font-family: 'Arial', sans-serif;
-        position: relative;
-    }
-</style>
-
-@* <style>
-    .modal-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100vw;
-        height: 100vh;
-        background: rgba(0,0,0,0.5);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        z-index: 9999;
-    }
-
-    .modal-content {
-        background: #fff;
-        border-radius: 8px;
-        padding: 20px;
-        box-shadow: 0 4px 16px rgba(0,0,0,0.3);
-    }
-</style> *@
 <partial name="_SignInPartial" model="new Domain.ViewModel.RegisterUserViewModel()" />
 @section Scripts {
     <script src="~/js/cart.js"></script>
