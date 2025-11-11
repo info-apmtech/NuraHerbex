@@ -12,6 +12,8 @@ using System.Text;
 using System.Text.Json.Serialization;
 using System.Text.Json;
 using static ServiceStack.Diagnostics.Events;
+using Microsoft.AspNetCore.Authorization;
+using Domain.Implementation;
 
 namespace NuraHerbex.Controllers
 {
@@ -532,40 +534,49 @@ namespace NuraHerbex.Controllers
         {
             var jsonOptions = new JsonSerializerOptions
             {
-                Converters = { new JsonStringEnumConverter() } 
+                Converters = { new JsonStringEnumConverter() }
             };
 
-            // 1️⃣ Get all consultations from API
-            var consultationResponse = await AuthorizedClient.GetAsync("AdminAPI/consultationbooking/all");
-            List<ConsultationBooking> consultations = new();
-            if (consultationResponse.IsSuccessStatusCode)
-                consultations = await consultationResponse.Content.ReadFromJsonAsync<List<ConsultationBooking>>(jsonOptions);
-
-            // 2️⃣ Get all doctors from API
+            // 1️⃣ Get all users (assuming doctors)
             var doctorResponse = await AuthorizedClient.GetAsync("AdminAPI/users/doctor");
-            List<RegisterUser> doctors = new();
+            var doctors = new List<RegisterUser>();
             if (doctorResponse.IsSuccessStatusCode)
+            {
                 doctors = await doctorResponse.Content.ReadFromJsonAsync<List<RegisterUser>>(jsonOptions);
+            }
+
+            // 2️⃣ Fetch all consultations (anonymous)
+            var consultationResponse = await AuthorizedClient.GetAsync("AdminAPI/consultationbooking/all");
+            var consultations = new List<ConsultationBooking>();
+            if (consultationResponse.IsSuccessStatusCode)
+            {
+                consultations = await consultationResponse.Content.ReadFromJsonAsync<List<ConsultationBooking>>(jsonOptions);
+            }
 
             // 3️⃣ Map consultations with doctors
             var consultationWithDoctors = consultations.Select(c => new ConsultationWithAssignedDoctorViewModel
             {
                 Consultation = c,
-                Doctor = doctors.FirstOrDefault(d =>
-                    !string.IsNullOrEmpty(d.Id) &&
-                    !string.IsNullOrEmpty(c.PreferredDoctorId) &&
-                    d.Id.Trim() == c.PreferredDoctorId.Trim())
+                Doctor = doctors.FirstOrDefault(d => d.Id.Trim() == c.PreferredDoctorId?.Trim())
             }).ToList();
 
-
-            // 4️⃣ Create view model
+            // 4️⃣ Build view model
             var model = new ConsultationListViewModel
             {
-                Consultations = consultationWithDoctors
+                Consultations = consultationWithDoctors,
+                UserRole = "All"
             };
 
             return View(model);
         }
+
+        public IActionResult JoinConsultation(Guid consultationId)
+        {
+            // Redirect to your video call platform
+            return Redirect($"https://your-video-platform.com/join/{consultationId}");
+        }
+
+
 
         [HttpGet]
         public async Task<IActionResult> UserCreation(string? id = null)

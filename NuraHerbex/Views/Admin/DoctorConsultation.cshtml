@@ -1,11 +1,9 @@
 ﻿@using Domain.ViewModel
 @model ConsultationListViewModel
-
-@{
-    ViewData["Title"] = "Consultation List";
+@{ 
+    ViewData["Title"] = "Doctor Consultation";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
 }
-
 <div class="pcoded-main-container">
     <div class="pcoded-content">
         <div class="d-flex flex-column align-items-center" style="min-height: 90vh;">
@@ -31,6 +29,11 @@
                                         <th>Preferred Doctor</th>
                                         <th>Preferred Time</th>
                                         <th>Submitted At</th>
+                                        <th>Preferred Date</th>
+                                        @if (Model.UserRole == "Doctor")
+                                        {
+                                            <th>Action</th>
+                                        }
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -48,6 +51,15 @@
                                                 <td>@(c.Doctor?.FullName ?? "Unknown")</td>
                                                 <td>@c.Consultation.PreferredTimeSlot</td>
                                                 <td>@c.Consultation.SubmittedAt.ToString("yyyy-MM-dd HH:mm")</td>
+                                                <td>@c.Consultation.PreferredDate.ToString("yyyy-MM-dd")</td>
+                                                <td>
+                                                    @if (c.CanJoin)
+                                                    {
+                                                        <a class="btn btn-primary" href="@Url.Action("JoinConsultation", "Admin", new { consultationId = c.Consultation.Id })">
+                                                            Join
+                                                        </a>
+                                                    }
+                                                </td>
                                             </tr>
                                             counter++;
                                         }
@@ -55,7 +67,7 @@
                                     else
                                     {
                                         <tr>
-                                            <td colspan="8" class="text-center">No consultations found.</td>
+                                            <td colspan="@(Model.UserRole == "Doctor" ? 10 : 9)" class="text-center">No consultations found.</td>
                                         </tr>
                                     }
                                 </tbody>
@@ -63,7 +75,6 @@
                         </div>
                     </div>
                 </div>
-
             </div>
         </div>
     </div>
