@@ -3,17 +3,20 @@
 <style>
     .modal-overlay1 {
         position: fixed;
-        inset: 0;
-        background: rgba(0,0,0,.45);
-        display: none; /* hidden by default; shown via JS */
-        align-items: center;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0, 0, 0, 0.4);
+        display: flex;
         justify-content: center;
+        align-items: center;
         z-index: 10000;
     }
 
     .modal-content1 {
         background: #1f2630;
-        color: #e9edf3; /* dark card like your screenshot */
+        color: #e9edf3; 
         width: 420px;
         max-width: 92vw;
         border-radius: 12px;
@@ -79,7 +82,8 @@
 
     .btn-secondary {
         background: #334155;
-        color: #e9edf3
+        /* color: #e9edf3; */
+         color: #fff
     }
 
     .close-x {
