@@ -303,4 +303,17 @@ namespace Domain.Models
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
+    public class PaymentGatewayDetails
+    {
+        public int Id { get; set; }
+        public string? PaymentId { get; set; }
+        public string? BankRRn { get; set; }
+        public string? OrderId { get; set; }
+        public string PaymentMethod { get; set; }
+        public string PaymentDetails { get; set; }
+        public decimal TotalAmount { get; set; } = 0;
+        public string ContactNo { get; set; }
+        public string EmailAddress { get; set; }
+
+    }
 }

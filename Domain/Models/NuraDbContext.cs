@@ -30,6 +30,7 @@ namespace Domain.Models
         public DbSet<DoctorDetail> DoctorDetails { get; set; }
         public DbSet<FeedBack> FeedBack { get; set; }
         public DbSet<Pincode> Pincodes { get; set; }
+        public DbSet<PaymentGatewayDetails> PaymentGatewayDetails { get; set; }
 
 
     }
