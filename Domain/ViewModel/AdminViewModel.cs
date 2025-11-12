@@ -331,4 +331,16 @@ namespace Domain.ViewModel
         public decimal UnitPrice { get; set; }
         public decimal LineTotal => Quantity * UnitPrice;
     }
+	public class OrderSummaryViewModel
+	{
+		public List<CartItemViewModel> Items { get; set; } = new();
+		public decimal SubTotal => Items.Sum(i => i.LineTotal);
+
+		public CartViewModel Cart { get; set; } = new();
+		public List<AddressDetail> Addresses { get; set; } = new();
+		public int? SelectedAddressId { get; set; }
+		// For the dropdown
+		public IEnumerable<SelectListItem> AddressItems { get; set; } = Enumerable.Empty<SelectListItem>();
+
+	}
 }

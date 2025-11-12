@@ -56,7 +56,11 @@
             $.ajax({
                 type: 'POST',
                 url: urls.addUrl,
-                data: { productId: productId }
+                data: { productId: productId },
+                // 👇 only this call opens the login on 401
+                statusCode: {
+                    401: function () { openLoginModal(); }
+                }
             })
                 .done(function () {
                     openCartModal(); // open on success
@@ -105,13 +109,28 @@
     // --- LOGIN MODAL HANDLERS ---
 
     // openLoginModal(): call this from your add-to-cart failure (401) path
+    //function openLoginModal() {
+    //    const $m = $("#loginModal");
+    //    $m.addClass("is-open")               // add the class
+    //        .fadeIn(180)
+    //        .attr("aria-hidden", "false");
+    //}
     function openLoginModal() {
-        $("#loginError").hide().text("");
-        $("#loginModal").fadeIn(180).attr("aria-hidden", "false");
+        const $m = $("#loginModal");
+        $m.stop(true, true)                 // cancel queued animations
+            .css("display", "flex")           // ensure flex for centering
+            .hide()
+            .fadeIn(180)
+            .addClass("is-open")
+            .attr("aria-hidden", "false");
     }
 
+
     function closeLoginModal() {
-        $("#loginModal").fadeOut(160).attr("aria-hidden", "true");
+        const $m = $("#loginModal");
+        $m.removeClass("is-open")            // remove the class
+            .fadeOut(160)
+            .attr("aria-hidden", "true");
     }
 
     // Close on X or Cancel buttons or clicking overlay
@@ -384,7 +403,6 @@ $(document)
 //            $("#cartModal").fadeOut(200);
 //        }
 //    });
-
 
 
 

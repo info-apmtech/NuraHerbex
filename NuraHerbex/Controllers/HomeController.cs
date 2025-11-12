@@ -393,10 +393,100 @@ namespace NuraHerbex.Controllers
 
 			return View(vm);
 		}
-		public IActionResult OrderSummary()
+		// DRY helper
+		private async Task<CartViewModel> BuildCartViewModelAsync()
 		{
-			return View();
+			var userId = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value
+						 ?? User?.Identity?.Name;
+
+			if (string.IsNullOrEmpty(userId))
+				return new CartViewModel();
+
+			try
+			{
+				var client = AuthorizedClient ?? _httpClient;
+
+				var cartResponse = await client.GetAsync($"AdminAPI/Cart/{userId}");
+				if (!cartResponse.IsSuccessStatusCode) return new CartViewModel();
+				var cartItems = await cartResponse.Content.ReadFromJsonAsync<List<CartItem>>() ?? new();
+
+				var productResponse = await client.GetAsync("AdminAPI/products");
+				var products = productResponse.IsSuccessStatusCode
+					? await productResponse.Content.ReadFromJsonAsync<List<Product>>()
+					: new List<Product>();
+
+				return new CartViewModel
+				{
+					Items = (from c in cartItems
+							 join p in products on c.ProductId equals p.Id into prodJoin
+							 from p in prodJoin.DefaultIfEmpty()
+							 select new CartItemViewModel
+							 {
+								 CartItemId = c.Id,
+								 ProductId = c.ProductId,
+								 ProductName = p?.ProductName ?? $"Product #{c.ProductId}",
+								 ProductImages = p?.ProductImages,
+								 Quantity = c.Quantity,
+								 UnitPrice = c.Price
+							 }).ToList()
+				};
+			}
+			catch
+			{
+				return new CartViewModel();
+			}
 		}
+		//public async Task<IActionResult> OrderSummary()
+		//{
+		//	var vm = await BuildCartViewModelAsync(); // reuse logic
+		//	return View(vm); // strongly-typed view: @model CartViewModel
+		//}
+		[HttpGet]
+		public async Task<IActionResult> OrderSummary(int? addressId = null)
+		{
+			var cart = await BuildCartViewModelAsync();
+
+			var vm = new OrderSummaryViewModel
+			{
+				Cart = cart,
+				Items = cart.Items?.ToList() ?? new List<CartItemViewModel>(),
+				Addresses = new List<AddressDetail>()
+			};
+
+			var userId = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "";
+			if (!string.IsNullOrEmpty(userId))
+			{
+				var resp = await _httpClient.GetAsync($"AdminAPI/addresses/{userId}");
+				if (resp.IsSuccessStatusCode)
+					vm.Addresses = await resp.Content.ReadFromJsonAsync<List<AddressDetail>>() ?? new();
+			}
+
+			vm.SelectedAddressId =
+				addressId ??
+				vm.Addresses.FirstOrDefault(a => (bool?)a.IsDefault == true)?.Id ??
+				vm.Addresses.FirstOrDefault()?.Id;
+
+			// Build dropdown items from the addresses (use your real property names)
+			vm.AddressItems = vm.Addresses.Select(a => new SelectListItem
+			{
+				Value = a.Id.ToString(),
+				Text  = string.Join(", ", new string?[]
+	{
+		a.Name,
+		a.Location,
+		a.DoorNo,
+		a.Address,
+		a.State > 0 ? a.State.ToString() : null,  
+		a.Pincode,
+		a.Country > 0 ? a.Country.ToString() : null,
+		a.PhoneNumber
+	}.Where(s => !string.IsNullOrWhiteSpace(s))),
+				Selected = (vm.SelectedAddressId == a.Id)
+			}).ToList();
+
+			return View(vm);
+		}
+
 		public IActionResult Privacy()
 		{
 			return View();
@@ -865,65 +955,8 @@ namespace NuraHerbex.Controllers
 		[AllowAnonymous]
 		public async Task<IActionResult> _ShoppingCartPartial()
 		{
-			var userId = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
-			if (string.IsNullOrEmpty(userId))
-			{
-				// Try fallback
-				userId = User?.Identity?.Name;
-			}
-
-			Console.WriteLine(">>> CartPartial userId: " + userId);
-
-			if (string.IsNullOrEmpty(userId))
-				return PartialView("_ShoppingCartPartial", new CartViewModel());
-
-			try
-			{
-				var client = AuthorizedClient ?? _httpClient;
-
-				// --- Get cart items ---
-				var cartResponse = await client.GetAsync($"AdminAPI/Cart/{userId}");
-				if (!cartResponse.IsSuccessStatusCode)
-				{
-					Console.WriteLine("Cart API failed: " + cartResponse.StatusCode);
-					return PartialView("_ShoppingCartPartial", new CartViewModel());
-				}
-
-				var cartItems = await cartResponse.Content.ReadFromJsonAsync<List<CartItem>>() ?? new List<CartItem>();
-				Console.WriteLine($"Cart Items Count: {cartItems.Count}");
-
-				// --- Get all products ---
-				var productResponse = await client.GetAsync("AdminAPI/products");
-				var products = productResponse.IsSuccessStatusCode
-					? await productResponse.Content.ReadFromJsonAsync<List<Product>>()
-					: new List<Product>();
-
-				// --- Build ViewModel ---
-				var vm = new CartViewModel
-				{
-					Items = (from c in cartItems
-							 join p in products on c.ProductId equals p.Id into prodJoin
-							 from p in prodJoin.DefaultIfEmpty()
-							 select new CartItemViewModel
-							 {
-								 CartItemId = c.Id,
-								 ProductId = c.ProductId,
-								 ProductName = p?.ProductName ?? $"Product #{c.ProductId}",
-								 ProductImages = p?.ProductImages,
-								 Quantity = c.Quantity,
-								 UnitPrice = c.Price
-							 }).ToList()
-				};
-
-				Console.WriteLine($"Cart VM items: {vm.Items.Count}");
-				return PartialView("_ShoppingCartPartial", vm);
-			}
-			catch (Exception ex)
-			{
-				Console.WriteLine("CartPartial exception: " + ex.Message);
-				return PartialView("_ShoppingCartPartial", new CartViewModel());
-			}
+			var vm = await BuildCartViewModelAsync();
+			return PartialView("_ShoppingCartPartial", vm);
 		}
 
 
@@ -1132,6 +1165,19 @@ namespace NuraHerbex.Controllers
 				return StatusCode(500, new { message = ex.Message });
 			}
 		}
+		[HttpGet]
+		public async Task<IActionResult> _AddressSummary(int id)
+		{
+			var userId = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "";
+			if (string.IsNullOrEmpty(userId)) return Unauthorized();
 
+			var addressResponse = await _httpClient.GetAsync($"AdminAPI/address/{id}");
+			if (!addressResponse.IsSuccessStatusCode) return BadRequest();
+
+			var addr = await addressResponse.Content.ReadFromJsonAsync<AddressDetail>();
+			if (addr is null || addr.UserId != userId) return Forbid();
+
+			return View("OrderSummary", addr);
+		}
 	}
 }
