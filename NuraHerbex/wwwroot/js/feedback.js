@@ -63,6 +63,7 @@
                     'Content-Type': 'application/json',
                     'RequestVerificationToken': AF_TOKEN,    // <-- REQUIRED because of [ValidateAntiForgeryToken]
                 },
+                credentials: 'same-origin',
                 body: JSON.stringify({ orderId, customerId, rating, message: txt.value || null })
             });
             if (!res.ok) throw new Error((await res.text()) || 'Failed to submit feedback');

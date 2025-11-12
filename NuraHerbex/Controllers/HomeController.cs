@@ -506,18 +506,9 @@ namespace NuraHerbex.Controllers
             };
             return View(vm);
         }
+  
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> MyOrders([FromBody] SubmitFeedbackRequest req, [FromServices] IHttpClientFactory http, CancellationToken ct)
-		{
-            var client = http.CreateClient("BackendApi"); // BaseAddress configured to your API origin
-            var res = await client.PostAsJsonAsync("AdminAPI/feedback", req, ct);
-            var payload = await res.Content.ReadAsStringAsync(ct);
-            return new ContentResult { Content = payload, ContentType = "application/json", StatusCode = (int)res.StatusCode };
-
-        }
-        [HttpPost]
-        [ValidateAntiForgeryToken] // keep if you send the token header; else use [IgnoreAntiforgeryToken]
         public async Task<IActionResult> SubmitFeedback([FromBody] SubmitFeedbackRequest req, CancellationToken ct)
         {
             if (req is null) return BadRequest("Invalid payload.");
@@ -525,7 +516,7 @@ namespace NuraHerbex.Controllers
 
             if (req.OrderId <= 0) req.OrderId = 1; // fallback so API doesn’t get 0
 
-            var apiRes = await _httpClient.PostAsJsonAsync("AdminAPI/feedback", req, ct);
+            var apiRes = await _httpClient.PostAsJsonAsync("AdminAPI/submitfeedback", req, ct);
             var payload = await apiRes.Content.ReadAsStringAsync(ct);
 
             return new ContentResult

@@ -766,7 +766,9 @@ namespace APIs.Controllers
 
             return BadRequest(result.Errors);
         }
-        [HttpPost]
+        [AllowAnonymous]
+        [IgnoreAntiforgeryToken]
+        [HttpPost("submitfeedback")]
         public async Task<IActionResult> Submit([FromBody] SubmitFeedbackRequest req, CancellationToken ct)
         {
             if (req is null) return BadRequest("Invalid payload.");

@@ -273,7 +273,25 @@
             font-size: 14px;
         }
     /* so the 🗑 fits nicely */
+    #feedbackPopup {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%); /* true center */
+        z-index: 1000;
+        width: 400px; /* your existing width */
+        max-width: 90vw; /* responsive */
+        margin: 0; /* override any auto margins */
+    }
 
+    /* Optional dim background without adding extra HTML */
+    body.showing-feedback::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,.45);
+        z-index: 999; /* just under the popup */
+    }
 </style>
 <div class="orders-layout">
     @Html.Partial("_UserSidebar")
@@ -313,10 +331,7 @@
                     <button class="orders-ghost-btn"><img class="orders-btn-icon" src="~/image/userSidebar/Group.png" alt="Track" />Track Order</button>
                     <button class="orders-ghost-btn"><img class="orders-btn-icon" src="~/image/userSidebar/Vector.png" alt="Return" />Return Item</button>
                     <button class="orders-buyagain">Buy Again</button>
-                    <button class="open-feedback" data-order-id="@Model.OrderId" data-customer-id="@Model.CustomerId">
-                        Leave Feedback
-                    </button>
-
+                    <button class="orders-ghost-btn open-feedback" data-order-id="@Model.OrderId" data-customer-id="@Model.CustomerId"><img class="orders-btn-icon" src="~/image/homepage/feedback.svg" alt="Invoice" />Feedback </button>
                 </div>
             </div>
             <!-- In Progress -->
@@ -866,3 +881,32 @@
     window.AF_TOKEN = document.querySelector('input[name="__RequestVerificationToken"]')?.value || '';
 </script>
 <script src="~/js/feedback.js"></script>
+<script>
+    // Show/hide using the existing #feedbackPopup
+    function showFeedbackPopup() {
+      const popup = document.getElementById('feedbackPopup');
+      if (!popup) return;
+      popup.style.display = 'block';
+      document.body.classList.add('showing-feedback');  // adds backdrop
+      // focus first interactive element for a11y (first star/button)
+      popup.querySelector('.star, .checkout-btn, .close-btn')?.focus();
+    }
+
+    function hideFeedbackPopup() {
+      const popup = document.getElementById('feedbackPopup');
+      if (!popup) return;
+      popup.style.display = 'none';
+      document.body.classList.remove('showing-feedback'); // remove backdrop
+    }
+
+    // Close button (your existing data-close="#feedbackPopup")
+    document.addEventListener('click', (e) => {
+      const closer = e.target.closest('[data-close="#feedbackPopup"]');
+      if (closer) hideFeedbackPopup();
+    });
+
+    // ESC to close
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') hideFeedbackPopup();
+    });
+</script>
