@@ -15,13 +15,14 @@ using MimeKit;
 using MimeKit;
 using Newtonsoft.Json;
 using NuraHerbex.Models;
+using Org.BouncyCastle.Ocsp;
 using System.Diagnostics;
 using System.Net;
 using System.Net.Http;
 using System.Net.Mail;
 using System.Security.Claims;
-using System.Text.Json.Serialization;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using SmtpClient = MailKit.Net.Smtp.SmtpClient;
 //using static ServiceStack.Diagnostics.Events;
 
@@ -405,11 +406,46 @@ namespace NuraHerbex.Controllers
 		{
 			return View();
 		}
-		public IActionResult MyOrders()
+        public IActionResult MyOrders()
+        {
+            var vm = new MyOrdersViewModel
+            {
+                OrderId = 1, // or latest order id
+                CustomerId = "304e12ef-050d-4bb2-8b3e-958a67a69850",
+                // ... other fields
+            };
+            return View(vm);
+        }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> MyOrders([FromBody] SubmitFeedbackRequest req, [FromServices] IHttpClientFactory http, CancellationToken ct)
 		{
-			return View();
-		}
-		public IActionResult MyReturns()
+            var client = http.CreateClient("BackendApi"); // BaseAddress configured to your API origin
+            var res = await client.PostAsJsonAsync("AdminAPI/feedback", req, ct);
+            var payload = await res.Content.ReadAsStringAsync(ct);
+            return new ContentResult { Content = payload, ContentType = "application/json", StatusCode = (int)res.StatusCode };
+
+        }
+        [HttpPost]
+        [ValidateAntiForgeryToken] // keep if you send the token header; else use [IgnoreAntiforgeryToken]
+        public async Task<IActionResult> SubmitFeedback([FromBody] SubmitFeedbackRequest req, CancellationToken ct)
+        {
+            if (req is null) return BadRequest("Invalid payload.");
+            if (req.Rating < 1 || req.Rating > 5) return BadRequest("Rating must be 1..5.");
+
+            if (req.OrderId <= 0) req.OrderId = 1; // fallback so API doesn’t get 0
+
+            var apiRes = await _httpClient.PostAsJsonAsync("AdminAPI/feedback", req, ct);
+            var payload = await apiRes.Content.ReadAsStringAsync(ct);
+
+            return new ContentResult
+            {
+                Content = payload,
+                ContentType = "application/json",
+                StatusCode = (int)apiRes.StatusCode
+            };
+        }
+        public IActionResult MyReturns()
 		{
 			return View();
 		}

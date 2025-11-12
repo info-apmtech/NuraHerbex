@@ -281,7 +281,7 @@ namespace Domain.Models
     {
         public int Id { get; set; }
         public int OrderID { get; set; }
-        public int CustomerID { get; set; }
+        public string CustomerID { get; set; }
         public int RatingCount { get; set; }
         public string Message { get; set; }
         public DateTime SubmittedAt { get; set; } = DateTime.Now;

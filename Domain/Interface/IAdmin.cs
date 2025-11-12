@@ -107,5 +107,6 @@ namespace Domain.Interface
         Task<DoctorDetail> GetDoctorDetailByIdAsync(int id);
         Task<IdentityResult> AddOrUpdateDoctorDetailAsync(DoctorDetail detail);
         Task<IdentityResult> DeleteDoctorDetailAsync(int id);
+        Task<FeedBack> SaveAsync(SubmitFeedbackRequest req, CancellationToken ct = default);
     }
 }

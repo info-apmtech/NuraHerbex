@@ -331,4 +331,16 @@ namespace Domain.ViewModel
         public decimal UnitPrice { get; set; }
         public decimal LineTotal => Quantity * UnitPrice;
     }
+    public sealed class SubmitFeedbackRequest
+    {
+        public int OrderId { get; set; }                       // default 1 now
+        public string CustomerId { get; set; } = default!;     // default your GUID now
+        public int Rating { get; set; }                        // 1..5
+        public string? Message { get; set; }
+    }
+	public class MyOrdersViewModel
+	{
+		public int OrderId { get; set; }
+		public string CustomerId { get; set; }
+	}
 }

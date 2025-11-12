@@ -8,17 +8,17 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace APIs.Controllers
 {
-	[Route("api/[controller]")]
-	[ApiController]
-	[Authorize]
-	public class AdminAPIController : ControllerBase
-	{
-		private readonly IAdmin _adminservice;
+    [Route("api/[controller]")]
+    [ApiController]
+    [Authorize]
+    public class AdminAPIController : ControllerBase
+    {
+        private readonly IAdmin _adminservice;
 
-		public AdminAPIController(IAdmin adminservice)
-		{
-			_adminservice = adminservice;
-		}
+        public AdminAPIController(IAdmin adminservice)
+        {
+            _adminservice = adminservice;
+        }
         [AllowAnonymous]
         [HttpGet("users")]
         public async Task<IActionResult> GetUsers()
@@ -28,36 +28,36 @@ namespace APIs.Controllers
         }
         [AllowAnonymous]
         [HttpGet("users/{role}")]
-		public async Task<IActionResult> GetUsers(UserRole role)
-		{
-			var users = await _adminservice.GetUsersByRoleAsync(role);
-			return Ok(users);
-		}
+        public async Task<IActionResult> GetUsers(UserRole role)
+        {
+            var users = await _adminservice.GetUsersByRoleAsync(role);
+            return Ok(users);
+        }
 
-		[HttpGet("user/{id}")]
-		public async Task<IActionResult> GetUser(string id)
-		{
-			var user = await _adminservice.GetUserByIdAsync(id);
-			if (user == null)
-				return NotFound();
+        [HttpGet("user/{id}")]
+        public async Task<IActionResult> GetUser(string id)
+        {
+            var user = await _adminservice.GetUserByIdAsync(id);
+            if (user == null)
+                return NotFound();
 
-			return Ok(user);
-		}
+            return Ok(user);
+        }
 
-		[AllowAnonymous]
-		[HttpPost("register")]
-		public async Task<IActionResult> AddOrUpdateUser([FromBody] RegisterUser user)
-		{
-			if (!ModelState.IsValid)
-				return BadRequest(ModelState);
+        [AllowAnonymous]
+        [HttpPost("register")]
+        public async Task<IActionResult> AddOrUpdateUser([FromBody] RegisterUser user)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
 
-			var result = await _adminservice.AddOrUpdateUserAsync(user);
+            var result = await _adminservice.AddOrUpdateUserAsync(user);
 
-			if (result.Succeeded)
-				return Ok(new { success = true, message = "User saved successfully" });
+            if (result.Succeeded)
+                return Ok(new { success = true, message = "User saved successfully" });
 
-			return BadRequest(result.Errors);
-		}
+            return BadRequest(result.Errors);
+        }
         //[AllowAnonymous]
         //[HttpDelete("delete/{id}")]
         //public async Task<IActionResult> DeleteUser(string id)
@@ -83,7 +83,7 @@ namespace APIs.Controllers
             return Ok(category);
         }
 
-        [AllowAnonymous] 
+        [AllowAnonymous]
         [HttpGet("blogcategories")]
         public async Task<IActionResult> GetBlogCategories()
         {
@@ -91,7 +91,7 @@ namespace APIs.Controllers
             return Ok(categories);
         }
 
-        [AllowAnonymous] 
+        [AllowAnonymous]
         [HttpPost("blogcategory")]
         public async Task<IActionResult> AddOrUpdateBlogCategory([FromBody] BlogCategory category)
         {
@@ -559,70 +559,70 @@ namespace APIs.Controllers
 
             return BadRequest(result.Errors);
         }
-		// Cart
-		[AllowAnonymous]
-		[HttpGet("Cart/{userId}")]
-		public async Task<IActionResult> Cartlist(string userId)
-		{
-			var items = await _adminservice.GetCartByUserAsync(userId);
-			return Ok(items);
-		}
+        // Cart
+        [AllowAnonymous]
+        [HttpGet("Cart/{userId}")]
+        public async Task<IActionResult> Cartlist(string userId)
+        {
+            var items = await _adminservice.GetCartByUserAsync(userId);
+            return Ok(items);
+        }
 
-		[AllowAnonymous]
-		[HttpPost("Cart")]
-		public async Task<IActionResult> AddOrUpdateCart([FromBody] CartItem item)
-		{
-			if (item == null || string.IsNullOrEmpty(item.UserId) || item.ProductId <= 0)
-				return BadRequest("Invalid Cart item.");
+        [AllowAnonymous]
+        [HttpPost("Cart")]
+        public async Task<IActionResult> AddOrUpdateCart([FromBody] CartItem item)
+        {
+            if (item == null || string.IsNullOrEmpty(item.UserId) || item.ProductId <= 0)
+                return BadRequest("Invalid Cart item.");
 
-			// Default quantity when caller didn't set it
-			if (item.Quantity <= 0) item.Quantity = 1;
+            // Default quantity when caller didn't set it
+            if (item.Quantity <= 0) item.Quantity = 1;
 
-			var result = await _adminservice.AddOrUpdateCartAsync(item);
-			if (result.Succeeded)
-				return Ok(new { success = true, message = "Cart updated" });
+            var result = await _adminservice.AddOrUpdateCartAsync(item);
+            if (result.Succeeded)
+                return Ok(new { success = true, message = "Cart updated" });
 
-			return BadRequest(result.Errors);
-		}
+            return BadRequest(result.Errors);
+        }
 
-		[AllowAnonymous]
-		[HttpDelete("Cart/{id:int}")]
-		public async Task<IActionResult> DeleteCart(int id)
-		{
-			var result = await _adminservice.DeleteCartAsync(id);
-			if (result.Succeeded)
-				return Ok(new { success = true });
+        [AllowAnonymous]
+        [HttpDelete("Cart/{id:int}")]
+        public async Task<IActionResult> DeleteCart(int id)
+        {
+            var result = await _adminservice.DeleteCartAsync(id);
+            if (result.Succeeded)
+                return Ok(new { success = true });
 
-			return BadRequest(result.Errors);
-		}
+            return BadRequest(result.Errors);
+        }
 
-		// NEW: change qty by delta (vm.Quantity is used as delta)
-		[AllowAnonymous]
-		[HttpPost("Cart/quantity/change")]
-		public async Task<IActionResult> ChangeQuantity([FromBody] CartItemViewModel vm)
-		{
-			if (vm == null || vm.CartItemId <= 0 || vm.Quantity == 0)
-				return BadRequest("Invalid payload.");
+        // NEW: change qty by delta (vm.Quantity is used as delta)
+        [AllowAnonymous]
+        [HttpPost("Cart/quantity/change")]
+        public async Task<IActionResult> ChangeQuantity([FromBody] CartItemViewModel vm)
+        {
+            if (vm == null || vm.CartItemId <= 0 || vm.Quantity == 0)
+                return BadRequest("Invalid payload.");
 
-			var result = await _adminservice.ChangeCartQuantityAsync(vm.CartItemId, vm.Quantity);
-			if (result.Succeeded) return Ok(new { success = true });
-			return BadRequest(new { success = false, message = "Failed to change quantity." });
-		}
+            var result = await _adminservice.ChangeCartQuantityAsync(vm.CartItemId, vm.Quantity);
+            if (result.Succeeded) return Ok(new { success = true });
+            return BadRequest(new { success = false, message = "Failed to change quantity." });
+        }
 
-		// NEW: set absolute qty (vm.Quantity is the new value)
-		[AllowAnonymous]
-		[HttpPut("Cart/quantity/set")]
-		public async Task<IActionResult> SetQuantity([FromBody] CartItemViewModel vm)
-		{
-			if (vm == null || vm.CartItemId <= 0)
-				return BadRequest("Invalid payload.");
+        // NEW: set absolute qty (vm.Quantity is the new value)
+        [AllowAnonymous]
+        [HttpPut("Cart/quantity/set")]
+        public async Task<IActionResult> SetQuantity([FromBody] CartItemViewModel vm)
+        {
+            if (vm == null || vm.CartItemId <= 0)
+                return BadRequest("Invalid payload.");
 
-			var result = await _adminservice.SetCartQuantityAsync(vm.CartItemId, vm.Quantity);
-			if (result.Succeeded) return Ok(new { success = true });
-			return BadRequest(new { success = false, message = "Failed to set quantity." });
-		}
+            var result = await _adminservice.SetCartQuantityAsync(vm.CartItemId, vm.Quantity);
+            if (result.Succeeded) return Ok(new { success = true });
+            return BadRequest(new { success = false, message = "Failed to set quantity." });
+        }
 
-		[AllowAnonymous]
+        [AllowAnonymous]
         [HttpPost("consultationbooking")]
         public async Task<IActionResult> BookConsultation([FromBody] ConsultationBooking consultation)
         {
@@ -754,6 +754,16 @@ namespace APIs.Controllers
 
             return BadRequest(result.Errors);
         }
+        [HttpPost]
+        public async Task<IActionResult> Submit([FromBody] SubmitFeedbackRequest req, CancellationToken ct)
+        {
+            if (req is null) return BadRequest("Invalid payload.");
+            if (req.Rating < 1 || req.Rating > 5) return BadRequest("Rating must be 1..5.");
+
+            var saved = await _adminservice.SaveAsync(req, ct);
+            return Ok(new { saved.Id, saved.OrderID, saved.CustomerID, saved.RatingCount, saved.Message, saved.SubmittedAt });
+        }
+
 
     }
 }

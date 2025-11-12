@@ -34,9 +34,11 @@ namespace Domain.Implementation
 
 		// In-memory OTP store (You can store this in DB/Redis for production)
 		private static readonly ConcurrentDictionary<string, (string Otp, DateTime Expiry)> _otpStore = new();
+        private const int DEFAULT_ORDER_ID = 1;
+        private const string DEFAULT_CUSTOMER_ID = "304e12ef-050d-4bb2-8b3e-958a67a69850";
 
 
-		public AdminService(UserManager<RegisterUser> userManager, IConfiguration config, IHttpClientFactory httpClientFactory, NuraDbContext db, IEmailService emailService, IWebHostEnvironment env)
+        public AdminService(UserManager<RegisterUser> userManager, IConfiguration config, IHttpClientFactory httpClientFactory, NuraDbContext db, IEmailService emailService, IWebHostEnvironment env)
 		{
 			_usermanager = userManager;
 			_config = config;
@@ -1048,9 +1050,51 @@ namespace Domain.Implementation
             await _db.SaveChangesAsync();
             return IdentityResult.Success;
         }
+		public async Task<FeedBack> SaveAsync(SubmitFeedbackRequest req, CancellationToken ct = default)
+		{
+			// Apply defaults if missing
+			var orderId = req.OrderId != 0 ? req.OrderId : DEFAULT_ORDER_ID;
+			var customerId = !string.IsNullOrWhiteSpace(req.CustomerId) ? req.CustomerId : DEFAULT_CUSTOMER_ID;
 
-    }
+			// (Optional) If orderId == default and you want to try resolving the latest order for this customer:
+			// var resolvedOrderId = await _db.Orders
+			//     .Where(o => o.CustomerId == customerId)
+			//     .OrderByDescending(o => o.CreatedAt)
+			//     .Select(o => o.Id)
+			//     .FirstOrDefaultAsync(ct);
+			// if (resolvedOrderId != 0) orderId = resolvedOrderId;
+
+			if (req.Rating < 1 || req.Rating > 5)
+				throw new ArgumentOutOfRangeException(nameof(req.Rating), "Rating must be 1..5.");
+
+			// Upsert by (OrderID, CustomerID)
+			var existing = await _db.FeedBack
+				.FirstOrDefaultAsync(f => f.OrderID == orderId && f.CustomerID == customerId, ct);
+
+			if (existing is null)
+			{
+				var fb = new FeedBack
+				{
+					OrderID = orderId,
+					CustomerID = customerId,
+					RatingCount = req.Rating,
+					Message = req.Message,
+					SubmittedAt = DateTime.UtcNow
+				};
+				_db.FeedBack.Add(fb);
+				await _db.SaveChangesAsync(ct);
+				return fb;
+			}
+
+			existing.RatingCount = req.Rating;
+			existing.Message = req.Message;
+			existing.SubmittedAt = DateTime.UtcNow;
+			await _db.SaveChangesAsync(ct);
+			return existing;
+		}
+	}
 }
+
 
 
 
