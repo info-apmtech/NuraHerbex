@@ -1043,5 +1043,71 @@ namespace NuraHerbex.Controllers
             return RedirectToAction(nameof(AdminDoctorDetail));
         }
 
+        //Pincode
+
+        [HttpGet]
+        public async Task<IActionResult> AdminPincode(int id = 0)
+        {
+            var response = await AuthorizedClient.GetAsync("AdminAPI/pincodes");
+            var pincodes = response.IsSuccessStatusCode
+                ? JsonConvert.DeserializeObject<List<Pincode>>(await response.Content.ReadAsStringAsync()) ?? new List<Pincode>()
+                : new List<Pincode>();
+
+            var vm = new PincodeViewModel
+            {
+                PincodeList = pincodes,
+                NewPincode = new Pincode()
+            };
+
+            if (id > 0)
+            {
+                var pinResp = await AuthorizedClient.GetAsync($"AdminAPI/pincode/{id}");
+                if (pinResp.IsSuccessStatusCode)
+                {
+                    var pincode = JsonConvert.DeserializeObject<Pincode>(await pinResp.Content.ReadAsStringAsync());
+                    if (pincode != null)
+                        vm.NewPincode = pincode;
+                }
+            }
+
+            return View(vm);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AdminPincode(PincodeViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                TempData["Error"] = "Validation failed";
+                return View(model);
+            }
+
+            var response = await AuthorizedClient.PostAsJsonAsync("AdminAPI/pincode", model.NewPincode);
+
+            if (response.IsSuccessStatusCode)
+            {
+                TempData["Success"] = model.NewPincode.Id > 0 ? "Pincode updated successfully" : "Pincode added successfully";
+                return RedirectToAction(nameof(AdminPincode), new { id = 0 });
+            }
+
+            var error = await response.Content.ReadAsStringAsync();
+            TempData["Error"] = $"Error: {error}";
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeletePincode(int id)
+        {
+            var response = await AuthorizedClient.DeleteAsync($"AdminAPI/pincode/{id}");
+            if (response.IsSuccessStatusCode)
+                TempData["Success"] = "Pincode deleted successfully!";
+            else
+                TempData["Error"] = $"Delete failed: {await response.Content.ReadAsStringAsync()}";
+
+            return RedirectToAction(nameof(AdminPincode));
+        }
+
     }
 }

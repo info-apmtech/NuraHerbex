@@ -289,5 +289,18 @@ namespace Domain.Models
         public string Message { get; set; }
         public DateTime SubmittedAt { get; set; } = DateTime.Now;
     }
+    public class Pincode
+    {
+        public int Id { get; set; }
 
+        [Required]
+        [RegularExpression(@"^\d{6}$", ErrorMessage = "PIN must be exactly 6 digits.")]
+        [StringLength(6, MinimumLength = 6)]
+        public string Code { get; set; } = default!;
+
+        [StringLength(200)]
+        public string? Description { get; set; }
+
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    }
 }

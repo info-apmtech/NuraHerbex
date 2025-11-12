@@ -778,6 +778,52 @@ namespace APIs.Controllers
             return Ok(new { saved.Id, saved.OrderID, saved.CustomerID, saved.RatingCount, saved.Message, saved.SubmittedAt });
         }
 
+        //Pincode
+        [AllowAnonymous]
+        [HttpGet("pincodes")]
+        public async Task<IActionResult> GetPincodes()
+        {
+            var pincodes = await _adminservice.GetPincodesAsync();
+            return Ok(pincodes);
+        }
+
+        [AllowAnonymous]
+        [HttpGet("pincode/{id}")]
+        public async Task<IActionResult> GetPincode(int id)
+        {
+            var pincode = await _adminservice.GetPincodeByIdAsync(id);
+            if (pincode == null)
+                return NotFound();
+
+            return Ok(pincode);
+        }
+
+        [AllowAnonymous]
+        [HttpPost("pincode")]
+        public async Task<IActionResult> AddOrUpdatePincode([FromBody] Pincode pincode)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var result = await _adminservice.AddOrUpdatePincodeAsync(pincode);
+
+            if (result.Succeeded)
+                return Ok(new { success = true, message = "Pincode saved successfully" });
+
+            return BadRequest(result.Errors);
+        }
+
+        [AllowAnonymous]
+        [HttpDelete("pincode/{id}")]
+        public async Task<IActionResult> DeletePincode(int id)
+        {
+            var result = await _adminservice.DeletePincodeAsync(id);
+            if (result.Succeeded)
+                return Ok(new { success = true, message = "Pincode deleted successfully" });
+
+            return BadRequest(result.Errors);
+        }
+
 
     }
 }

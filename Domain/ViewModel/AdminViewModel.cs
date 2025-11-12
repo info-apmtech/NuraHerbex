@@ -362,6 +362,10 @@ namespace Domain.ViewModel
         public IEnumerable<SelectListItem> AddressItems { get; set; } = Enumerable.Empty<SelectListItem>();
 
     }
-
+    public class PincodeViewModel
+    {
+        public List<Pincode> PincodeList { get; set; } = new();
+        public Pincode NewPincode { get; set; } = new();
+    }
 }
 
