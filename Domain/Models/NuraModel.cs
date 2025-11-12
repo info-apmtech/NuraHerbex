@@ -300,7 +300,8 @@ namespace Domain.Models
 
         [StringLength(200)]
         public string? Description { get; set; }
-
+        public decimal? StandardDeliveryAmount { get; set; }
+        public decimal? ExpressDeliveryAmount { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
     public class PaymentGatewayDetails

@@ -41,6 +41,8 @@
                                     <th>#</th>
                                     <th>Code</th>
                                     <th>Description</th>
+                                    <th>Standard Delivery Amount</th>
+                                    <th>Express Delivery Amount</th>
                                     <th>Created At</th>
                                     <th style="min-width: 160px;">Actions</th>
                                 </tr>
@@ -55,6 +57,8 @@
                                             <td>@sno</td>
                                             <td>@item.Code</td>
                                             <td>@item.Description</td>
+                                            <td>@item.StandardDeliveryAmount</td>
+                                            <td>@item.ExpressDeliveryAmount</td>
                                             <td>@item.CreatedAt.ToString("dd MMM yyyy")</td>
                                             <td>
                                                 <form method="get" asp-action="AdminPincode" asp-route-id="@item.Id" style="display:inline;">
@@ -104,6 +108,18 @@
                                     <label asp-for="NewPincode.Description" class="form-label"></label>
                                     <input asp-for="NewPincode.Description" class="form-control" />
                                     <span asp-validation-for="NewPincode.Description" class="text-danger"></span>
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <label asp-for="NewPincode.StandardDeliveryAmount" class="form-label"></label>
+                                    <input asp-for="NewPincode.StandardDeliveryAmount" type="number" step="0.01" class="form-control" />
+                                    <span asp-validation-for="NewPincode.StandardDeliveryAmount" class="text-danger"></span>
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label asp-for="NewPincode.ExpressDeliveryAmount" class="form-label"></label>
+                                    <input asp-for="NewPincode.ExpressDeliveryAmount" type="number" step="0.01" class="form-control" />
+                                    <span asp-validation-for="NewPincode.ExpressDeliveryAmount" class="text-danger"></span>
                                 </div>
                             </div>
 

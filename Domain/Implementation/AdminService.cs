@@ -1174,6 +1174,8 @@ namespace Domain.Implementation
 
                 existing.Code = pincode.Code;
                 existing.Description = pincode.Description;
+                existing.StandardDeliveryAmount = pincode.StandardDeliveryAmount;
+                existing.ExpressDeliveryAmount = pincode.ExpressDeliveryAmount;
                 _db.Pincodes.Update(existing);
             }
             else
