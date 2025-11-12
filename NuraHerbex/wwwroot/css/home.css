@@ -2241,6 +2241,8 @@
     border-radius: 16px;
     padding: 2rem 1.75rem;
     transition: all 0.3s ease;
+    display: flex; 
+    flex-direction: column; 
 }
 
     .testimonial-card:hover {
@@ -2265,6 +2267,7 @@
     display: flex;
     align-items: center;
     gap: 1rem;
+    margin-top: auto;
 }
 
 .author-photo {
