@@ -520,6 +520,7 @@ namespace NuraHerbex.Controllers
 		{
 			var cart = await BuildCartViewModelAsync();
 
+
 			var vm = new OrderSummaryViewModel
 			{
 				Cart = cart,
@@ -557,7 +558,15 @@ namespace NuraHerbex.Controllers
 	}.Where(s => !string.IsNullOrWhiteSpace(s))),
 				Selected = (vm.SelectedAddressId == a.Id)
 			}).ToList();
+			// UI-only values (the POST recomputes on server)
+			vm.Shipping = 0m;
+			vm.Tax = 0m;
+			vm.TotalDiscount = 0m;
 
+			// Optional: prefill
+			vm.Order.UserId = userId;
+			vm.Order.OrderDate = DateTime.UtcNow;
+			vm.Order.Status = OrderStatus.OrderPlaced;
 			return View(vm);
 		}
 
@@ -1279,5 +1288,75 @@ namespace NuraHerbex.Controllers
 
 			return View("OrderSummary", addr);
 		}
+		[HttpPost]
+		[ValidateAntiForgeryToken]
+		public async Task<IActionResult> ProceedToPayment([FromForm] OrderSummaryViewModel input)
+		{
+			var userId = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "";
+			if (string.IsNullOrEmpty(userId)) return Unauthorized();
+
+			// 1️⃣ Get cart
+			var cart = await BuildCartViewModelAsync();
+			var items = cart.Items?.ToList() ?? new();
+			if (items.Count == 0) return BadRequest("Cart is empty.");
+
+			// 2️⃣ Get address
+			var resp = await _httpClient.GetAsync($"AdminAPI/addresses/{userId}");
+			var addrList = resp.IsSuccessStatusCode
+				? await resp.Content.ReadFromJsonAsync<List<AddressDetail>>() ?? new()
+				: new();
+			var address = addrList.FirstOrDefault(a => a.Id == input.SelectedAddressId);
+			if (address == null) return BadRequest("Address not found.");
+
+			// 3️⃣ Calculate totals
+			decimal subtotal = items.Sum(i => i.LineTotal);
+			decimal shipping = input.DeliveryOption == "express" ? 15m : 0m;
+			decimal tax = 0m;
+			decimal discount = 0m;
+			decimal total = subtotal + shipping + tax - discount;
+
+			// 4️⃣ Build order + details
+			var vm = new OrderSummaryViewModel
+			{
+				Order = new Order
+				{
+					UserId = userId,
+					AddressId = address.Id,
+					DoorNo = address.DoorNo,
+					PhoneNo = address.PhoneNumber,
+					Address = address.Address ?? "",
+					State = address.State,
+					PinCode = address.Pincode,
+					Country = address.Country,
+					OrderDate = DateTime.UtcNow,
+					Status = OrderStatus.OrderPlaced,
+					Subtotal = subtotal,
+					Tax = tax,
+					Shipping = shipping,
+					TotalDiscount = discount,
+					Total = total
+				},
+				Details = items.Select(i => new OrderDetail
+				{
+					ProductId = i.ProductId,
+					Quantity = i.Quantity,
+					UnitPrice = i.UnitPrice,
+					//ProductDiscount = i.productdis ?? 0m
+				}).ToList()
+			};
+
+			// 5️⃣ Call your backend API
+			var response = await _httpClient.PostAsJsonAsync("AdminAPI/Create", vm);
+			if (!response.IsSuccessStatusCode)
+				return BadRequest("Order creation failed.");
+
+			var result = await response.Content.ReadFromJsonAsync<Dictionary<string, int>>();
+			int orderId = result?["id"] ?? 0;
+
+			// 6️⃣ Redirect to payment
+			return RedirectToAction("Payment", "Checkout", new { orderId });
+		}
+
+
 	}
 }

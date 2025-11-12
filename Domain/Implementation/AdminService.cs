@@ -21,6 +21,7 @@ using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using static Domain.ViewModel.CartItemViewModel;
+using static System.Net.WebRequestMethods;
 
 namespace Domain.Implementation
 {
@@ -1223,6 +1224,20 @@ namespace Domain.Implementation
             return IdentityResult.Success;
         }
 
+		public async Task<int> CreateAsync(Order order, List<OrderDetail> details)
+		{
+			_db.Orders.Add(order);
+			await _db.SaveChangesAsync(); 
+
+			foreach (var d in details)
+				d.OrderId = order.Id;
+
+			_db.orderDetails.AddRange(details);
+			await _db.SaveChangesAsync();
+
+			return order.Id;
+		}
+	}
         public async Task<List<PaymentGatewayDetails>> GetPaymentGatewayDetailsAsync()
         {
             return await _db.PaymentGatewayDetails.OrderByDescending(p => p.Id).ToListAsync();

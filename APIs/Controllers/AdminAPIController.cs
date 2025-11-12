@@ -832,6 +832,11 @@ namespace APIs.Controllers
 
             return BadRequest(result.Errors);
         }
+		[HttpPost]
+		public async Task<IActionResult> Create([FromBody] OrderSummaryViewModel vm)
+		{
+			if (vm == null || vm.Order == null || vm.Details == null || vm.Details.Count == 0)
+				return BadRequest("Invalid data.");
 
         //payment
         [AllowAnonymous]
@@ -856,6 +861,9 @@ namespace APIs.Controllers
             var payments = await _adminservice.GetPaymentGatewayDetailsAsync();
             return Ok(payments);
         }
+			var orderId = await _adminservice.CreateAsync(vm.Order, vm.Details);
+			return Ok(new { id = orderId });
+		}
 
-    }
+	}
 }

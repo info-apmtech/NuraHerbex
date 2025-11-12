@@ -31,7 +31,7 @@ namespace Domain.Models
         public DbSet<FeedBack> FeedBack { get; set; }
         public DbSet<Pincode> Pincodes { get; set; }
         public DbSet<PaymentGatewayDetails> PaymentGatewayDetails { get; set; }
-
-
+        public DbSet<Order> Orders { get; set; }
+        public DbSet<OrderDetail> orderDetails { get; set; }
     }
 }
