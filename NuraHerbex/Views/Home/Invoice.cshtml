@@ -1,15 +1,44 @@
 ﻿@{
     Layout = null;
     ViewData["Title"] = "Purchase Order";
+
+    // ===== Supplier Info =====
+    var supplierName = "ABC Components Pvt. Ltd.";
+    var supplierAddress = "No. 45, Industrial Estate, Peenya, Bengaluru - 560058";
+    var supplierGSTIN = "29AACCA1234D1ZB";
+    var supplierEmail = "contact@abccomponents.com";
+    var supplierPhone = "+91 98765 43210";
+
+    // ===== Company Info =====
+    var companyName = "NMSIM Technologies Pvt. Ltd.";
+    var companyAddress = "No. 12, 2nd Floor, Tech Park Road, Chennai - 600042";
+    var companyGSTIN = "33AAFCN5678G1ZT";
+    var companyEmail = "accounts@nmsimtech.com";
+    var companyPhone = "+91 91234 56789";
+
+    // ===== Purchase Order Info =====
+    var poNumber = "PO/2025/0012";
+    var poDate = "28-Oct-2025";
+
+    // ===== Item List (dummy) =====
+    var items = new List<dynamic>
+    {
+        new { SNo = 1, Description = "GPS Tracking Module - AIS140<br/>Model: NMSIM-GT06", HSN = "8526", Qty = 50, UnitPrice = 2000.00, GST = 18, GSTAmount = 18000.00, Total = 118000.00 },
+        new { SNo = 2, Description = "SIM Card (IoT Data SIM)<br/>Data Plan: 1 Year Validity", HSN = "8517", Qty = 50, UnitPrice = 150.00, GST = 18, GSTAmount = 1350.00, Total = 8850.00 }
+    };
+
+    // ===== Totals =====
+    var subtotal = 109850.00;
+    var totalGST = 19350.00;
+    var grandTotal = 129200.00;
 }
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Purchase Order - Invoice</title>
+    <title>@ViewData["Title"]</title>
 
-    <!-- Bootstrap 5 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
 
     <style>
@@ -62,7 +91,6 @@
             border-top: none !important;
         }
 
-        /* ---- Print Styling ---- */
         @@media print {
             body {
                 margin: 0;
@@ -98,10 +126,6 @@
                 size: A4;
                 margin: 1.5cm;
             }
-
-            .page-break {
-                page-break-before: always;
-            }
         }
     </style>
 </head>
@@ -118,21 +142,21 @@
             <div class="col-md-6">
                 <h5>Supplier</h5>
                 <div>
-                    <strong>ABC Components Pvt. Ltd.</strong><br />
-                    No. 45, Industrial Estate, Peenya,<br />
-                    Bengaluru - 560058<br />
-                    GSTIN: 29AACCA1234D1ZB<br />
-                    Email: contact@abccomponents.com
+                    <strong>@supplierName</strong><br />
+                    @supplierAddress<br />
+                    GSTIN: @supplierGSTIN<br />
+                    Email: @supplierEmail<br />
+                    Phone: @supplierPhone
                 </div>
             </div>
             <div class="col-md-6 text-md-end">
                 <h5>Company</h5>
                 <div>
-                    <strong>NMSIM Technologies Pvt. Ltd.</strong><br />
-                    No. 12, 2nd Floor, Tech Park Road,<br />
-                    Chennai - 600042<br />
-                    GSTIN: 33AAFCN5678G1ZT<br />
-                    Email: accounts@nmsimtech.com
+                    <strong>@companyName</strong><br />
+                    @companyAddress<br />
+                    GSTIN: @companyGSTIN<br />
+                    Email: @companyEmail<br />
+                    Phone: @companyPhone
                 </div>
             </div>
         </div>
@@ -140,10 +164,10 @@
         <!-- Meta Info -->
         <div class="row mb-3">
             <div class="col-md-6">
-                <strong>PO No:</strong> PO/2025/0012
+                <strong>PO No:</strong> @poNumber
             </div>
             <div class="col-md-6 text-md-end">
-                <strong>PO Date:</strong> 28-Oct-2025
+                <strong>PO Date:</strong> @poDate
             </div>
         </div>
 
@@ -163,26 +187,19 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td class="text-center">1</td>
-                        <td><strong>GPS Tracking Module - AIS140</strong><br />Model: NMSIM-GT06</td>
-                        <td class="text-center">8526</td>
-                        <td class="text-end">50</td>
-                        <td class="text-end">2,000.00</td>
-                        <td class="text-end">18%</td>
-                        <td class="text-end">18,000.00</td>
-                        <td class="text-end">1,18,000.00</td>
-                    </tr>
-                    <tr>
-                        <td class="text-center">2</td>
-                        <td><strong>SIM Card (IoT Data SIM)</strong><br />Data Plan: 1 Year Validity</td>
-                        <td class="text-center">8517</td>
-                        <td class="text-end">50</td>
-                        <td class="text-end">150.00</td>
-                        <td class="text-end">18%</td>
-                        <td class="text-end">1,350.00</td>
-                        <td class="text-end">8,850.00</td>
-                    </tr>
+                    @foreach (var item in items)
+                    {
+                        <tr>
+                            <td class="text-center">@item.SNo</td>
+                            <td>@Html.Raw(item.Description)</td>
+                            <td class="text-center">@item.HSN</td>
+                            <td class="text-end">@item.Qty</td>
+                            <td class="text-end">@item.UnitPrice.ToString("N2")</td>
+                            <td class="text-end">@item.GST%</td>
+                            <td class="text-end">@item.GSTAmount.ToString("N2")</td>
+                            <td class="text-end">@item.Total.ToString("N2")</td>
+                        </tr>
+                    }
                 </tbody>
             </table>
         </div>
@@ -193,15 +210,15 @@
                 <table class="table table-borderless">
                     <tr class="totals">
                         <td class="text-end fw-bold">Subtotal (Net):</td>
-                        <td class="text-end">₹1,09,850.00</td>
+                        <td class="text-end">₹@subtotal.ToString("N2")</td>
                     </tr>
                     <tr class="totals">
                         <td class="text-end fw-bold">Total GST:</td>
-                        <td class="text-end">₹19,350.00</td>
+                        <td class="text-end">₹@totalGST.ToString("N2")</td>
                     </tr>
                     <tr class="totals border-top">
                         <td class="text-end fw-bold">Grand Total:</td>
-                        <td class="text-end fw-bold">₹1,29,200.00</td>
+                        <td class="text-end fw-bold">₹@grandTotal.ToString("N2")</td>
                     </tr>
                 </table>
             </div>
@@ -215,7 +232,7 @@
             <div class="col-6 text-end">
                 <p><strong>Authorized Signatory</strong></p>
                 <div style="height:50px;"></div>
-                <p class="text-muted small">For NMSIM Technologies Pvt. Ltd.</p>
+                <p class="text-muted small">For @companyName</p>
             </div>
         </div>
 
@@ -228,3 +245,6 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
+<script type="text/javascript">
+    window.onload = function () { window.print(); }
+</script>

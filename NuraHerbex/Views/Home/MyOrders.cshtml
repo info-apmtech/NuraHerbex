@@ -2,13 +2,12 @@
 
 
 @{
+    Layout = "~/Views/Shared/_Layout.cshtml";
     var defaultOrderId = Model?.OrderId ?? 1; // fallback
     var defaultCustomerId = Model?.CustomerId ?? "304e12ef-050d-4bb2-8b3e-958a67a69850";
+    ViewData["Title"] = "My Orders";
 }
-@{
-    Layout = "~/Views/Shared/_Layout.cshtml";
-   
-}
+
 <style>
     .rating-stars {
         display: flex;
