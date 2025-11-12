@@ -1346,7 +1346,7 @@ namespace NuraHerbex.Controllers
 			};
 
 			// 5️⃣ Call your backend API
-			var response = await _httpClient.PostAsJsonAsync("AdminAPI/Create", vm);
+			var response = await _httpClient.PostAsJsonAsync("AdminAPI/orders", vm);
 			if (!response.IsSuccessStatusCode)
 				return BadRequest("Order creation failed.");
 
@@ -1354,7 +1354,7 @@ namespace NuraHerbex.Controllers
 			int orderId = result?["id"] ?? 0;
 
 			// 6️⃣ Redirect to payment
-			return RedirectToAction("Payment", "Checkout", new { orderId });
+			return RedirectToAction("Payment", "Home", new { orderId });
 		}
 
 

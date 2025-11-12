@@ -832,7 +832,8 @@ namespace APIs.Controllers
 
             return BadRequest(result.Errors);
         }
-        [HttpPost]
+        [AllowAnonymous]
+        [HttpPost("orders")]
         public async Task<IActionResult> Create([FromBody] OrderSummaryViewModel vm)
         {
             if (vm == null || vm.Order == null || vm.Details == null || vm.Details.Count == 0)
