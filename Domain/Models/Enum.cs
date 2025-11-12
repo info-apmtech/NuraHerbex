@@ -36,5 +36,12 @@ namespace Domain.Models
 	{
 		Registration,
 	}
-
+	public enum OrderStatus
+	{
+		OrderPlaced,
+		Paid,
+		Shipped,
+		Completed,
+		Cancelled
+	}
 }

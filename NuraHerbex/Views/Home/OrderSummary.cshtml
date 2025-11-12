@@ -792,30 +792,30 @@
 		}
 	}
 	<!-- Price Breakdown -->
-	<div class="summary-content">
-		<!-- Product Details -->
-		<div class="product-details">
-			<!-- Price Breakdown -->
-			<div class="price-breakdown">
-				<div class="price-row">
-					<span>Subtotal</span>
-					<span id="subtotal">₹@Model.SubTotal.ToString("0.00")</span>
-				</div>
-
-				<div class="price-row">
-					<span>Delivery</span>
-					<span>$ 5.00</span>
-				</div>
-
-				<hr class="divider">
-
-				<div class="price-row total">
-					<span>Total</span>
-					<span id="total">₹ 54.00</span>
-				</div>
-			</div>
+	<div class="price-breakdown">
+		<div class="price-row">
+			<span>Subtotal</span>
+			<span id="subtotal">₹@Model.SubTotal.ToString("N2")</span>
+		</div>
+		<div class="price-row">
+			<span>Delivery</span>
+			<span id="shipping">₹@Model.Shipping.ToString("N2")</span>
+		</div>
+		<div class="price-row">
+			<span>Tax</span>
+			<span id="tax">₹@Model.Tax.ToString("N2")</span>
+		</div>
+		<div class="price-row">
+			<span>Discount</span>
+			<span id="discount">−₹@Model.TotalDiscount.ToString("N2")</span>
+		</div>
+		<hr class="divider">
+		<div class="price-row total">
+			<span>Total</span>
+			<span id="total">₹@Model.GrandTotal.ToString("N2")</span>
 		</div>
 	</div>
+
 	<!-- Security Icons -->
 	<div class="secure-icons">
 		<div class="security-item">
@@ -943,7 +943,7 @@
 			</label>
 		</div>
 
-		<!-- Coupon Code -->
+		@* <!-- Coupon Code -->
 		<div class="coupon-section">
 			<h3 class="subsection-title">Coupon Code</h3>
 			<div class="coupon-input-wrapper">
@@ -954,11 +954,17 @@
 				<input type="text" class="coupon-input" placeholder="Enter Coupon code">
 				<button class="apply-btn">Apply</button>
 			</div>
-		</div>
+		</div> *@
 
 		<!-- Proceed Button -->
 		<div class="proceed-section">
-			<button class="proceed-btn">Proceed to Payment</button>
+			<form asp-action="ProceedToPayment" method="post">
+				@Html.AntiForgeryToken()
+				<input type="hidden" name="SelectedAddressId" value="@Model.SelectedAddressId" />
+				<input type="hidden" name="DeliveryOption" value="standard" />
+				@* <input type="hidden" name="CouponCode" value="" /> *@
+				<button type="submit" class="proceed-btn">Proceed to Payment</button>
+			</form>
 		</div>
 	</div>
 </div>
@@ -1057,3 +1063,33 @@
 </script>
 
 @* } *@
+<script>
+	(function () {
+	  // Hidden inputs in the submit form
+	  const form = document.querySelector('.proceed-section form');
+	  if (!form) return;
+
+	  const hiddenAddress  = form.querySelector('input[name="SelectedAddressId"]');
+	  const hiddenDelivery = form.querySelector('input[name="DeliveryOption"]');
+
+	  // Address dropdown -> hidden SelectedAddressId
+	  const addressSelect = document.getElementById('addressSelect');
+	  if (addressSelect && hiddenAddress) {
+		hiddenAddress.value = addressSelect.value || '';
+		addressSelect.addEventListener('change', () => {
+		  hiddenAddress.value = addressSelect.value || '';
+		});
+	  }
+
+	  // Delivery radios -> hidden DeliveryOption
+	  const deliveryRadios = document.querySelectorAll('input[name="delivery"]');
+	  function syncDelivery() {
+		const checked = Array.from(deliveryRadios).find(r => r.checked);
+		if (checked && hiddenDelivery) hiddenDelivery.value = checked.value;
+	  }
+	  if (deliveryRadios.length) {
+		syncDelivery();
+		deliveryRadios.forEach(r => r.addEventListener('change', syncDelivery));
+	  }
+	})();
+</script>

@@ -117,5 +117,7 @@ namespace Domain.Interface
         Task<Pincode?> GetPincodeByIdAsync(int id);
         Task<IdentityResult> AddOrUpdatePincodeAsync(Pincode pincode);
         Task<IdentityResult> DeletePincodeAsync(int id);
-    }
+		//order
+		Task<int> CreateAsync(Order order, List<OrderDetail> details);
+	}
 }
