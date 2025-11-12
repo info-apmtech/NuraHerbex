@@ -1109,7 +1109,59 @@ namespace Domain.Implementation
 			await _db.SaveChangesAsync(ct);
 			return existing;
 		}
-	}
+
+        //Pincode 
+        // Get all pincodes
+        public async Task<List<Pincode>> GetPincodesAsync()
+        {
+            return await _db.Pincodes.OrderByDescending(p => p.CreatedAt).ToListAsync();
+        }
+
+        // Get pincode by Id
+        public async Task<Pincode?> GetPincodeByIdAsync(int id)
+        {
+            return await _db.Pincodes.FindAsync(id);
+        }
+
+        // Add or update pincode
+        public async Task<IdentityResult> AddOrUpdatePincodeAsync(Pincode pincode)
+        {
+            if (pincode == null)
+                return IdentityResult.Failed(new IdentityError { Description = "Pincode cannot be null" });
+
+            if (pincode.Id > 0)
+            {
+                var existing = await _db.Pincodes.FindAsync(pincode.Id);
+                if (existing == null)
+                    return IdentityResult.Failed(new IdentityError { Description = "Pincode not found" });
+
+                existing.Code = pincode.Code;
+                existing.Description = pincode.Description;
+                _db.Pincodes.Update(existing);
+            }
+            else
+            {
+                pincode.CreatedAt = DateTime.UtcNow;
+                await _db.Pincodes.AddAsync(pincode);
+            }
+
+            await _db.SaveChangesAsync();
+            return IdentityResult.Success;
+        }
+
+        // Delete pincode
+        public async Task<IdentityResult> DeletePincodeAsync(int id)
+        {
+            var existing = await _db.Pincodes.FindAsync(id);
+            if (existing == null)
+                return IdentityResult.Failed(new IdentityError { Description = "Pincode not found" });
+
+            _db.Pincodes.Remove(existing);
+            await _db.SaveChangesAsync();
+            return IdentityResult.Success;
+        }
+
+    }
 }
 
 

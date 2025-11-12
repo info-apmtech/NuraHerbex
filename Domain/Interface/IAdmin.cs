@@ -111,5 +111,11 @@ namespace Domain.Interface
         Task<IdentityResult> AddOrUpdateDoctorDetailAsync(DoctorDetail detail);
         Task<IdentityResult> DeleteDoctorDetailAsync(int id);
         Task<FeedBack> SaveAsync(SubmitFeedbackRequest req, CancellationToken ct = default);
+
+        //Pincode
+        Task<List<Pincode>> GetPincodesAsync();
+        Task<Pincode?> GetPincodeByIdAsync(int id);
+        Task<IdentityResult> AddOrUpdatePincodeAsync(Pincode pincode);
+        Task<IdentityResult> DeletePincodeAsync(int id);
     }
 }
