@@ -67,12 +67,16 @@ namespace NuraHerbex.Controllers
                 ModelState.AddModelError("", "Login failed. Token missing.");
                 return View(model);
             }
-
+            var roles = (result.Roles ?? Enumerable.Empty<string>()).ToList();
+            if (!roles.Any() && result.User != null)
+            {
+                roles.Add(result.User.Role.ToString());
+            }
             HttpContext.Session.SetString("JwtToken", result.Token);
 
-            var roles = (result.Roles ?? Enumerable.Empty<string>())
-                .Where(r => !string.IsNullOrWhiteSpace(r))
-                .Select(r => r.Trim());
+            //var roles = (result.Roles ?? Enumerable.Empty<string>())
+            //    .Where(r => !string.IsNullOrWhiteSpace(r))
+            //    .Select(r => r.Trim());
 
             var claims = new List<Claim>
         {
@@ -92,8 +96,10 @@ namespace NuraHerbex.Controllers
             HttpContext.User = principal;
 
             // Redirect based on role; you can customize
-            if (principal.IsInRole("Admin") || principal.IsInRole("Employee") || principal.IsInRole("Doctor"))
+            if (principal.IsInRole("Admin") || principal.IsInRole("Employee"))
                 return RedirectToAction("UserCreation", "Admin");
+            else if (principal.IsInRole("Doctor"))
+                return RedirectToAction("DoctorConsultation", "Admin");
             else
                 return RedirectToAction("MyOrders", "Home");
         }

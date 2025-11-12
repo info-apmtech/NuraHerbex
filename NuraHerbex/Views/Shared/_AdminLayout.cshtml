@@ -53,108 +53,125 @@
                     <li class="nav-item pcoded-menu-caption">
                         <label>Navigation</label>
                     </li>
-                    <li class="nav-item">
-                        <a href="@Url.Action("Index", "Admin")" class="nav-link">
-                            <span class="pcoded-micon"><i class="feather icon-home"></i></span>
-                            <span class="pcoded-mtext">Dashboard</span>
-                        </a>
-                    </li>
 
-                    <li class="nav-item">
-                        <a href="@Url.Action("UserCreation", "Admin")" class="nav-link">
-                            <span class="pcoded-micon"><i class="feather icon-user"></i></span>
-                            <span class="pcoded-mtext">User Creation</span>
-                        </a>
-                    </li>
+                    @if (User.IsInRole("Admin"))
+                    {
+                        <!-- ✅ Show all admin items -->
+                        <li class="nav-item">
+                            <a href="@Url.Action("Index", "Admin")" class="nav-link">
+                                <span class="pcoded-micon"><i class="feather icon-home"></i></span>
+                                <span class="pcoded-mtext">Dashboard</span>
+                            </a>
+                        </li>
 
-                    <li class="nav-item">
-                        <a href="@Url.Action("Product", "Admin")" class="nav-link">
-                            <span class="pcoded-micon"><i class="feather icon-box"></i></span>
-                            <span class="pcoded-mtext">Product</span>
-                        </a>
-                    </li>
+                        <li class="nav-item">
+                            <a href="@Url.Action("UserCreation", "Admin")" class="nav-link">
+                                <span class="pcoded-micon"><i class="feather icon-user"></i></span>
+                                <span class="pcoded-mtext">User Creation</span>
+                            </a>
+                        </li>
 
-                    <li class="nav-item">
-                        <a href="@Url.Action("AdminIngredient", "Admin")" class="nav-link">
-                            <span class="pcoded-micon"><i class="feather icon-droplet"></i></span>
-                            <span class="pcoded-mtext">Ingredient</span>
-                        </a>
-                    </li>
+                        <li class="nav-item">
+                            <a href="@Url.Action("Product", "Admin")" class="nav-link">
+                                <span class="pcoded-micon"><i class="feather icon-box"></i></span>
+                                <span class="pcoded-mtext">Product</span>
+                            </a>
+                        </li>
 
-                    <li class="nav-item">
-                        <a href="@Url.Action("AdminIngredientCategory", "Admin")" class="nav-link">
-                            <span class="pcoded-micon"><i class="feather icon-layers"></i></span>
-                            <span class="pcoded-mtext">Ingredient Category</span>
-                        </a>
-                    </li>
+                        <li class="nav-item">
+                            <a href="@Url.Action("AdminIngredient", "Admin")" class="nav-link">
+                                <span class="pcoded-micon"><i class="feather icon-droplet"></i></span>
+                                <span class="pcoded-mtext">Ingredient</span>
+                            </a>
+                        </li>
 
-                    <li class="nav-item">
-                        <a href="@Url.Action("AdminBlog", "Admin")" class="nav-link">
-                            <span class="pcoded-micon"><i class="feather icon-file-text"></i></span>
-                            <span class="pcoded-mtext">Blogs</span>
-                        </a>
-                    </li>
+                        <li class="nav-item">
+                            <a href="@Url.Action("AdminIngredientCategory", "Admin")" class="nav-link">
+                                <span class="pcoded-micon"><i class="feather icon-layers"></i></span>
+                                <span class="pcoded-mtext">Ingredient Category</span>
+                            </a>
+                        </li>
 
-                    <li class="nav-item">
-                        <a href="@Url.Action("AdminBlogCategory", "Admin")" class="nav-link">
-                            <span class="pcoded-micon"><i class="feather icon-tag"></i></span>
-                            <span class="pcoded-mtext">Blog Category</span>
-                        </a>
-                    </li>
+                        <li class="nav-item">
+                            <a href="@Url.Action("AdminBlog", "Admin")" class="nav-link">
+                                <span class="pcoded-micon"><i class="feather icon-file-text"></i></span>
+                                <span class="pcoded-mtext">Blogs</span>
+                            </a>
+                        </li>
 
-                    <li class="nav-item">
-                        <a href="@Url.Action("AdminGSTEntry", "Admin")" class="nav-link">
-                            <span class="pcoded-micon"><i class="feather icon-percent"></i></span>
-                            <span class="pcoded-mtext">GST</span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="@Url.Action("AdminPricingPlan", "Admin")" class="nav-link">
-                            <span class="pcoded-micon"><i class="feather icon-credit-card"></i></span>
-                            <span class="pcoded-mtext">Pricing Plan</span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="@Url.Action("AdminDoctorSpeciality", "Admin")" class="nav-link">
-                            <span class="pcoded-micon"><i class="fas fa-stethoscope"></i></span>
-                            <span class="pcoded-mtext">Doctor Speciality</span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="@Url.Action("DoctorConsultation", "Admin")" class="nav-link">
-                            <span class="pcoded-micon"><i class="feather icon-activity"></i></span>
-                            <span class="pcoded-mtext">Doctor Consultation</span>
-                        </a>
-                    </li>
+                        <li class="nav-item">
+                            <a href="@Url.Action("AdminBlogCategory", "Admin")" class="nav-link">
+                                <span class="pcoded-micon"><i class="feather icon-tag"></i></span>
+                                <span class="pcoded-mtext">Blog Category</span>
+                            </a>
+                        </li>
 
-                    <li class="nav-item">
-                        <a href="@Url.Action("AdminDoctorDetail", "Admin")" class="nav-link">
-                            <span class="pcoded-micon"><i class="feather icon-user-check"></i></span>
-                            <span class="pcoded-mtext">Doctor Details</span>
-                        </a>
-                    </li>
+                        <li class="nav-item">
+                            <a href="@Url.Action("AdminGSTEntry", "Admin")" class="nav-link">
+                                <span class="pcoded-micon"><i class="feather icon-percent"></i></span>
+                                <span class="pcoded-mtext">GST</span>
+                            </a>
+                        </li>
 
-                    <li class="nav-item">
-                        <a href="@Url.Action("SubscribeDetail", "Admin")" class="nav-link">
-                            <span class="pcoded-micon"><i class="feather icon-credit-card"></i></span>
-                            <span class="pcoded-mtext">Subscribe Detail </span>
-                        </a>
-                    </li>
+                        <li class="nav-item">
+                            <a href="@Url.Action("AdminPricingPlan", "Admin")" class="nav-link">
+                                <span class="pcoded-micon"><i class="feather icon-credit-card"></i></span>
+                                <span class="pcoded-mtext">Pricing Plan</span>
+                            </a>
+                        </li>
 
-                    <li class="nav-item">
-                        <a href="@Url.Action("AdminPincode", "Admin")" class="nav-link">
-                            <span class="pcoded-micon"><i class="feather icon-map-pin"></i></span>
-                            <span class="pcoded-mtext">Pincode</span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="@Url.Action("PaymentDetails", "Admin")" class="nav-link">
-                            <span class="pcoded-micon"><i class="feather icon-briefcase"></i></span>
-                            <span class="pcoded-mtext">Payment Details</span>
-                        </a>
-                    </li>
+                        <li class="nav-item">
+                            <a href="@Url.Action("AdminDoctorSpeciality", "Admin")" class="nav-link">
+                                <span class="pcoded-micon"><i class="fas fa-stethoscope"></i></span>
+                                <span class="pcoded-mtext">Doctor Speciality</span>
+                            </a>
+                        </li>
 
+                        <li class="nav-item">
+                            <a href="@Url.Action("DoctorConsultation", "Admin")" class="nav-link">
+                                <span class="pcoded-micon"><i class="feather icon-activity"></i></span>
+                                <span class="pcoded-mtext">Doctor Consultation</span>
+                            </a>
+                        </li>
 
+                        <li class="nav-item">
+                            <a href="@Url.Action("AdminDoctorDetail", "Admin")" class="nav-link">
+                                <span class="pcoded-micon"><i class="feather icon-user-check"></i></span>
+                                <span class="pcoded-mtext">Doctor Details</span>
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a href="@Url.Action("SubscribeDetail", "Admin")" class="nav-link">
+                                <span class="pcoded-micon"><i class="feather icon-credit-card"></i></span>
+                                <span class="pcoded-mtext">Subscribe Detail </span>
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a href="@Url.Action("AdminPincode", "Admin")" class="nav-link">
+                                <span class="pcoded-micon"><i class="feather icon-map-pin"></i></span>
+                                <span class="pcoded-mtext">Pincode</span>
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a href="@Url.Action("PaymentDetails", "Admin")" class="nav-link">
+                                <span class="pcoded-micon"><i class="feather icon-briefcase"></i></span>
+                                <span class="pcoded-mtext">Payment Details</span>
+                            </a>
+                        </li>
+                    }
+                    else if (User.IsInRole("Doctor"))
+                    {
+                        <!-- ✅ Show only doctor consultation -->
+                        <li class="nav-item">
+                            <a href="@Url.Action("DoctorConsultation", "Admin")" class="nav-link">
+                                <span class="pcoded-micon"><i class="feather icon-activity"></i></span>
+                                <span class="pcoded-mtext">Doctor Consultation</span>
+                            </a>
+                        </li>
+                    }
                 </ul>
             </div>
         </div>
@@ -188,9 +205,16 @@
                             <div class="pro-head">
                                 <img src="~/assets/images/user/avatar-1.jpg" class="img-radius" alt="User-Profile-Image">
                                 <span>John Doe</span>
-                                <a asp-action="LogOut" asp-controller="Authentication" class="dud-logout" title="Logout">
+                                @* <a asp-action="LogOut" asp-controller="Authentication" class="dud-logout" title="Logout">
                                     <i class="feather icon-log-out"></i>
-                                </a>
+                                </a> *@
+                                <form asp-controller="Authentication" asp-action="LogOut" method="post" style="display:inline;">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit"
+                                            style="background:none; border:none; padding:0; margin:0; color:inherit; text-decoration:none; cursor:pointer;">
+                                        <i class="feather icon-log-out m-r-5"></i>
+                                    </button>
+                                </form>
                             </div>
                             <ul class="pro-body">
                                 <li><a href="user-profile.html" class="dropdown-item"><i class="feather icon-user"></i> Profile</a></li>

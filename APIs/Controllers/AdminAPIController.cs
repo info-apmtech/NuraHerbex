@@ -788,7 +788,7 @@ namespace APIs.Controllers
         }
 
         //Pincode
-        [AllowAnonymous]
+        [Authorize(Roles = "Admin,Employee")]
         [HttpGet("pincodes")]
         public async Task<IActionResult> GetPincodes()
         {
@@ -796,7 +796,7 @@ namespace APIs.Controllers
             return Ok(pincodes);
         }
 
-        [AllowAnonymous]
+        [Authorize(Roles = "Admin,Employee")]
         [HttpGet("pincode/{id}")]
         public async Task<IActionResult> GetPincode(int id)
         {
@@ -807,7 +807,8 @@ namespace APIs.Controllers
             return Ok(pincode);
         }
 
-        [AllowAnonymous]
+
+        [Authorize(Roles = "Admin")]
         [HttpPost("pincode")]
         public async Task<IActionResult> AddOrUpdatePincode([FromBody] Pincode pincode)
         {
@@ -822,7 +823,7 @@ namespace APIs.Controllers
             return BadRequest(result.Errors);
         }
 
-        [AllowAnonymous]
+        [Authorize(Roles = "Admin")]
         [HttpDelete("pincode/{id}")]
         public async Task<IActionResult> DeletePincode(int id)
         {
