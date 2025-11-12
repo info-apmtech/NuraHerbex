@@ -29,18 +29,18 @@ namespace APIs.Controllers
         }
         [AllowAnonymous]
         [HttpGet("users/{role}")]
-		public async Task<IActionResult> GetUsers(UserRole role)
-		{
-			var users = await _adminservice.GetUsersByRoleAsync(role);
-			return Ok(users);
-		}
+        public async Task<IActionResult> GetUsers(UserRole role)
+        {
+            var users = await _adminservice.GetUsersByRoleAsync(role);
+            return Ok(users);
+        }
         [AllowAnonymous]
         [HttpGet("user/{id}")]
-		public async Task<IActionResult> GetUser(string id)
-		{
-			var user = await _adminservice.GetUserByIdAsync(id);
-			if (user == null)
-				return NotFound();
+        public async Task<IActionResult> GetUser(string id)
+        {
+            var user = await _adminservice.GetUserByIdAsync(id);
+            if (user == null)
+                return NotFound();
 
             return Ok(user);
         }
@@ -831,6 +831,40 @@ namespace APIs.Controllers
                 return Ok(new { success = true, message = "Pincode deleted successfully" });
 
             return BadRequest(result.Errors);
+        }
+        [HttpPost]
+        public async Task<IActionResult> Create([FromBody] OrderSummaryViewModel vm)
+        {
+            if (vm == null || vm.Order == null || vm.Details == null || vm.Details.Count == 0)
+                return BadRequest("Invalid data.");
+            var orderId = await _adminservice.CreateAsync(vm.Order, vm.Details);
+            return Ok(new { id = orderId });
+        }
+
+        //payment
+        [AllowAnonymous]
+        [HttpPost("PaymentDetails")]
+        public async Task<IActionResult> AddPaymentDetails([FromBody] PaymentGatewayDetails payment)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var result = await _adminservice.AddPaymentGatewayDetails(payment);
+
+            if (result.Succeeded)
+                return Ok(new { success = true, message = "Pincode saved successfully" });
+
+            return BadRequest(result.Errors);
+        }
+
+        [AllowAnonymous]
+        [HttpGet("paymentlist")]
+        public async Task<IActionResult> GetPayments()
+        {
+            var payments = await _adminservice.GetPaymentGatewayDetailsAsync();
+            return Ok(payments);
+
+            
         }
 
 

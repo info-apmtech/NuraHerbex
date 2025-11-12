@@ -317,4 +317,63 @@ namespace Domain.Models
         public string EmailAddress { get; set; }
 
     }
+	public class Order
+	{
+		public int Id { get; set; }
+
+		[Required]
+		public string UserId { get; set; } = default!;
+
+		public int? AddressId { get; set; }
+
+		[StringLength(50)]
+		public string? DoorNo { get; set; }
+
+		[Phone, StringLength(20)]
+		public string? PhoneNo { get; set; }
+
+		[Required, StringLength(200)]
+		public string? Address { get; set; } = default!;
+
+		public int? State { get; set; }  
+		[StringLength(12)]
+		public string? PinCode { get; set; } 
+		public int? Country { get; set; }  
+
+		public DateTime OrderDate { get; set; } = DateTime.UtcNow;
+		public OrderStatus Status { get; set; } = OrderStatus.OrderPlaced;
+
+		[Column(TypeName = "decimal(18,2)")]
+		public decimal Subtotal { get; set; }
+
+		[Column(TypeName = "decimal(18,2)")]
+		public decimal Tax { get; set; } = 0m;
+
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal Shipping { get; set; } = 0m;
+
+        [Column(TypeName = "decimal(18,2)")]
+		public decimal TotalDiscount { get; set; } = 0m;
+
+		[Column(TypeName = "decimal(18,2)")]
+		public decimal Total { get; set; }
+	}
+	public class OrderDetail
+	{
+		public int Id { get; set; }
+
+		[Required]
+		public int OrderId { get; set; }
+
+		public int? ProductId { get; set; }
+
+		[Range(1, 1_000_000)]
+		public int Quantity { get; set; }
+
+		[Column(TypeName = "decimal(18,2)"), Range(0, 1_000_000_000)]
+		public decimal UnitPrice { get; set; }
+
+		[Column(TypeName = "decimal(18,2)"), Range(0, 1_000_000_000)]
+		public decimal ProductDiscount { get; set; } = 0m;
+	}
 }

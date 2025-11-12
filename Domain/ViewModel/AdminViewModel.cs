@@ -182,6 +182,10 @@ namespace Domain.ViewModel
     {
         public List<NewsletterSubscription> SubscriptionList { get; set; } = new List<NewsletterSubscription>();
     }
+    public class PaymentGatewayViewModel
+    {
+        public List<PaymentGatewayDetails> PaymentGatewayList { get; set; } = new List<PaymentGatewayDetails>();
+    }
     public sealed class SubscribeRequest
     {
         public string Email { get; set; } = "";
@@ -372,8 +376,19 @@ namespace Domain.ViewModel
         public int? SelectedAddressId { get; set; }
         // For the dropdown
         public IEnumerable<SelectListItem> AddressItems { get; set; } = Enumerable.Empty<SelectListItem>();
+		public Order Order { get; set; } = new();                 // your domain header
+		public List<OrderDetail> Details { get; set; } = new();   // domain line items
+																  // Optional UI inputs
+		public string? DeliveryOption { get; set; }  
+		//public string? CouponCode { get; set; }
 
-    }
+		// UI-only (server will recompute on POST)
+		public decimal Shipping { get; set; } = 0m;
+		public decimal Tax { get; set; } = 0m;
+		public decimal TotalDiscount { get; set; } = 0m;
+		public decimal GrandTotal => SubTotal + Shipping + Tax - TotalDiscount;
+
+	}
     public class PincodeViewModel
     {
         public List<Pincode> PincodeList { get; set; } = new();
