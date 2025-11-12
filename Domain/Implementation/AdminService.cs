@@ -101,50 +101,99 @@ namespace Domain.Implementation
 				return await _usermanager.UpdateAsync(existingUser);
 			}
 		}
+        public async Task<LoginResponseModel?> SignInAsync(RegisterUserViewModel model)
+        {
+            var user = await _usermanager.FindByNameAsync(model.Username);
+            if (user == null || !await _usermanager.CheckPasswordAsync(user, model.Password))
+                return null;
 
-		public async Task<LoginResponseModel?> SignInAsync(RegisterUserViewModel model)
-		{
-			var user = await _usermanager.FindByNameAsync(model.Username);
-			if (user == null || !await _usermanager.CheckPasswordAsync(user, model.Password))
-				return null;
+            // Try to get roles from ASP.NET Identity tables
+            var roles = (await _usermanager.GetRolesAsync(user)).ToList();
 
-			var roles = (await _usermanager.GetRolesAsync(user)).ToList();
+            // ✅ Fallback to the enum role if no Identity roles are found
+            if (roles == null || !roles.Any())
+            {
+                roles.Add(user.Role.ToString());  // <-- adds "Doctor", "Admin", etc.
+            }
 
-			var authClaims = new List<Claim>
-			{
-				new Claim(JwtRegisteredClaimNames.Sub, user.UserName),
-				new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-				new Claim(ClaimTypes.NameIdentifier, user.Id),
-				new Claim(ClaimTypes.Name, user.UserName)
-			};
+            var authClaims = new List<Claim>
+    {
+        new Claim(JwtRegisteredClaimNames.Sub, user.UserName),
+        new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+        new Claim(ClaimTypes.NameIdentifier, user.Id),
+        new Claim(ClaimTypes.Name, user.UserName)
+    };
 
-			foreach (var role in roles)
-				authClaims.Add(new Claim(ClaimTypes.Role, role));
+            foreach (var role in roles)
+                authClaims.Add(new Claim(ClaimTypes.Role, role));
 
-			var secretKey = _config["JWT:Secret"] ?? "this_is_a_super_secure_key_12345678";
-			var issuer = _config["JWT:ValidIssuer"] ?? "https://nura.apmtechnologies.in";
-			var audience = _config["JWT:ValidAudience"] ?? "https://nura.apmtechnologies.in";
+            var secretKey = _config["JWT:Secret"] ?? "this_is_a_super_secure_key_12345678";
+            var issuer = _config["JWT:ValidIssuer"] ?? "https://nura.apmtechnologies.in";
+            var audience = _config["JWT:ValidAudience"] ?? "https://nura.apmtechnologies.in";
 
-			var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
+            var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
 
-			var token = new JwtSecurityToken(
-				issuer: issuer,
-				audience: audience,
-				expires: DateTime.UtcNow.AddMinutes(60),
-				claims: authClaims,
-				signingCredentials: new SigningCredentials(signingKey, SecurityAlgorithms.HmacSha256)
-			);
+            var token = new JwtSecurityToken(
+                issuer: issuer,
+                audience: audience,
+                expires: DateTime.UtcNow.AddMinutes(60),
+                claims: authClaims,
+                signingCredentials: new SigningCredentials(signingKey, SecurityAlgorithms.HmacSha256)
+            );
 
-			return new LoginResponseModel
-			{
-				Token = new JwtSecurityTokenHandler().WriteToken(token),
-				User = user,
-				Roles = roles,
-				Expiration = token.ValidTo
-			};
-		}
-		// ✅ Step 1: Send OTP
-		public async Task<bool> SendOtpAsync(string email)
+            // ✅ Include Roles in response explicitly
+            return new LoginResponseModel
+            {
+                Token = new JwtSecurityTokenHandler().WriteToken(token),
+                User = user,
+                Roles = roles, // <-- This ensures MVC receives the correct role list
+                Expiration = token.ValidTo
+            };
+        }
+
+        //public async Task<LoginResponseModel?> SignInAsync(RegisterUserViewModel model)
+        //{
+        //	var user = await _usermanager.FindByNameAsync(model.Username);
+        //	if (user == null || !await _usermanager.CheckPasswordAsync(user, model.Password))
+        //		return null;
+
+        //	var roles = (await _usermanager.GetRolesAsync(user)).ToList();
+
+        //	var authClaims = new List<Claim>
+        //	{
+        //		new Claim(JwtRegisteredClaimNames.Sub, user.UserName),
+        //		new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+        //		new Claim(ClaimTypes.NameIdentifier, user.Id),
+        //		new Claim(ClaimTypes.Name, user.UserName)
+        //	};
+
+        //	foreach (var role in roles)
+        //		authClaims.Add(new Claim(ClaimTypes.Role, role));
+
+        //	var secretKey = _config["JWT:Secret"] ?? "this_is_a_super_secure_key_12345678";
+        //	var issuer = _config["JWT:ValidIssuer"] ?? "https://nura.apmtechnologies.in";
+        //	var audience = _config["JWT:ValidAudience"] ?? "https://nura.apmtechnologies.in";
+
+        //	var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
+
+        //	var token = new JwtSecurityToken(
+        //		issuer: issuer,
+        //		audience: audience,
+        //		expires: DateTime.UtcNow.AddMinutes(60),
+        //		claims: authClaims,
+        //		signingCredentials: new SigningCredentials(signingKey, SecurityAlgorithms.HmacSha256)
+        //	);
+
+        //	return new LoginResponseModel
+        //	{
+        //		Token = new JwtSecurityTokenHandler().WriteToken(token),
+        //		User = user,
+        //		Roles = roles,
+        //		Expiration = token.ValidTo
+        //	};
+        //}
+        // ✅ Step 1: Send OTP
+        public async Task<bool> SendOtpAsync(string email)
 		{
 			var user = await _usermanager.Users.FirstOrDefaultAsync(u => u.Email == email);
 			if (user == null) return false;
