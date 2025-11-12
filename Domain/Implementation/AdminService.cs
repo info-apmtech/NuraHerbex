@@ -1141,7 +1141,7 @@ namespace Domain.Implementation
             }
             else
             {
-                pincode.CreatedAt = DateTime.UtcNow;
+                pincode.CreatedAt = DateTime.Now;
                 await _db.Pincodes.AddAsync(pincode);
             }
 
@@ -1160,7 +1160,36 @@ namespace Domain.Implementation
             await _db.SaveChangesAsync();
             return IdentityResult.Success;
         }
+		//paymentGateWay
 
+        public async Task<IdentityResult> AddPaymentGatewayDetails(PaymentGatewayDetails payment)
+        {
+            if (payment == null)
+                return IdentityResult.Failed(new IdentityError { Description = "Pincode cannot be null" });
+
+            if (payment.Id > 0)
+            {
+                var existing = await _db.PaymentGatewayDetails.FindAsync(payment.Id);
+                if (existing == null)
+                    return IdentityResult.Failed(new IdentityError { Description = "Pincode not found" });
+
+                existing.PaymentMethod = payment.PaymentMethod;
+                existing.PaymentMethod = payment.PaymentMethod;
+                _db.PaymentGatewayDetails.Update(existing);
+            }
+            else
+            {
+                await _db.PaymentGatewayDetails.AddAsync(payment);
+            }
+
+            await _db.SaveChangesAsync();
+            return IdentityResult.Success;
+        }
+
+        public async Task<List<PaymentGatewayDetails>> GetPaymentGatewayDetailsAsync()
+        {
+            return await _db.PaymentGatewayDetails.OrderByDescending(p => p.Id).ToListAsync();
+        }
     }
 }
 

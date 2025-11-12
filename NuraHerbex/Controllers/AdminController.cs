@@ -1,20 +1,21 @@
 ﻿using Domain.Extensions;
+using Domain.Implementation;
 using Domain.Interface;
 using Domain.Models;
 using Domain.ViewModel;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Net.Mime;
 using System.Security.Claims;
 using System.Text;
-using System.Text.Json.Serialization;
 using System.Text.Json;
-using static ServiceStack.Diagnostics.Events;
-using Microsoft.AspNetCore.Authorization;
-using Domain.Implementation;
+using System.Text.Json.Serialization;
 using static Domain.ViewModel.CartItemViewModel;
+using static ServiceStack.Diagnostics.Events;
 
 namespace NuraHerbex.Controllers
 {
@@ -1108,6 +1109,42 @@ namespace NuraHerbex.Controllers
 
             return RedirectToAction(nameof(AdminPincode));
         }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> PaymentDetails([FromBody] PaymentGatewayDetails payment, CancellationToken ct)
+        {
+            if (payment is null)
+                return BadRequest("Invalid payload.");
 
+            if (!ModelState.IsValid)
+                return ValidationProblem(ModelState);
+            using var res = await AuthorizedClient.PostAsJsonAsync("PaymentDetails", payment, ct);
+            var contentType = res.Content.Headers.ContentType?.MediaType ?? MediaTypeNames.Application.Json;
+            var body = await res.Content.ReadAsStringAsync(ct);
+
+            return new ContentResult
+            {
+                Content = body,
+                ContentType = contentType,
+                StatusCode = (int)res.StatusCode
+            };
+        }
+        [HttpGet]
+        public async Task<IActionResult> PaymentDetails(CancellationToken ct)
+        {
+
+            var response = await AuthorizedClient.GetAsync("/api/AdminAPI/paymentlist", ct);
+
+            var list = response.IsSuccessStatusCode
+                ? JsonConvert.DeserializeObject<List<PaymentGatewayDetails>>(await response.Content.ReadAsStringAsync(ct))
+                : new List<PaymentGatewayDetails>();
+
+            var vm = new PaymentGatewayViewModel
+            {
+                PaymentGatewayList = list
+            };
+
+            return View(vm);
+        }
     }
 }

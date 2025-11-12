@@ -179,6 +179,10 @@ namespace Domain.ViewModel
     {
         public List<NewsletterSubscription> SubscriptionList { get; set; } = new List<NewsletterSubscription>();
     }
+    public class PaymentGatewayViewModel
+    {
+        public List<PaymentGatewayDetails> PaymentGatewayList { get; set; } = new List<PaymentGatewayDetails>();
+    }
     public sealed class SubscribeRequest
     {
         public string Email { get; set; } = "";

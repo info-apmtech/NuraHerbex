@@ -1,0 +1,76 @@
+﻿@model Domain.ViewModel.PaymentGatewayViewModel
+
+@{
+    ViewData["Title"] = "Payment Gateway";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+<div class="pcoded-main-container">
+    <div class="pcoded-content">
+        <div class="d-flex flex-column align-items-center" style="min-height: 90vh;">
+            <div class="w-100">
+                <div class="d-flex justify-content-between align-items-center mt-4 mb-3">
+                    <h4 class="mb-0">Payment Gateway</h4>
+                </div>
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>Payment Gateway List</h5>
+                            @* <span class="d-block m-t-5">use class <code>table-hover</code> inside table element</span> *@
+                        </div>
+                        <div class="card-body table-border-style">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Payment Id</th>
+                                            <th>Bank RRN</th>
+                                            <th> Order Id</th>
+                                            <th>  Payment Method</th>
+                                            <th>  Payment Detail</th>
+                                            <th>  Total Amount </th>
+                                            <th>  Contact No </th>
+                                            <th>  EMail Address </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @if (Model.PaymentGatewayList.Any())
+                                        {
+                                            int sno = 1;
+                                            foreach (var pay in Model.PaymentGatewayList)
+                                            {
+                                                <tr>
+                                                    <td>@sno</td>
+                                                    @{
+                                                        sno += 1;
+                                                    }
+                                                    <td>@pay.PaymentId</td>
+                                                    <td>@pay.BankRRn</td>
+                                                    <td>@pay.OrderId</td>
+                                                    <td>@pay.PaymentMethod</td>
+                                                    <td>@pay.PaymentDetails</td>
+                                                    <td>@pay.TotalAmount</td>
+                                                    <td>@pay.ContactNo</td>
+                                                    <td>@pay.EmailAddress</td>
+
+                                                </tr>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <tr>
+                                                <td colspan="9" class="text-center">No products found.</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div> <!-- End tab-content -->
+        </div>
+    </div>
+</div>
+

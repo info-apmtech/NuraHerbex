@@ -824,6 +824,29 @@ namespace APIs.Controllers
             return BadRequest(result.Errors);
         }
 
+        //payment
+        [AllowAnonymous]
+        [HttpPost("PaymentDetails")]
+        public async Task<IActionResult> AddPaymentDetails([FromBody] PaymentGatewayDetails payment)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var result = await _adminservice.AddPaymentGatewayDetails(payment);
+
+            if (result.Succeeded)
+                return Ok(new { success = true, message = "Pincode saved successfully" });
+
+            return BadRequest(result.Errors);
+        }
+
+        [AllowAnonymous]
+        [HttpGet("paymentlist")]
+        public async Task<IActionResult> GetPayments()
+        {
+            var payments = await _adminservice.GetPaymentGatewayDetailsAsync();
+            return Ok(payments);
+        }
 
     }
 }
