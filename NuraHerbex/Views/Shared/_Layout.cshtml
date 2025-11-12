@@ -1,4 +1,6 @@
-﻿<!DOCTYPE html>
+﻿@using Domain.Models
+@using Domain.ViewModel
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -114,12 +116,54 @@
             <!-- Desktop Action Buttons -->
             <div class="header-actions">
                 <a asp-controller="Home" asp-action="Quiz" class="btn-secondary">Take Quiz</a>
-                <button class="btn-secondary" onclick="window.location.href='@Url.Action("Consultation", "Home")'">Book Consultation</button>
-                <button class="btn-primary">Subscription</button>
-                <button class="btn-primary"
-                        onclick="window.location.href='@Url.Action("signin", "authentication")'">
-                    Login
+
+                <button class="btn-secondary"
+                        onclick="window.location.href='@Url.Action("Consultation", "Home")'">
+                    Book Consultation
                 </button>
+
+                <button class="btn-primary">
+                    Subscription
+                </button>
+
+                @if (User.Identity.IsAuthenticated)
+                {
+                    <div class="user-profile dropdown">
+                        <button class="user-profile-btn dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                            <svg class="user-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="12" cy="7" r="4"></circle>
+                            </svg>
+
+                            <div class="user-text">
+                                <span class="welcome-text">Welcome,</span>
+                                <span class="user-name">@User.Identity.Name</span>
+                            </div>
+
+                            <svg class="dropdown-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </button>
+
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li>
+                                <form asp-controller="Authentication" asp-action="LogOut" method="post" style="margin: 0;">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="dropdown-item">Logout</button>
+                                </form>
+                            </li>
+                        </ul>
+                    </div>
+                }
+                else
+                {
+                    <button class="btn-login"
+                            onclick="window.location.href='@Url.Action("SignIn", "Authentication")'">
+                        Login
+                    </button>
+                }
             </div>
 
             <!-- Mobile: User Profile + Hamburger on RIGHT -->

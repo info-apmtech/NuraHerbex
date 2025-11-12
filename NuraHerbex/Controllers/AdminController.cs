@@ -14,6 +14,7 @@ using System.Text.Json;
 using static ServiceStack.Diagnostics.Events;
 using Microsoft.AspNetCore.Authorization;
 using Domain.Implementation;
+using static Domain.ViewModel.CartItemViewModel;
 
 namespace NuraHerbex.Controllers
 {
@@ -530,6 +531,7 @@ namespace NuraHerbex.Controllers
 
             return RedirectToAction(nameof(AdminPricingPlan));
         }
+
         public async Task<IActionResult> DoctorConsultation()
         {
             var jsonOptions = new JsonSerializerOptions
@@ -537,46 +539,112 @@ namespace NuraHerbex.Controllers
                 Converters = { new JsonStringEnumConverter() }
             };
 
-            // 1️⃣ Get all users (assuming doctors)
-            var doctorResponse = await AuthorizedClient.GetAsync("AdminAPI/users/doctor");
+            // 1️⃣ Get logged-in user id
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            var client = AuthorizedClient;
+
+            // 2️⃣ Get full user info from RegisterUser API
+            var userResponse = await client.GetAsync($"AdminAPI/user/{userId}");
+            if (!userResponse.IsSuccessStatusCode)
+                return Unauthorized();
+
+            var loggedInUser = await userResponse.Content.ReadFromJsonAsync<RegisterUser>(jsonOptions);
+            if (loggedInUser == null)
+                return Unauthorized();
+
+            var userRole = loggedInUser.Role;
+
+            // 3️⃣ Get all doctors for mapping
+            var doctorResponse = await client.GetAsync("AdminAPI/users/doctor");
             var doctors = new List<RegisterUser>();
             if (doctorResponse.IsSuccessStatusCode)
             {
                 doctors = await doctorResponse.Content.ReadFromJsonAsync<List<RegisterUser>>(jsonOptions);
             }
 
-            // 2️⃣ Fetch all consultations (anonymous)
-            var consultationResponse = await AuthorizedClient.GetAsync("AdminAPI/consultationbooking/all");
+            // 4️⃣ Get consultations based on role
+            HttpResponseMessage consultationResponse;
+            if (userRole == UserRole.Admin)
+            {
+                consultationResponse = await client.GetAsync("AdminAPI/consultationbooking/all");
+            }
+            else if (userRole == UserRole.Doctor)
+            {
+                consultationResponse = await client.GetAsync($"AdminAPI/consultationbooking/{userId}");
+            }
+            else
+            {
+                consultationResponse = await client.GetAsync($"AdminAPI/consultationbooking/user/{userId}");
+            }
+
             var consultations = new List<ConsultationBooking>();
             if (consultationResponse.IsSuccessStatusCode)
             {
                 consultations = await consultationResponse.Content.ReadFromJsonAsync<List<ConsultationBooking>>(jsonOptions);
             }
 
-            // 3️⃣ Map consultations with doctors
+            // 5️⃣ Map consultations with doctors
             var consultationWithDoctors = consultations.Select(c => new ConsultationWithAssignedDoctorViewModel
             {
                 Consultation = c,
                 Doctor = doctors.FirstOrDefault(d => d.Id.Trim() == c.PreferredDoctorId?.Trim())
             }).ToList();
 
-            // 4️⃣ Build view model
+            // 6️⃣ Build view model
             var model = new ConsultationListViewModel
             {
                 Consultations = consultationWithDoctors,
-                UserRole = "All"
+                UserRole = userRole.ToString()
             };
 
             return View(model);
         }
 
-        public IActionResult JoinConsultation(Guid consultationId)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AcceptConsultation(int consultationId, string meetingLink)
         {
-            // Redirect to your video call platform
-            return Redirect($"https://your-video-platform.com/join/{consultationId}");
+            if (string.IsNullOrWhiteSpace(meetingLink))
+            {
+                TempData["Error"] = "Meeting link is required.";
+                return RedirectToAction("DoctorConsultation");
+            }
+
+            var updateModel = new ConsultationStatusUpdateModel
+            {
+                Status = ConsultationStatus.Accepted,
+                MeetingLink = meetingLink
+            };
+
+            var response = await AuthorizedClient.PostAsJsonAsync($"AdminAPI/consultationbooking/{consultationId}/status", updateModel);
+            if (!response.IsSuccessStatusCode)
+            {
+                TempData["Error"] = "Failed to update consultation status.";
+            }
+            return RedirectToAction("DoctorConsultation");
         }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RejectConsultation(int consultationId)
+        {
+            var updateModel = new ConsultationStatusUpdateModel
+            {
+                Status = ConsultationStatus.Rejected,
+                MeetingLink = null
+            };
 
+            var response = await AuthorizedClient.PostAsJsonAsync($"AdminAPI/consultationbooking/{consultationId}/status", updateModel);
+            if (!response.IsSuccessStatusCode)
+            {
+                TempData["Error"] = "Failed to reject consultation.";
+            }
+            return RedirectToAction("DoctorConsultation");
+        }
 
         [HttpGet]
         public async Task<IActionResult> UserCreation(string? id = null)

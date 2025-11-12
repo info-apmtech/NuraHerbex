@@ -330,6 +330,12 @@ namespace Domain.ViewModel
         public int Quantity { get; set; }
         public decimal UnitPrice { get; set; }
         public decimal LineTotal => Quantity * UnitPrice;
+
+        public class ConsultationStatusUpdateModel
+        {
+            public ConsultationStatus Status { get; set; }
+            public string? MeetingLink { get; set; }
+        }
     }
     public sealed class SubmitFeedbackRequest
     {
