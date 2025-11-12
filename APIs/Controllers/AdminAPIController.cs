@@ -29,18 +29,18 @@ namespace APIs.Controllers
         }
         [AllowAnonymous]
         [HttpGet("users/{role}")]
-		public async Task<IActionResult> GetUsers(UserRole role)
-		{
-			var users = await _adminservice.GetUsersByRoleAsync(role);
-			return Ok(users);
-		}
+        public async Task<IActionResult> GetUsers(UserRole role)
+        {
+            var users = await _adminservice.GetUsersByRoleAsync(role);
+            return Ok(users);
+        }
         [AllowAnonymous]
         [HttpGet("user/{id}")]
-		public async Task<IActionResult> GetUser(string id)
-		{
-			var user = await _adminservice.GetUserByIdAsync(id);
-			if (user == null)
-				return NotFound();
+        public async Task<IActionResult> GetUser(string id)
+        {
+            var user = await _adminservice.GetUserByIdAsync(id);
+            if (user == null)
+                return NotFound();
 
             return Ok(user);
         }
@@ -832,11 +832,14 @@ namespace APIs.Controllers
 
             return BadRequest(result.Errors);
         }
-		[HttpPost]
-		public async Task<IActionResult> Create([FromBody] OrderSummaryViewModel vm)
-		{
-			if (vm == null || vm.Order == null || vm.Details == null || vm.Details.Count == 0)
-				return BadRequest("Invalid data.");
+        [HttpPost]
+        public async Task<IActionResult> Create([FromBody] OrderSummaryViewModel vm)
+        {
+            if (vm == null || vm.Order == null || vm.Details == null || vm.Details.Count == 0)
+                return BadRequest("Invalid data.");
+            var orderId = await _adminservice.CreateAsync(vm.Order, vm.Details);
+            return Ok(new { id = orderId });
+        }
 
         //payment
         [AllowAnonymous]
@@ -860,10 +863,10 @@ namespace APIs.Controllers
         {
             var payments = await _adminservice.GetPaymentGatewayDetailsAsync();
             return Ok(payments);
-        }
-			var orderId = await _adminservice.CreateAsync(vm.Order, vm.Details);
-			return Ok(new { id = orderId });
-		}
 
-	}
+            
+        }
+
+
+    }
 }

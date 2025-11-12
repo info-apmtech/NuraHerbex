@@ -1237,7 +1237,7 @@ namespace Domain.Implementation
 
 			return order.Id;
 		}
-	}
+	
         public async Task<List<PaymentGatewayDetails>> GetPaymentGatewayDetailsAsync()
         {
             return await _db.PaymentGatewayDetails.OrderByDescending(p => p.Id).ToListAsync();

@@ -122,7 +122,7 @@ namespace Domain.Interface
         Task<IdentityResult> DeletePincodeAsync(int id);
         Task<IdentityResult> AddPaymentGatewayDetails(PaymentGatewayDetails payment);
         Task<List<PaymentGatewayDetails>> GetPaymentGatewayDetailsAsync();
-    }
+    
 		//order
 		Task<int> CreateAsync(Order order, List<OrderDetail> details);
 	}
