@@ -1259,7 +1259,7 @@ body {
 
 /*testimonial section*/
 /* Base (desktop) ------------------- */
-.testimonials-section {
+/*.testimonials-section {
     width: 100vw;
     background: #fff;
     text-align: center;
@@ -1394,9 +1394,9 @@ body {
     text-align: left;
     line-height: 1.38;
     font-style: italic;
-}
+}*/
 /* Mobile: horizontal scrollable carousel */
-@media (max-width: 900px) {
+/*@media (max-width: 900px) {
     .testimonials-carousel {
         display: flex !important;
         gap: 1rem !important;
@@ -1430,6 +1430,206 @@ body {
     }
 
     .testimonials-card {
+        padding: 0.7rem 0.3rem 0.7rem 0.3rem;
+        font-size: 0.87rem;
+    }
+}*/
+/* Shop Testimonials Section */
+.shop-testimonials-section {
+    width: 100vw;
+    background: #fff;
+    text-align: center;
+    padding: 3.5rem 0 2.5rem 0;
+    position: relative;
+}
+
+.shop-testimonials-title {
+    font-size: 2rem;
+    font-weight: 600;
+    letter-spacing: -0.5px;
+    margin-bottom: 1rem;
+    color: #191a1d;
+}
+
+.shop-testimonials-rating-row {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.9rem;
+    margin-bottom: 0.4rem;
+    font-size: 1.45rem;
+}
+
+.shop-stars {
+    color: #ff8800;
+    font-size: 1.66rem;
+    font-family: inherit;
+    letter-spacing: 2px;
+    font-weight: 700;
+}
+
+.shop-testimonials-meta {
+    font-size: 1.04rem;
+    color: #353535;
+    margin-bottom: 2.1rem;
+}
+
+.shop-score {
+    color: #191a1d;
+    font-size: 1.05rem;
+    font-weight: 500;
+}
+
+/* Carousel Wrapper */
+.shop-testimonials-wrapper {
+    position: relative;
+    margin-left:10px;
+}
+
+/* Carousel cards */
+.shop-testimonials-carousel {
+    display: flex;
+    overflow-x: auto;
+    gap: 1.9rem;
+    padding: 0 1rem;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+}
+
+    .shop-testimonials-carousel::-webkit-scrollbar {
+        display: none;
+    }
+
+.shop-testimonials-card {
+    flex: 0 0 25rem;
+    scroll-snap-align: start;
+    background: #ededed;
+    border-radius: 18px;
+    padding: 1.7rem 1.2rem 1.35rem 1.2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    min-width: 0;
+}
+
+    .shop-testimonials-card:nth-child(4n+1) {
+        background: #ededed;
+    }
+
+    .shop-testimonials-card:nth-child(4n+2) {
+        background: #dbf0ef;
+    }
+
+    .shop-testimonials-card:nth-child(4n+3) {
+        background: #dfd7eb;
+    }
+
+    .shop-testimonials-card:nth-child(4n+4) {
+        background: #efd5db;
+    }
+
+.shop-testimonial-meta {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 0.22rem;
+}
+
+.shop-avatar {
+    background: #c9c9c9;
+    color: #38425a;
+    font-size: 1.02rem;
+    font-weight: 700;
+    border-radius: 50%;
+    width: 2.14rem;
+    height: 2.14rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    letter-spacing: 1px;
+}
+
+.shop-name {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #222;
+    margin-bottom: 0.08rem;
+    text-align: left;
+}
+
+.shop-verified {
+    font-size: 0.97rem;
+    color: #444;
+    text-align: left;
+}
+
+    .shop-verified .shop-date {
+        color: #838383;
+        font-size: 0.85rem;
+        margin-left: 0.3em;
+    }
+
+.shop-testimonials-card .shop-stars {
+    font-size: 1.14rem;
+    margin-bottom: 0.38rem;
+    margin-top: 0.17rem;
+}
+
+.shop-text {
+    color: #222;
+    font-size: 1.07rem;
+    margin-top: 0.2rem;
+    text-align: left;
+    line-height: 1.38;
+    font-style: italic;
+}
+
+/* Navigation Arrows */
+.shop-testimonials-prev,
+.shop-testimonials-next {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: #fff;
+    border: none;
+    font-size: 2rem;
+    cursor: pointer;
+    z-index: 10;
+    padding: 0.2rem 0.6rem;
+    border-radius: 50%;
+    box-shadow: 0 0 5px rgba(0,0,0,0.15);
+}
+
+.shop-testimonials-prev {
+    left: 0.5rem;
+}
+
+.shop-testimonials-next {
+    right: 0.5rem;
+}
+
+/* Mobile: horizontal scrollable */
+@media (max-width: 900px) {
+    .shop-testimonials-card {
+        flex: 0 0 88vw !important;
+        min-width: 88vw !important;
+        max-width: 88vw !important;
+        scroll-snap-align: start !important;
+        margin: 0 !important;
+    }
+}
+
+@media (max-width: 600px) {
+    .shop-testimonials-title {
+        font-size: 1.02rem;
+        margin-bottom: 0.4rem;
+    }
+
+    .shop-testimonials-rating-row {
+        font-size: 1.2rem;
+    }
+
+    .shop-testimonials-card {
         padding: 0.7rem 0.3rem 0.7rem 0.3rem;
         font-size: 0.87rem;
     }

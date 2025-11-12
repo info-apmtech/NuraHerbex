@@ -134,6 +134,7 @@ namespace Domain.ViewModel
         public List<Ingredient> Ingredients { get; set; } = new();
         public List<PricingPlan> PlanList { get; set; } = new();
         public List<Product> FeaturedProducts { get; set; } = new List<Product>();
+        public List<FeedbackViewModel> FeedbackList { get; set; } = new();
         public List<int> WishlistProductIds { get; set; } = new List<int>();
     }
     public class BlogCategoryViewModel
@@ -166,9 +167,11 @@ namespace Domain.ViewModel
     public class ProductViewModel
     {
         public List<Product> ProductList { get; set; } = new List<Product>();
+        public List<FeedbackViewModel> FeedbackList { get; set; } 
         public Product NewProduct { get; set; } = new Product();
         public List<IFormFile> ProductFiles { get; set; } = new();
         public List<GST> GSTDetails { get; set; } = new List<GST>();
+
     }
     public class GSTViewModel
     {
@@ -337,7 +340,16 @@ namespace Domain.ViewModel
         public ConsultationStatus Status { get; set; }
         public string? MeetingLink { get; set; }
     }
-
+    public class FeedbackViewModel
+    {
+        public int Id { get; set; }
+        public int OrderID { get; set; }
+        public string CustomerName { get; set; } = "Anonymous"; 
+        public int RatingCount { get; set; }
+        public string Message { get; set; } = string.Empty;
+        public DateTime SubmittedAt { get; set; }
+        public string CustomerImage { get; set; } = "/images/default-user.png"; // default image
+    }
     public sealed class SubmitFeedbackRequest
     {
         public int OrderId { get; set; }                       // default 1 now

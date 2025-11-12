@@ -110,7 +110,10 @@ namespace Domain.Interface
         Task<DoctorDetail> GetDoctorDetailByIdAsync(int id);
         Task<IdentityResult> AddOrUpdateDoctorDetailAsync(DoctorDetail detail);
         Task<IdentityResult> DeleteDoctorDetailAsync(int id);
+
+        //Feedback
         Task<FeedBack> SaveAsync(SubmitFeedbackRequest req, CancellationToken ct = default);
+        Task<List<FeedbackViewModel>> GetAllFeedbacksAsync(CancellationToken ct = default);
 
         //Pincode
         Task<List<Pincode>> GetPincodesAsync();

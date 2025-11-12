@@ -340,8 +340,59 @@
         }
     </div>
 </section>
+<section class="shop-testimonials-section">
+    <h2 class="shop-testimonials-title">What our customers Say</h2>
 
-<section class="testimonials-section">
+    <div class="shop-testimonials-rating-row">
+        <span class="shop-stars">★★★★★</span>
+        <span class="shop-score">
+            @(Model.FeedbackList.Any()
+                ? Math.Round(Model.FeedbackList.Average(f => f.RatingCount), 1) + " Out of 5"
+                : "0 Out of 5")
+        </span>
+
+    </div>
+
+    <div class="shop-testimonials-meta">
+        Based on @Model.FeedbackList.Count + " Verified Reviews"
+    </div>
+
+    <div class="shop-testimonials-wrapper">
+
+
+        <div class="shop-testimonials-carousel">
+            @foreach (var fb in Model.FeedbackList)
+            {
+                <div class="shop-testimonials-card">
+                    <div class="shop-testimonial-meta">
+                        <div class="shop-avatar">
+                            @(fb.CustomerName.Length >= 2 ? fb.CustomerName.Substring(0, 2).ToUpper() : fb.CustomerName.ToUpper())
+                        </div>
+                        <div>
+                            <div class="shop-name">@fb.CustomerName</div>
+                            <div class="shop-verified">
+                                Verified Purchase <span class="shop-date">@fb.SubmittedAt.ToString("MMM dd, yyyy")</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="shop-stars">
+                        @for (int i = 0; i < fb.RatingCount; i++)
+                        {
+                            <span>★</span>
+                        }
+                    </div>
+                    <div class="shop-text">
+                        @fb.Message
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</section>
+
+
+
+@* <section class="testimonials-section">
     <h2 class="testimonials-title">What our customers Say</h2>
     <div class="testimonials-rating-row">
         <span class="stars">★★★★★</span>
@@ -405,7 +456,7 @@
         </div>
     </div>
 </section>
-<script>window.__initialProduct = @Html.Raw(initialJson);</script>
+ *@<script>window.__initialProduct = @Html.Raw(initialJson);</script>
 
 
 <script src="~/js/shop.js"></script>

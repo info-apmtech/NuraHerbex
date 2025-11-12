@@ -47,54 +47,130 @@ namespace NuraHerbex.Controllers
 
 		}
 		private System.Net.Http.HttpClient AuthorizedClient => _httpClientFactory.CreateAuthorizedClient(_httpContextAccessor);
-		public async Task<IActionResult> Index()
-		{
-			var blogs = new List<Blog>();
-			var ingredients = new List<Ingredient>();
-			var products = new List<Product>();
+        //public async Task<IActionResult> Index()
+        //{
+        //	var blogs = new List<Blog>();
+        //	var ingredients = new List<Ingredient>();
+        //	var products = new List<Product>();
+        //	var feedbacks = new List<FeedBack>();
 
-			// Fetch blogs, ingredients, products as before
-			var blogResponse = await _httpClient.GetAsync("AdminAPI/blogs");
-			if (blogResponse.IsSuccessStatusCode)
-				blogs = JsonConvert.DeserializeObject<List<Blog>>(await blogResponse.Content.ReadAsStringAsync()) ?? new List<Blog>();
+        //	// Fetch blogs, ingredients, products as before
+        //	var blogResponse = await _httpClient.GetAsync("AdminAPI/blogs");
+        //	if (blogResponse.IsSuccessStatusCode)
+        //		blogs = JsonConvert.DeserializeObject<List<Blog>>(await blogResponse.Content.ReadAsStringAsync()) ?? new List<Blog>();
 
-			var ingredientResponse = await _httpClient.GetAsync("AdminAPI/ingredients");
-			if (ingredientResponse.IsSuccessStatusCode)
-				ingredients = JsonConvert.DeserializeObject<List<Ingredient>>(await ingredientResponse.Content.ReadAsStringAsync()) ?? new List<Ingredient>();
+        //	var ingredientResponse = await _httpClient.GetAsync("AdminAPI/ingredients");
+        //	if (ingredientResponse.IsSuccessStatusCode)
+        //		ingredients = JsonConvert.DeserializeObject<List<Ingredient>>(await ingredientResponse.Content.ReadAsStringAsync()) ?? new List<Ingredient>();
 
-			var productsResponse = await _httpClient.GetAsync("AdminAPI/products");
-			if (productsResponse.IsSuccessStatusCode)
-				products = JsonConvert.DeserializeObject<List<Product>>(await productsResponse.Content.ReadAsStringAsync()) ?? new List<Product>();
+        //	var productsResponse = await _httpClient.GetAsync("AdminAPI/products");
+        //	if (productsResponse.IsSuccessStatusCode)
+        //		products = JsonConvert.DeserializeObject<List<Product>>(await productsResponse.Content.ReadAsStringAsync()) ?? new List<Product>();
 
-			// Filter home ingredients, featured products, etc.
-			var homeIngredients = ingredients.Where(i => i.IsActive && i.ShowHome).OrderByDescending(i => i.CreatedAt).Take(6).ToList();
-			var latestBlogs = blogs.OrderByDescending(b => b.CreatedAt).Take(10).ToList();
-			var featuredProducts = products.OrderBy(p => p.Id).ToList();
+        //          var feedbackResponse = await _httpClient.GetAsync("AdminAPI/feedbacks");
+        //          if (feedbackResponse.IsSuccessStatusCode)
+        //              feedbacks = JsonConvert.DeserializeObject<List<FeedBack>>(await feedbackResponse.Content.ReadAsStringAsync()) ?? new List<FeedBack>();
 
-			// ? Fetch user's wishlist IDs if logged in
-			var userId = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-			List<int> wishlistIds = new List<int>();
-			if (!string.IsNullOrEmpty(userId))
-			{
-				var wishlistResponse = await _httpClient.GetAsync($"AdminAPI/wishlist/{userId}");
-				if (wishlistResponse.IsSuccessStatusCode)
-				{
-					var wishlistItems = await wishlistResponse.Content.ReadFromJsonAsync<List<WishlistItem>>();
-					wishlistIds = wishlistItems?.Select(x => x.ProductId).ToList() ?? new List<int>();
-				}
-			}
 
-			var vm = new HomeViewModel
-			{
-				BlogList = latestBlogs,
-				Ingredients = homeIngredients,
-				PlanList = await GetPlansFromApi(),
-				FeaturedProducts = featuredProducts,
-				WishlistProductIds = wishlistIds // pass to view
-			};
 
-			return View(vm);
-		}
+        //          // Filter home ingredients, featured products, etc.
+        //          var homeIngredients = ingredients.Where(i => i.IsActive && i.ShowHome).OrderByDescending(i => i.CreatedAt).Take(6).ToList();
+        //	var latestBlogs = blogs.OrderByDescending(b => b.CreatedAt).Take(10).ToList();
+        //	var featuredProducts = products.OrderBy(p => p.Id).ToList();
+
+        //	// ? Fetch user's wishlist IDs if logged in
+        //	var userId = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        //	List<int> wishlistIds = new List<int>();
+        //	if (!string.IsNullOrEmpty(userId))
+        //	{
+        //		var wishlistResponse = await _httpClient.GetAsync($"AdminAPI/wishlist/{userId}");
+        //		if (wishlistResponse.IsSuccessStatusCode)
+        //		{
+        //			var wishlistItems = await wishlistResponse.Content.ReadFromJsonAsync<List<WishlistItem>>();
+        //			wishlistIds = wishlistItems?.Select(x => x.ProductId).ToList() ?? new List<int>();
+        //		}
+        //	}
+
+        //	var vm = new HomeViewModel
+        //	{
+        //		BlogList = latestBlogs,
+        //		Ingredients = homeIngredients,
+        //		PlanList = await GetPlansFromApi(),
+        //		FeaturedProducts = featuredProducts,
+        //		WishlistProductIds = wishlistIds,
+        //              FeedbackList = feedbacks.OrderByDescending(f => f.SubmittedAt).Take(10).ToList()
+        //          };
+
+        //	return View(vm);
+        //}
+        public async Task<IActionResult> Index()
+        {
+            var blogs = new List<Blog>();
+            var ingredients = new List<Ingredient>();
+            var products = new List<Product>();
+            var feedbacks = new List<FeedbackViewModel>(); 
+
+            // Fetch blogs
+            var blogResponse = await _httpClient.GetAsync("AdminAPI/blogs");
+            if (blogResponse.IsSuccessStatusCode)
+                blogs = JsonConvert.DeserializeObject<List<Blog>>(await blogResponse.Content.ReadAsStringAsync()) ?? new List<Blog>();
+
+            // Fetch ingredients
+            var ingredientResponse = await _httpClient.GetAsync("AdminAPI/ingredients");
+            if (ingredientResponse.IsSuccessStatusCode)
+                ingredients = JsonConvert.DeserializeObject<List<Ingredient>>(await ingredientResponse.Content.ReadAsStringAsync()) ?? new List<Ingredient>();
+
+            // Fetch products
+            var productsResponse = await _httpClient.GetAsync("AdminAPI/products");
+            if (productsResponse.IsSuccessStatusCode)
+                products = JsonConvert.DeserializeObject<List<Product>>(await productsResponse.Content.ReadAsStringAsync()) ?? new List<Product>();
+
+            // Fetch feedbacks via API
+            var feedbackResponse = await _httpClient.GetAsync("AdminAPI/feedbacks");
+            if (feedbackResponse.IsSuccessStatusCode)
+                feedbacks = JsonConvert.DeserializeObject<List<FeedbackViewModel>>(await feedbackResponse.Content.ReadAsStringAsync())
+                            ?? new List<FeedbackViewModel>();
+
+            // Filter home ingredients, featured products, etc.
+            var homeIngredients = ingredients
+                .Where(i => i.IsActive && i.ShowHome)
+                .OrderByDescending(i => i.CreatedAt)
+                .Take(6)
+                .ToList();
+
+            var latestBlogs = blogs
+                .OrderByDescending(b => b.CreatedAt)
+                .Take(10)
+                .ToList();
+
+            var featuredProducts = products.OrderBy(p => p.Id).ToList();
+
+            // Fetch user's wishlist IDs if logged in
+            var userId = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            List<int> wishlistIds = new List<int>();
+            if (!string.IsNullOrEmpty(userId))
+            {
+                var wishlistResponse = await _httpClient.GetAsync($"AdminAPI/wishlist/{userId}");
+                if (wishlistResponse.IsSuccessStatusCode)
+                {
+                    var wishlistItems = await wishlistResponse.Content.ReadFromJsonAsync<List<WishlistItem>>();
+                    wishlistIds = wishlistItems?.Select(x => x.ProductId).ToList() ?? new List<int>();
+                }
+            }
+
+            // Build ViewModel
+            var vm = new HomeViewModel
+            {
+                BlogList = latestBlogs,
+                Ingredients = homeIngredients,
+                PlanList = await GetPlansFromApi(),
+                FeaturedProducts = featuredProducts,
+                WishlistProductIds = wishlistIds,
+                FeedbackList = feedbacks
+            };
+
+            return View(vm);
+        }
 
         public IActionResult About()
         {
@@ -256,65 +332,62 @@ namespace NuraHerbex.Controllers
 			return plans;
 		}
 
-		public async Task<IActionResult> Shop(int id = 0)
-		{
-			var products = new List<Product>();
+        public async Task<IActionResult> Shop(int id = 0)
+        {
+            var products = new List<Product>();
+            var feedbacks = new List<FeedbackViewModel>();
 
-			var productsResponse = await _httpClient.GetAsync("AdminAPI/products");
-			if (productsResponse.IsSuccessStatusCode)
-			{
-				var json = await productsResponse.Content.ReadAsStringAsync();
-				products = JsonConvert.DeserializeObject<List<Product>>(json) ?? new List<Product>();
-			}
+            // Fetch products
+            var productsResponse = await _httpClient.GetAsync("AdminAPI/products");
+            if (productsResponse.IsSuccessStatusCode)
+                products = JsonConvert.DeserializeObject<List<Product>>(await productsResponse.Content.ReadAsStringAsync()) ?? new List<Product>();
 
-			// Optional: pre-select a specific product
-			Product? selected = null;
-			if (id > 0)
-			{
-				var oneResponse = await _httpClient.GetAsync($"AdminAPI/product/{id}");
-				if (oneResponse.IsSuccessStatusCode)
-				{
-					selected = JsonConvert.DeserializeObject<Product>(
-						await oneResponse.Content.ReadAsStringAsync()
-					);
-				}
-			}
+            // Fetch feedbacks
+            var feedbackResponse = await _httpClient.GetAsync("AdminAPI/feedbacks");
+            if (feedbackResponse.IsSuccessStatusCode)
+                feedbacks = JsonConvert.DeserializeObject<List<FeedbackViewModel>>(await feedbackResponse.Content.ReadAsStringAsync())
+                            ?? new List<FeedbackViewModel>();
 
-			// ---- helpers to unpack "Heading | Description" ----
-			static (string Heading, string Desc) Unpack(string? s)
-			{
-				if (string.IsNullOrWhiteSpace(s)) return ("", "");
-				var parts = s.Split('|', 2);
-				return (parts[0].Trim(), parts.Length > 1 ? parts[1].Trim() : "");
-			}
+            // Optional: pre-select a product
+            Product? selected = null;
+            if (id > 0)
+            {
+                var oneResponse = await _httpClient.GetAsync($"AdminAPI/product/{id}");
+                if (oneResponse.IsSuccessStatusCode)
+                    selected = JsonConvert.DeserializeObject<Product>(await oneResponse.Content.ReadAsStringAsync());
+            }
 
-			static List<KeyValuePair<string, string>> Extract(Product? p)
-			{
-				var list = new List<KeyValuePair<string, string>>();
-				if (p == null) return list;
+            // Helper functions for benefits
+            static (string Heading, string Desc) Unpack(string? s)
+            {
+                if (string.IsNullOrWhiteSpace(s)) return ("", "");
+                var parts = s.Split('|', 2);
+                return (parts[0].Trim(), parts.Length > 1 ? parts[1].Trim() : "");
+            }
 
-				foreach (var raw in new[] { p.KeyBenefits1, p.KeyBenefits2, p.KeyBenefits3, p.KeyBenefits4 })
-				{
-					var (h, d) = Unpack(raw);
-					if (!string.IsNullOrWhiteSpace(h) || !string.IsNullOrWhiteSpace(d))
-						list.Add(new KeyValuePair<string, string>(h, d));
-				}
-				return list;
-			}
+            static List<KeyValuePair<string, string>> Extract(Product? p)
+            {
+                var list = new List<KeyValuePair<string, string>>();
+                if (p == null) return list;
+                foreach (var raw in new[] { p.KeyBenefits1, p.KeyBenefits2, p.KeyBenefits3, p.KeyBenefits4 })
+                {
+                    var (h, d) = Unpack(raw);
+                    if (!string.IsNullOrWhiteSpace(h) || !string.IsNullOrWhiteSpace(d))
+                        list.Add(new KeyValuePair<string, string>(h, d));
+                }
+                return list;
+            }
 
-			var vm = new ProductViewModel
-			{
-				ProductList = products,
-				NewProduct = selected ?? new Product()
-			};
+            var vm = new ProductViewModel
+            {
+                ProductList = products,
+                NewProduct = selected ?? new Product(),
+                FeedbackList = feedbacks.Take(10).ToList() 
+            };
 
-			// For the selected product
-			ViewBag.SelectedBenefits = Extract(vm.NewProduct); // List<KeyValuePair<string,string>>
-
-			// For product cards list � handle duplicate IDs safely
-			ViewBag.BenefitsByProduct = products
-				.GroupBy(p => p.Id)
-				.ToDictionary(g => g.Key, g => Extract(g.First()));
+            ViewBag.SelectedBenefits = Extract(vm.NewProduct);
+            ViewBag.BenefitsByProduct = products.GroupBy(p => p.Id)
+                                                .ToDictionary(g => g.Key, g => Extract(g.First()));
 
             return View(vm);
         }

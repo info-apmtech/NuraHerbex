@@ -1067,7 +1067,44 @@ namespace Domain.Implementation
             await _db.SaveChangesAsync();
             return IdentityResult.Success;
         }
-		public async Task<FeedBack> SaveAsync(SubmitFeedbackRequest req, CancellationToken ct = default)
+        public async Task<List<FeedbackViewModel>> GetAllFeedbacksAsync(CancellationToken ct = default)
+        {
+            var feedbacks = await _db.FeedBack
+                .OrderByDescending(f => f.SubmittedAt)
+                .ToListAsync(ct);
+
+            var customerIds = feedbacks.Select(f => f.CustomerID).Distinct().ToList();
+
+            // fetch customer info
+            var customers = await _db.Users
+                .Where(c => customerIds.Contains(c.Id))
+                .Select(c => new { c.Id, c.FirstName, c.LastName })
+                .ToListAsync(ct);
+
+            var result = feedbacks.Select(f =>
+            {
+                var customer = customers.FirstOrDefault(c => c.Id == f.CustomerID);
+                return new FeedbackViewModel
+                {
+                    Id = f.Id,
+                    OrderID = f.OrderID,
+                    CustomerName = customer != null
+                        ? string.IsNullOrEmpty(customer.LastName)
+                            ? customer.FirstName
+                            : $"{customer.FirstName} {customer.LastName}"
+                        : "Anonymous",
+                    RatingCount = f.RatingCount,
+                    Message = f.Message ?? string.Empty,
+                    SubmittedAt = f.SubmittedAt,
+                    CustomerImage = "/image/signin/users-01 2.svg" 
+                };
+            }).Take(10).ToList(); // take latest 10 feedbacks
+
+            return result;
+        }
+
+
+        public async Task<FeedBack> SaveAsync(SubmitFeedbackRequest req, CancellationToken ct = default)
 		{
 			// Apply defaults if missing
 			var orderId = req.OrderId != 0 ? req.OrderId : DEFAULT_ORDER_ID;

@@ -766,6 +766,15 @@ namespace APIs.Controllers
 
             return BadRequest(result.Errors);
         }
+
+        [AllowAnonymous]
+        [HttpGet("feedbacks")]
+        public async Task<IActionResult> GetAllFeedbacks(CancellationToken ct)
+        {
+            var feedbacks = await _adminservice.GetAllFeedbacksAsync(ct);
+            return Ok(feedbacks);
+        }
+
         [AllowAnonymous]
         [IgnoreAntiforgeryToken]
         [HttpPost("submitfeedback")]
