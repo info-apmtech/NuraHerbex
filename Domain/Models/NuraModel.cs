@@ -323,8 +323,7 @@ namespace Domain.Models
 
 		[Required]
 		public string UserId { get; set; } = default!;
-
-		public int? AddressId { get; set; }
+        public int? AddressId { get; set; }
 
 		[StringLength(50)]
 		public string? DoorNo { get; set; }

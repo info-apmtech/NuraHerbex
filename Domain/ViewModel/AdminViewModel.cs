@@ -394,5 +394,15 @@ namespace Domain.ViewModel
         public List<Pincode> PincodeList { get; set; } = new();
         public Pincode NewPincode { get; set; } = new();
     }
+    public class UpdateOrderStatusRequest
+    {
+        public int OrderId { get; set; }
+        public OrderStatus Status { get; set; }
+    }
+    public class OrderListViewModel
+    {
+        public List<Order> Orders { get; set; } = new List<Order>();
+        public string UserRole { get; set; } 
+    }
 }
 
