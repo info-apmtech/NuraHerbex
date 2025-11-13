@@ -1,4 +1,5 @@
-﻿@{
+﻿@model Domain.ViewModel.PaymentViewModel
+@{
     ViewData["Title"] = "Payment";
 }
 <style>
@@ -392,3 +393,12 @@
     </div>
 </div>
 
+<script>
+    window.PaymentContext = {
+      orderId: @Model.OrderId,
+      customerId: '@Model.CustomerId',
+      amountPaise: @Model.AmountPaise,     // e.g. (int)Math.Round(order.Total*100)
+      amountRupees: @Model.AmountRupees,   // optional (display only)
+      domain: 'NURA'
+    };
+</script>

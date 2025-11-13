@@ -394,5 +394,23 @@ namespace Domain.ViewModel
         public List<Pincode> PincodeList { get; set; } = new();
         public Pincode NewPincode { get; set; } = new();
     }
+    public class PaymentViewModel
+    {
+        public int OrderId { get; set; }
+        public string CustomerId { get; set; }
+        public decimal AmountPaise { get;set; }
+        public decimal AmountRupees { get; set; }
+    }
+    public class ProceedToPaymentInput
+    {
+        public int? SelectedAddressId { get; set; }
+        public string? DeliveryOption { get; set; }
+
+        public bool HasPaid { get; set; }
+        public string? RazorpayPaymentId { get; set; }
+        public string? RazorpayOrderId { get; set; }
+        public string? RazorpaySignature { get; set; }
+    }
+
 }
 
