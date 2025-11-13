@@ -843,6 +843,24 @@ namespace APIs.Controllers
             return Ok(new { id = orderId });
         }
 
+        [AllowAnonymous]
+        [HttpPost("updateStatus")]
+        public async Task<IActionResult> UpdateStatus([FromBody] UpdateOrderStatusRequest request)
+        {
+            var success = await _adminservice.UpdateOrderStatusAsync(request.OrderId, request.Status);
+            if (success)
+                return Ok(new { message = "Order status updated successfully." });
+            else
+                return NotFound(new { message = "Order not found." });
+        }
+        [AllowAnonymous]
+        [HttpGet("orders")]
+        public async Task<IActionResult> GetOrders()
+        {
+            var orders = await _adminservice.GetAllOrdersAsync();
+            return Ok(orders);
+        }
+
         //payment
         [AllowAnonymous]
         [HttpPost("PaymentDetails")]

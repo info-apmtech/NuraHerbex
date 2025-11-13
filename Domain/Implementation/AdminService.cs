@@ -1288,7 +1288,23 @@ namespace Domain.Implementation
 
 			return order.Id;
 		}
-	
+        public async Task<List<Order>> GetAllOrdersAsync()
+        {
+            return await _db.Orders.ToListAsync();
+        }
+
+        public async Task<bool> UpdateOrderStatusAsync(int orderId, OrderStatus newStatus)
+        {
+            var order = await _db.Orders.FindAsync(orderId);
+            if (order == null)
+                return false;
+
+            order.Status = newStatus;
+            await _db.SaveChangesAsync();
+            return true;
+        }
+
+
         public async Task<List<PaymentGatewayDetails>> GetPaymentGatewayDetailsAsync()
         {
             return await _db.PaymentGatewayDetails.OrderByDescending(p => p.Id).ToListAsync();
