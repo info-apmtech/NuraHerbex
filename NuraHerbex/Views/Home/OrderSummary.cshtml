@@ -757,7 +757,7 @@
 						<span class="quantity-label">Quantity :</span>
 						<div class="quantity-controls">
 							<button class="qty-btn" onclick="decrementQuantity()">−</button>
-							<input type="text" id="quantity" value="@item.Quantity" readonly>
+							@if (item.Quantity > 1)
 							<button class="qty-btn" onclick="incrementQuantity()">+</button>
 						</div>
 
