@@ -554,30 +554,29 @@ namespace NuraHerbex.Controllers
 				Selected = (vm.SelectedAddressId == a.Id)
 			}).ToList();
 
-			// ✅ Load pincodes list into the VM
-			vm.Pincodes = await _httpClient.GetFromJsonAsync<List<Pincode>>("AdminAPI/pincodes") ?? new();
+			// ✅ Load pincodes list into the VM (safe, no exceptions on 401)
+			vm.Pincodes = new List<Pincode>();
 
-			// ✅ Set initial rates for the currently selected address (STANDARD by default)
-			var selectedPin = vm.Addresses.FirstOrDefault(a => a.Id == vm.SelectedAddressId)?.Pincode;
-			if (!string.IsNullOrWhiteSpace(selectedPin))
+			try
 			{
-				var rate = vm.Pincodes.FirstOrDefault(p => string.Equals(p.Code, selectedPin, StringComparison.OrdinalIgnoreCase));
-				if (rate != null)
+				var pinResp = await _httpClient.GetAsync("AdminAPI/pincodes");
+
+				if (pinResp.StatusCode == System.Net.HttpStatusCode.Unauthorized)
 				{
-					vm.SelectedStandard = rate.StandardDeliveryAmount ?? 0m;
-					vm.SelectedExpress  = rate.ExpressDeliveryAmount  ?? 0m;
-					vm.Shipping         = vm.SelectedStandard; // show standard on first render
+					// handle unauth: you can redirect to login, or just continue with empty pincodes
+					// return RedirectToAction("Login", "Account"); // if you want a hard redirect
 				}
+				else if (pinResp.IsSuccessStatusCode)
+				{
+					vm.Pincodes = await pinResp.Content.ReadFromJsonAsync<List<Pincode>>() ?? new();
+				}
+				// else: other status codes -> you might want to log
 			}
-
-			// Other UI values
-			vm.Tax = 0m;
-			vm.TotalDiscount = 0m;
-
-			vm.Order.UserId    = userId;
-			vm.Order.OrderDate = DateTime.UtcNow;
-			vm.Order.Status    = OrderStatus.OrderPlaced;
-
+			catch (Exception ex)
+			{
+				// log but don't crash the view
+				_logger.LogError(ex, "Failed to load pincodes from AdminAPI.");
+			}
 			return View(vm);
 		}
 
