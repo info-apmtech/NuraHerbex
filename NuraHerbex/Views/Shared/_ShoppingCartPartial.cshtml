@@ -239,24 +239,24 @@
 					@* <div class="product-qty">Quantity : @item.Quantity</div> *@
 					<!-- qty controls -->
 					<div class="qty-controls">
-						@if (item.Quantity > 1)
-						{
-							<button class="qty-btn minus"
-									aria-label="Decrease"
-									data-cartid="@item.CartItemId"
-									data-productid="@item.ProductId">
-								−
-							</button>
-						}
-						else
-						{
-							<button class="qty-btn delete"
-									aria-label="Remove"
-									data-cartid="@item.CartItemId"
-									data-productid="@item.ProductId">
-								🗑
-							</button>
-						}
+							@if (item.Quantity > 1)
+							{
+								<button class="qty-btn minus"
+										aria-label="Decrease"
+										data-cartid="@item.CartItemId"
+										data-productid="@item.ProductId">
+									−
+								</button>
+							}
+							else
+							{
+								<button class="qty-btn delete"
+										aria-label="Remove"
+										data-cartid="@item.CartItemId"
+										data-productid="@item.ProductId">
+									🗑
+								</button>
+							}
 
 						<span class="qty-val">@item.Quantity</span>
 

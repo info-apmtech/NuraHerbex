@@ -520,11 +520,10 @@ namespace NuraHerbex.Controllers
 		{
 			var cart = await BuildCartViewModelAsync();
 
-
 			var vm = new OrderSummaryViewModel
 			{
 				Cart = cart,
-				Items = cart.Items?.ToList() ?? new List<CartItemViewModel>(),
+				Items = cart.Items?.ToList() ?? new(),
 				Addresses = new List<AddressDetail>()
 			};
 
@@ -541,34 +540,47 @@ namespace NuraHerbex.Controllers
 				vm.Addresses.FirstOrDefault(a => (bool?)a.IsDefault == true)?.Id ??
 				vm.Addresses.FirstOrDefault()?.Id;
 
-			// Build dropdown items from the addresses (use your real property names)
 			vm.AddressItems = vm.Addresses.Select(a => new SelectListItem
 			{
 				Value = a.Id.ToString(),
 				Text  = string.Join(", ", new string?[]
-	{
-		a.Name,
-		a.Location,
-		a.DoorNo,
-		a.Address,
-		a.State > 0 ? a.State.ToString() : null,  
-		a.Pincode,
-		a.Country > 0 ? a.Country.ToString() : null,
-		a.PhoneNumber
-	}.Where(s => !string.IsNullOrWhiteSpace(s))),
+				{
+			a.Name, a.Location, a.DoorNo, a.Address,
+			a.State > 0 ? a.State.ToString() : null,
+			a.Pincode,
+			a.Country > 0 ? a.Country.ToString() : null,
+			a.PhoneNumber
+				}.Where(s => !string.IsNullOrWhiteSpace(s))),
 				Selected = (vm.SelectedAddressId == a.Id)
 			}).ToList();
-			// UI-only values (the POST recomputes on server)
-			vm.Shipping = 0m;
+
+			// ✅ Load pincodes list into the VM
+			vm.Pincodes = await _httpClient.GetFromJsonAsync<List<Pincode>>("AdminAPI/pincodes") ?? new();
+
+			// ✅ Set initial rates for the currently selected address (STANDARD by default)
+			var selectedPin = vm.Addresses.FirstOrDefault(a => a.Id == vm.SelectedAddressId)?.Pincode;
+			if (!string.IsNullOrWhiteSpace(selectedPin))
+			{
+				var rate = vm.Pincodes.FirstOrDefault(p => string.Equals(p.Code, selectedPin, StringComparison.OrdinalIgnoreCase));
+				if (rate != null)
+				{
+					vm.SelectedStandard = rate.StandardDeliveryAmount ?? 0m;
+					vm.SelectedExpress  = rate.ExpressDeliveryAmount  ?? 0m;
+					vm.Shipping         = vm.SelectedStandard; // show standard on first render
+				}
+			}
+
+			// Other UI values
 			vm.Tax = 0m;
 			vm.TotalDiscount = 0m;
 
-			// Optional: prefill
-			vm.Order.UserId = userId;
+			vm.Order.UserId    = userId;
 			vm.Order.OrderDate = DateTime.UtcNow;
-			vm.Order.Status = OrderStatus.OrderPlaced;
+			vm.Order.Status    = OrderStatus.OrderPlaced;
+
 			return View(vm);
 		}
+
 
 		public IActionResult Privacy()
 		{
@@ -1295,12 +1307,12 @@ namespace NuraHerbex.Controllers
 			var userId = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "";
 			if (string.IsNullOrEmpty(userId)) return Unauthorized();
 
-			// 1️⃣ Get cart
+			// 1) Load cart
 			var cart = await BuildCartViewModelAsync();
 			var items = cart.Items?.ToList() ?? new();
 			if (items.Count == 0) return BadRequest("Cart is empty.");
 
-			// 2️⃣ Get address
+			// 2) Get address
 			var resp = await _httpClient.GetAsync($"AdminAPI/addresses/{userId}");
 			var addrList = resp.IsSuccessStatusCode
 				? await resp.Content.ReadFromJsonAsync<List<AddressDetail>>() ?? new()
@@ -1308,14 +1320,23 @@ namespace NuraHerbex.Controllers
 			var address = addrList.FirstOrDefault(a => a.Id == input.SelectedAddressId);
 			if (address == null) return BadRequest("Address not found.");
 
-			// 3️⃣ Calculate totals
+			// 3) Compute totals (with live PIN lookup)
 			decimal subtotal = items.Sum(i => i.LineTotal);
-			decimal shipping = input.DeliveryOption == "express" ? 15m : 0m;
+
+			Pincode? pin = null;
+			if (!string.IsNullOrWhiteSpace(address.Pincode))
+				pin = await _httpClient.GetFromJsonAsync<Pincode>($"AdminAPI/pincodes/{address.Pincode}");
+
+			decimal shipping =
+				(input.DeliveryOption == "express")
+				? (pin?.ExpressDeliveryAmount  ?? 0m)
+				: (pin?.StandardDeliveryAmount ?? 0m);
+
 			decimal tax = 0m;
 			decimal discount = 0m;
 			decimal total = subtotal + shipping + tax - discount;
 
-			// 4️⃣ Build order + details
+			// 4) Build payload for API
 			var vm = new OrderSummaryViewModel
 			{
 				Order = new Order
@@ -1324,7 +1345,7 @@ namespace NuraHerbex.Controllers
 					AddressId = address.Id,
 					DoorNo = address.DoorNo,
 					PhoneNo = address.PhoneNumber,
-					Address = address.Address ?? "",
+					Address = string.Join(", ", new[] { address.DoorNo, address.Address }.Where(s => !string.IsNullOrWhiteSpace(s))), // ensure not empty
 					State = address.State,
 					PinCode = address.Pincode,
 					Country = address.Country,
@@ -1341,21 +1362,26 @@ namespace NuraHerbex.Controllers
 					ProductId = i.ProductId,
 					Quantity = i.Quantity,
 					UnitPrice = i.UnitPrice,
-					//ProductDiscount = i.productdis ?? 0m
+					//ProductDiscount = i.ProductDiscount ?? 0m
 				}).ToList()
 			};
 
-			// 5️⃣ Call your backend API
+			// 5) POST to API (correct route)
 			var response = await _httpClient.PostAsJsonAsync("AdminAPI/orders", vm);
+			var body = await response.Content.ReadAsStringAsync();
 			if (!response.IsSuccessStatusCode)
-				return BadRequest("Order creation failed.");
+			{
+				// Show error on the same page
+				ModelState.AddModelError(string.Empty, $"Order creation failed: {(int)response.StatusCode} {response.StatusCode}. {body}");
+				return await OrderSummary(input.SelectedAddressId);
+			}
 
 			var result = await response.Content.ReadFromJsonAsync<Dictionary<string, int>>();
-			int orderId = result?["id"] ?? 0;
+			var orderId = result?["id"] ?? 0;
 
-			// 6️⃣ Redirect to payment
-			return RedirectToAction("Payment", "Home", new { orderId });
+			return RedirectToAction("Payment", "Checkout", new { orderId });
 		}
+
 
 
 	}
