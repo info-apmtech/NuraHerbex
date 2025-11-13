@@ -207,6 +207,17 @@
 		font-size: 1rem;
 	}
 
+	.qty-val {
+		width: 3rem;
+		height: 2rem;
+		background-color: #1b2b3b;
+		color: #ffffff;
+		border: none;
+		border-radius: 0.25rem;
+		text-align: center;
+		font-size: 1rem;
+	}
+
 	/* Price */
 	.price {
 		color: #ff6600;
@@ -755,16 +766,48 @@
 					<!-- Quantity Controls -->
 					<div class="quantity-section">
 						<span class="quantity-label">Quantity :</span>
-						<div class="quantity-controls">
-							<button class="qty-btn" onclick="decrementQuantity()">−</button>
-							<input type="text" id="quantity" value="@item.Quantity" readonly>
-							<button class="qty-btn" onclick="incrementQuantity()">+</button>
-						</div>
+						<div class="quantity-controls cart-content"
+							 data-cartid="@item.CartItemId">
+							@if (item.Quantity > 1)
+							{
+								<button class="qty-btn minus"
+										aria-label="Decrease"
+										data-cartid="@item.CartItemId"
+										data-productid="@item.ProductId">
+									−
+								</button>
+							}
+							else
+							{
+								<button class="qty-btn delete"
+										aria-label="Remove"
+										data-cartid="@item.CartItemId"
+										data-productid="@item.ProductId">
+									🗑
+								</button>
+							}
 
+							<input type="text"
+								   class="qty-val"
+								   value="@item.Quantity"
+								   readonly />
+
+							<button class="qty-btn plus"
+									aria-label="Increase"
+									data-cartid="@item.CartItemId"
+									data-productid="@item.ProductId">
+								+
+							</button>
+						</div>
 					</div>
 
+
+
+
 					<!-- Price -->
-					<div class="price">₹@item.UnitPrice</div>
+					<div class="price" data-unitprice="@item.UnitPrice">
+						₹@item.UnitPrice
+					</div>
 
 					@*   <!-- Price Breakdown -->
                     <div class="price-breakdown">
@@ -792,7 +835,7 @@
 		}
 	}
 	<!-- Price Breakdown -->
-	<div class="price-breakdown">
+	@* <div class="price-breakdown">
 		<div class="price-row">
 			<span>Subtotal</span>
 			<span id="subtotal">₹@Model.SubTotal.ToString("N2")</span>
@@ -813,6 +856,31 @@
 		<div class="price-row total">
 			<span>Total</span>
 			<span id="total">₹@Model.GrandTotal.ToString("N2")</span>
+		</div>
+	</div> *@
+	<!-- Price Breakdown -->
+	<div class="summary-content">
+		<!-- Product Details -->
+		<div class="product-details">
+			<!-- Price Breakdown -->
+			<div class="price-breakdown">
+				<div class="price-row">
+					<span>Subtotal</span>
+					<span id="subtotal">₹@Model.SubTotal.ToString("N2")</span>
+				</div>
+
+				<div class="price-row">
+					<span>Delivery</span>
+					<span id="shipping">₹@Model.Shipping.ToString("N2")</span>
+				</div>
+
+				<hr class="divider">
+
+				<div class="price-row total">
+					<span>Total</span>
+					<span id="total">₹@Model.GrandTotal.ToString("N2")</span>
+				</div>
+			</div>
 		</div>
 	</div>
 
@@ -922,7 +990,7 @@
 							<div class="option-time">5-7 Business days</div>
 						</div>
 					</div>
-					<div class="option-price">$ 5.00</div>
+					<div class="option-price" id="priceStandard">₹@Model.SelectedStandard.ToString("N2")</div>
 				</div>
 			</label>
 
@@ -938,7 +1006,7 @@
 							<div class="option-time">2-3 Business days</div>
 						</div>
 					</div>
-					<div class="option-price">$ 15.00</div>
+					<div class="option-price" id="priceExpress">₹@Model.SelectedExpress.ToString("N2")</div>
 				</div>
 			</label>
 		</div>
@@ -1003,64 +1071,135 @@
 
 @* @section Scripts { *@
 @{
-	var json = JsonSerializer.Serialize(
-		Model.Addresses,
-		new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase }
-	);
+	// IMPORTANT: camelCase so JS sees .pincode, .phoneNumber, etc.
+	var jsonOpts = new System.Text.Json.JsonSerializerOptions { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase };
+	var addressesJ = System.Text.Json.JsonSerializer.Serialize(Model.Addresses, jsonOpts);
+	var pincodesJ = System.Text.Json.JsonSerializer.Serialize(Model.Pincodes, jsonOpts);
 }
 <script>
-	(function () {
-	  const addresses = @Html.Raw(json);        // [{ id, name, location, doorNo, phoneNumber, address, state, pincode, country, ... }]
-	  const selectEl  = document.getElementById('addressSelect');
+	(() => {
+	  // ---------- Data from server ----------
+	  const addresses = @Html.Raw(addressesJ); // [{ id, name, location, doorNo, address, state, pincode, country, phoneNumber }]
+	  const pincodes  = @Html.Raw(pincodesJ);  // [{ code, standardDeliveryAmount, expressDeliveryAmount }]
 
-	  // Build a lookup by id for O(1) access
-	  const byId = new Map(addresses.map(a => [a.id, a]));
+	  // Maps
+	  const addrById = new Map((addresses || []).map(a => [a.id, a]));
+	  const pinRates = Object.fromEntries((pincodes || []).map(p => [
+		p.code, { std: p.standardDeliveryAmount || 0, exp: p.expressDeliveryAmount || 0 }
+	  ]));
 
-	  const $ = id => document.getElementById(id);
-	  const set = (id, v) => { const el = $(id); if (el) el.value = (v ?? "").toString(); };
-	  const clearForm = () => ['firstName','lastName','streetAddress','city','state','zipCode','phone']
-		.forEach(id => set(id, ""));
+	  // ---------- DOM refs ----------
+	  const addressSelect   = document.getElementById('addressSelect');
 
-	  function fillForm(a) {
-		if (!a) { clearForm(); return; }
+	  // Address fields (IDs must exist in your form)
+	  const fields = {
+		firstName:     document.getElementById('firstName'),
+		lastName:      document.getElementById('lastName'),
+		streetAddress: document.getElementById('streetAddress'),
+		city:          document.getElementById('city'),
+		state:         document.getElementById('state'),
+		zipCode:       document.getElementById('zipCode'),
+		phone:         document.getElementById('phone')
+	  };
 
-		// Split name if you only have a single Name field
-		const full = a.name || "";
-		const space = full.indexOf(" ");
-		const fn = space > 0 ? full.slice(0, space) : full;
-		const ln = space > 0 ? full.slice(space + 1) : "";
+	  // Delivery radios
+	  const deliveryRadios  = document.querySelectorAll('input[name="delivery"]');
 
-		set('firstName', fn);
-		set('lastName', ln);
+	  // Totals area
+	  const subtotalEl = document.getElementById('subtotal');
+	  const taxEl      = document.getElementById('tax');
+	  const discountEl = document.getElementById('discount');
+	  const shippingEl = document.getElementById('shipping');
+	  const totalEl    = document.getElementById('total');
 
-		// Address lines (customize as needed)
-		// Street Address from DoorNo + Address (+ Location if you prefer)
-		const street = [a.doorNo, a.address].filter(Boolean).join(", ");
-		set('streetAddress', street);
+	  // (Optional) the price labels shown on the cards
+	  const priceStdEl = document.getElementById('priceStandard');
+	  const priceExpEl = document.getElementById('priceExpress');
 
-		// City/State/Zip/Country/Phone (numbers converted to string)
-		set('city',     a.location);          // or a.city if that's your field
-		set('state',    a.state);             // if you have stateName, use that
-		set('zipCode',  a.pincode);           // pincode is often numeric
-		set('phone',    a.phoneNumber);
+	  // Hidden inputs used by the POST form
+	  const form           = document.querySelector('.proceed-section form');
+	  const hiddenAddress  = form?.querySelector('input[name="SelectedAddressId"]');
+	  const hiddenDelivery = form?.querySelector('input[name="DeliveryOption"]');
+
+	  // ---------- helpers ----------
+	  const fmt = n => "₹" + Number(n || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+	  const parseMoney = s => Number((s || "").toString().replace(/[^\d.-]/g, "")) || 0;
+
+	  const getSelectedAddress = () => {
+		const id = parseInt(addressSelect?.value || "0", 10);
+		return Number.isFinite(id) ? addrById.get(id) : null;
+	  };
+	  const getMode = () => {
+		const r = Array.from(deliveryRadios).find(x => x.checked);
+		return r ? r.value : "standard";
+	  };
+
+	  function fillAddressForm(addr) {
+		// clear if not found
+		if (!addr) {
+		  Object.values(fields).forEach(el => { if (el) el.value = ""; });
+		  return;
+		}
+		// Split the Name field into first/last
+		const full = addr.name || "";
+		const i    = full.indexOf(" ");
+		const fn   = i > 0 ? full.slice(0, i) : full;
+		const ln   = i > 0 ? full.slice(i + 1) : "";
+
+		if (fields.firstName)     fields.firstName.value     = fn;
+		if (fields.lastName)      fields.lastName.value      = ln;
+		if (fields.streetAddress) fields.streetAddress.value = [addr.doorNo, addr.address].filter(Boolean).join(", ");
+		if (fields.city)          fields.city.value          = addr.location || "";
+		if (fields.state)         fields.state.value         = (addr.state ?? "").toString();
+		if (fields.zipCode)       fields.zipCode.value       = addr.pincode || "";
+		if (fields.phone)         fields.phone.value         = addr.phoneNumber || "";
 	  }
 
-	  function getSelected() {
-		const id = parseInt(selectEl.value, 10);
-		return Number.isFinite(id) ? byId.get(id) : null;
+	  function refreshPrices(addr) {
+		const pin  = addr?.pincode || "";
+		const rate = pinRates[pin] || { std: 0, exp: 0 };
+
+		// update labels on the cards (if present)
+		if (priceStdEl) priceStdEl.textContent = fmt(rate.std);
+		if (priceExpEl) priceExpEl.textContent = fmt(rate.exp);
+
+		const mode     = getMode();
+		const shipping = (mode === "express") ? rate.exp : rate.std;
+
+		const subtotal = parseMoney(subtotalEl?.textContent);
+		const tax      = parseMoney(taxEl?.textContent);
+		const discount = parseMoney(discountEl?.textContent);
+
+		if (shippingEl) shippingEl.textContent = fmt(shipping);
+		if (totalEl)    totalEl.textContent    = fmt(subtotal + tax + shipping - discount);
+
+		// keep hidden fields in sync for POST
+		if (hiddenDelivery) hiddenDelivery.value = mode;
+		if (hiddenAddress && addressSelect) hiddenAddress.value = addressSelect.value || '';
 	  }
 
-	  // Initial render (when page loads with a preselected option)
-	  if (selectEl && selectEl.value) {
-		fillForm(getSelected());
+	  function onAddressChange() {
+		const addr = getSelectedAddress();
+		fillAddressForm(addr);
+		refreshPrices(addr);
+	  }
+	  function onDeliveryChange() {
+		refreshPrices(getSelectedAddress());
 	  }
 
-	  // On change
-	  selectEl.addEventListener('change', function () {
-		fillForm(getSelected());
-	  });
+	  // ---------- init + listeners ----------
+	  // Initial sync (handles preselected address)
+	  onAddressChange();
+
+	  // Bind once
+	  addressSelect?.addEventListener('change', onAddressChange);
+	  deliveryRadios.forEach(r => r.addEventListener('change', onDeliveryChange));
 	})();
 </script>
+
+
+
+
 
 @* } *@
 <script>
@@ -1092,4 +1231,181 @@
 		deliveryRadios.forEach(r => r.addEventListener('change', syncDelivery));
 	  }
 	})();
+</script>
+<script>
+		function toggleLeftButton($row, qty) {
+		const $left = $row.find(".qty-btn").first();
+		if (qty > 1) {
+			$left.removeClass("delete").addClass("minus").text("−");
+		} else {
+			$left.removeClass("minus").addClass("delete").text("🗑");
+		}
+	}
+
+	// ----------- INCREMENT (+) -----------
+	$(document)
+		.off("click.cart.qty.plus")
+		.on("click.cart.qty.plus", ".qty-btn.plus", function (e) {
+			e.preventDefault();
+			const $row = $(this).closest(".cart-content");
+			const $qty = $row.find(".qty-val");
+			const cartId = $(this).data("cartid");
+			if (!cartId) return;
+
+			const oldQty = parseInt($qty.val()) || 1;
+			const newQty = oldQty + 1;
+
+			// Instant UI update
+			$qty.val(newQty);
+			toggleLeftButton($row, newQty);
+			updateCartTotals();
+				window.location.reload();
+
+			// Background server update
+			$.ajax({
+				type: "POST",
+				url: "/Home/ChangeQuantity",
+				data: { cartId: cartId, delta: 1 }
+			})
+			.done(function () {
+				if (typeof reloadCartPartialIntoModal === "function")
+					reloadCartPartialIntoModal();
+			})
+			.fail(function () {
+				// Rollback if server fails
+				$qty.val(oldQty);
+				toggleLeftButton($row, oldQty);
+				updateCartTotals();
+					@* window.location.reload(); *@
+				alert("Failed to increase quantity.");
+			});
+		});
+
+	// ----------- DECREMENT (−) -----------
+	$(document)
+		.off("click.cart.qty.minus")
+		.on("click.cart.qty.minus", ".qty-btn.minus", function (e) {
+			e.preventDefault();
+			const $row = $(this).closest(".cart-content");
+			const $qty = $row.find(".qty-val");
+			const cartId = $(this).data("cartid");
+			if (!cartId) return;
+
+			const oldQty = parseInt($qty.val()) || 1;
+			if (oldQty <= 1) return;
+
+			const newQty = oldQty - 1;
+
+			// Instant UI update
+			$qty.val(newQty);
+			toggleLeftButton($row, newQty);
+			updateCartTotals();
+				@* window.location.reload(); *@
+
+			// Background server update
+			$.ajax({
+				type: "POST",
+				url: "/Home/ChangeQuantity",
+				data: { cartId: cartId, delta: -1 }
+			})
+			.done(function () {
+				if (typeof reloadCartPartialIntoModal === "function")
+					reloadCartPartialIntoModal();
+			})
+			.fail(function () {
+				// Rollback if server fails
+				$qty.val(oldQty);
+				toggleLeftButton($row, oldQty);
+				updateCartTotals();
+					@* window.location.reload(); *@
+				alert("Failed to decrease quantity.");
+			});
+		});
+
+	// ----------- DELETE (🗑) -----------
+	$(document)
+		.off("click.cart.qty.delete")
+		.on("click.cart.qty.delete", ".qty-btn.delete", function (e) {
+			e.preventDefault();
+			const $row = $(this).closest(".cart-content");
+			const cartId = $(this).data("cartid");
+			if (!cartId) return;
+
+			// Confirm popup
+			const ok = window.confirm("Are you sure you want to remove this item from your cart?");
+			if (!ok) return;
+
+			const backup = $row.clone(true, true); // for rollback
+			$row.fadeOut(150, function () {
+				$(this).remove();
+				@* updateCartTotals(); *@
+				  window.location.reload(); // or just location.reload();
+			});
+
+			$.ajax({
+				type: "DELETE",
+				url: "/Home/DeleteCartItem",
+				data: { cartId: cartId }
+			})
+			.done(function () {
+				if (typeof reloadCartPartialIntoModal === "function")
+					reloadCartPartialIntoModal();
+			})
+			.fail(function () {
+				// rollback
+				$(".cart-footer").before(backup);
+				alert("Failed to remove item.");
+			@* updateCartTotals(); *@
+					window.location.reload();
+			});
+		});
+
+</script>
+<script>
+	function formatMoney(n) {
+		return "₹" + Number(n || 0).toLocaleString(undefined, {
+			minimumFractionDigits: 2,
+			maximumFractionDigits: 2
+		});
+	}
+
+	function parseMoneyText(txt) {
+		return Number((txt || "").toString().replace(/[^\d.-]/g, "")) || 0;
+	}
+
+	function updateCartTotals() {
+		let subtotal = 0;
+
+		// Only item rows: they have data-cartid
+		$(".summary-content[data-cartid]").each(function () {
+			const $row = $(this);
+			const $qtyInput = $row.find(".qty-val");
+			const $priceEl  = $row.find(".price");
+
+			if (!$qtyInput.length || !$priceEl.length) return;
+
+			const qty       = parseInt($qtyInput.val()) || 0;
+			const unitPrice = parseFloat($priceEl.data("unitprice")) || 0;
+
+			subtotal += qty * unitPrice;
+		});
+
+		// Update Subtotal span
+		const $subtotalEl = $("#subtotal");
+		if ($subtotalEl.length) {
+			$subtotalEl.text(formatMoney(subtotal));
+		}
+
+		// Read existing shipping/tax/discount from DOM (if present)
+		const shipping = parseMoneyText($("#shipping").text());
+		const tax      = $("#tax").length ? parseMoneyText($("#tax").text()) : 0;
+		const discount = $("#discount").length ? parseMoneyText($("#discount").text()) : 0;
+
+		const total = subtotal + tax + shipping - discount;
+
+		const $totalEl = $("#total");
+		if ($totalEl.length) {
+			$totalEl.text(formatMoney(total));
+		}
+	}
 </script>

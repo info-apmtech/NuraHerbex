@@ -387,6 +387,12 @@ namespace Domain.ViewModel
 		public decimal Tax { get; set; } = 0m;
 		public decimal TotalDiscount { get; set; } = 0m;
 		public decimal GrandTotal => SubTotal + Shipping + Tax - TotalDiscount;
+		// ✅ Use Pincode directly
+		public List<Pincode> Pincodes { get; set; } = new();
+
+		// For initial render (selected address’s pincode)
+		public decimal SelectedStandard { get; set; } = 0m;
+		public decimal SelectedExpress { get; set; } = 0m;
 
 	}
     public class PincodeViewModel

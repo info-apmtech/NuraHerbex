@@ -1309,7 +1309,10 @@ namespace Domain.Implementation
         {
             return await _db.PaymentGatewayDetails.OrderByDescending(p => p.Id).ToListAsync();
         }
-    }
+		public async Task<Pincode?> GetPincodeByCodeAsync(string code)
+	   => await _db.Pincodes.AsNoTracking()
+			 .FirstOrDefaultAsync(p => p.Code == code);
+	}
 }
 
 

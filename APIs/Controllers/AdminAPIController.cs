@@ -5,6 +5,7 @@ using Domain.ViewModel;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using System.Text.RegularExpressions;
 using static Domain.ViewModel.CartItemViewModel;
 
 namespace APIs.Controllers
@@ -886,7 +887,15 @@ namespace APIs.Controllers
 
             
         }
+		// GET /AdminAPI/pincodes/600001
+		[HttpGet("{code:length(6)}")]
+		public async Task<ActionResult<Pincode>> GetByCode(string code)
+		{
+			if (!System.Text.RegularExpressions.Regex.IsMatch(code, @"^\d{6}$"))
+				return BadRequest("PIN must be exactly 6 digits.");
 
-
-    }
+			var pin = await _adminservice.GetPincodeByCodeAsync(code);
+			return pin is null ? NotFound() : Ok(pin);
+		}
+	}
 }
