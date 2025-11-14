@@ -403,6 +403,11 @@ namespace Domain.ViewModel
 		public string? State { get; set; }
 		public string? ZipCode { get; set; }
 		public string? Phone { get; set; }
+      
+        public string FullName { get; set; } = string.Empty;
+        public string CountryName { get; set; } = string.Empty;
+        public string StateName { get; set; } = string.Empty;
+
 
     }
     public class PincodeViewModel
