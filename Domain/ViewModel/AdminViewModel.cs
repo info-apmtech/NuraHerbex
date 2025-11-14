@@ -404,7 +404,7 @@ namespace Domain.ViewModel
 		public string? ZipCode { get; set; }
 		public string? Phone { get; set; }
 
-	}
+    }
     public class PincodeViewModel
     {
         public List<Pincode> PincodeList { get; set; } = new();

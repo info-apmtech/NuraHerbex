@@ -917,28 +917,13 @@ namespace NuraHerbex.Controllers
 			return View(wishlistProducts.ToList());
 		}
 
-        //[HttpGet("Home/Invoice/{orderId:int}")]
-        //public async Task<IActionResult> Invoice(int orderId)
-        //{
-        //	var response = await _httpClient.GetAsync($"AdminAPI/orders/{orderId}");
-        //	if (!response.IsSuccessStatusCode) return NotFound();
-
-        //	var vm = await response.Content.ReadFromJsonAsync<OrderSummaryViewModel>(_jsonOptions);
-        //	if (vm == null) return NotFound();
-
-        //	return View(vm);
-        //}
         [HttpGet("Home/Invoice/{orderId:int}")]
         public async Task<IActionResult> Invoice(int orderId)
         {
             var response = await _httpClient.GetAsync($"AdminAPI/orders/{orderId}");
             if (!response.IsSuccessStatusCode) return NotFound();
 
-            // 1) Read raw JSON (helps if you want to inspect it in logs)
             var json = await response.Content.ReadAsStringAsync();
-            // Console.WriteLine(json); // optional for debugging
-
-            // 2) Deserialize into DTO where Status is string (no enum issues)
             var dto = JsonSerializer.Deserialize<InvoiceOrderSummaryDto>(
                 json,
                 new JsonSerializerOptions
@@ -949,7 +934,6 @@ namespace NuraHerbex.Controllers
             if (dto == null || dto.Order == null)
                 return NotFound();
 
-            // 3) Map DTO -> your Domain.ViewModel.OrderSummaryViewModel
             var order = new Order
             {
                 Id = dto.Order.Id,
@@ -962,10 +946,7 @@ namespace NuraHerbex.Controllers
                 PinCode = dto.Order.PinCode,
                 Country = dto.Order.Country,
                 OrderDate = dto.Order.OrderDate,
-
-                // SAFE enum mapping: if parse fails, fall back to a default
                 Status = ParseOrderStatus(dto.Order.Status),
-
                 Subtotal = dto.Order.Subtotal,
                 Tax = dto.Order.Tax,
                 Shipping = dto.Order.Shipping,
@@ -989,8 +970,125 @@ namespace NuraHerbex.Controllers
                 Details = details
             };
 
+            // Fetch user details for fullname
+            var userResponse = await _httpClient.GetAsync($"AdminAPI/user/{order.UserId}");
+            if (userResponse.IsSuccessStatusCode)
+            {
+                var user = await userResponse.Content.ReadFromJsonAsync<RegisterUser>();
+                if (user != null)
+                {
+                    vm.FullName = $"{user.FirstName} {user.LastName}".Trim();
+                }
+                else
+                {
+                    vm.FullName = "Unknown User";
+                }
+            }
+            else
+            {
+                vm.FullName = "Unknown User";
+            }
+
+            // Fetch product names for order details
+            foreach (var item in vm.Details)
+            {
+                var productResponse = await _httpClient.GetAsync($"AdminAPI/product/{item.ProductId}");
+                if (productResponse.IsSuccessStatusCode)
+                {
+                    var product = await productResponse.Content.ReadFromJsonAsync<Product>();
+                    if (product != null)
+                    {
+                        item.productName = product.ProductName;
+                    }
+                }
+            }
+
+            // Fetch list of countries
+            var countriesResponse = await _httpClient.GetAsync("AdminAPI/countries");
+            List<Country> countries = new();
+            if (countriesResponse.IsSuccessStatusCode)
+            {
+                countries = await countriesResponse.Content.ReadFromJsonAsync<List<Country>>() ?? new List<Country>();
+            }
+
+            // Fetch list of all states
+            var statesResponse = await _httpClient.GetAsync("AdminAPI/states");
+            List<State> states = new();
+            if (statesResponse.IsSuccessStatusCode)
+            {
+                states = await statesResponse.Content.ReadFromJsonAsync<List<State>>() ?? new List<State>();
+            }
+
+            vm.CountryName = countries.FirstOrDefault(c => c.Id == order.Country)?.CountryName ?? "Unknown Country";
+            vm.StateName = states.FirstOrDefault(s => s.Id == order.State)?.StateName ?? "Unknown State";
+
             return View(vm);
         }
+
+
+        //[HttpGet("Home/Invoice/{orderId:int}")]
+        //public async Task<IActionResult> Invoice(int orderId)
+        //{
+        //    var response = await _httpClient.GetAsync($"AdminAPI/orders/{orderId}");
+        //    if (!response.IsSuccessStatusCode) return NotFound();
+
+        //    // 1) Read raw JSON (helps if you want to inspect it in logs)
+        //    var json = await response.Content.ReadAsStringAsync();
+        //    // Console.WriteLine(json); // optional for debugging
+
+        //    // 2) Deserialize into DTO where Status is string (no enum issues)
+        //    var dto = JsonSerializer.Deserialize<InvoiceOrderSummaryDto>(
+        //        json,
+        //        new JsonSerializerOptions
+        //        {
+        //            PropertyNameCaseInsensitive = true
+        //        });
+
+        //    if (dto == null || dto.Order == null)
+        //        return NotFound();
+
+        //    // 3) Map DTO -> your Domain.ViewModel.OrderSummaryViewModel
+        //    var order = new Order
+        //    {
+        //        Id = dto.Order.Id,
+        //        UserId = dto.Order.UserId,
+        //        AddressId = dto.Order.AddressId,
+        //        DoorNo = dto.Order.DoorNo,
+        //        PhoneNo = dto.Order.PhoneNo,
+        //        Address = dto.Order.Address,
+        //        State = dto.Order.State,
+        //        PinCode = dto.Order.PinCode,
+        //        Country = dto.Order.Country,
+        //        OrderDate = dto.Order.OrderDate,
+
+        //        // SAFE enum mapping: if parse fails, fall back to a default
+        //        Status = ParseOrderStatus(dto.Order.Status),
+
+        //        Subtotal = dto.Order.Subtotal,
+        //        Tax = dto.Order.Tax,
+        //        Shipping = dto.Order.Shipping,
+        //        TotalDiscount = dto.Order.TotalDiscount,
+        //        Total = dto.Order.Total
+        //    };
+
+        //    var details = dto.Details?.Select(d => new OrderDetail
+        //    {
+        //        Id = d.Id,
+        //        OrderId = d.OrderId,
+        //        ProductId = d.ProductId,
+        //        Quantity = d.Quantity,
+        //        UnitPrice = d.UnitPrice,
+        //        productName = d.productName
+        //    }).ToList() ?? new List<OrderDetail>();
+
+        //    var vm = new OrderSummaryViewModel
+        //    {
+        //        Order = order,
+        //        Details = details
+        //    };
+
+        //    return View(vm);
+        //}
 
         // helper method in HomeController
         private OrderStatus ParseOrderStatus(string status)

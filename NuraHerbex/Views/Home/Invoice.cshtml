@@ -19,12 +19,12 @@
     var poDate = order.OrderDate.ToString("dd-MMM-yyyy");
 
     // Customer-related props
-    var customerName = order.UserId ?? "";
+    var customerName = Model.FullName ?? "";
     var customerDoorNo = order.DoorNo;
     var customerBaseAddress = order.Address;
-    var customerStateText = order.State > 0 ? order.State.ToString() : "";
+    var customerStateText = Model.StateName  ?? "";
     var customerPinCode = order.PinCode;
-    var customerCountryText = order.Country > 0 ? order.Country.ToString() : "";
+    var customerCountryText = Model.CountryName ?? "";
     var customerPhone = order.PhoneNo;
 
     var customerAddressLine1 = string.Join(", ",
