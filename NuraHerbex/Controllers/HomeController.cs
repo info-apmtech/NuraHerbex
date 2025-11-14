@@ -22,6 +22,7 @@ using System.Net.Mail;
 using System.Security.Claims;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Text.RegularExpressions;
 using SmtpClient = MailKit.Net.Smtp.SmtpClient;
 using System.Text.Json.Serialization;
 using JsonSerializer = System.Text.Json.JsonSerializer;
@@ -49,140 +50,140 @@ namespace NuraHerbex.Controllers
 
 		}
 		private System.Net.Http.HttpClient AuthorizedClient => _httpClientFactory.CreateAuthorizedClient(_httpContextAccessor);
-        //public async Task<IActionResult> Index()
-        //{
-        //	var blogs = new List<Blog>();
-        //	var ingredients = new List<Ingredient>();
-        //	var products = new List<Product>();
-        //	var feedbacks = new List<FeedBack>();
+		//public async Task<IActionResult> Index()
+		//{
+		//	var blogs = new List<Blog>();
+		//	var ingredients = new List<Ingredient>();
+		//	var products = new List<Product>();
+		//	var feedbacks = new List<FeedBack>();
 
-        //	// Fetch blogs, ingredients, products as before
-        //	var blogResponse = await _httpClient.GetAsync("AdminAPI/blogs");
-        //	if (blogResponse.IsSuccessStatusCode)
-        //		blogs = JsonConvert.DeserializeObject<List<Blog>>(await blogResponse.Content.ReadAsStringAsync()) ?? new List<Blog>();
+		//	// Fetch blogs, ingredients, products as before
+		//	var blogResponse = await _httpClient.GetAsync("AdminAPI/blogs");
+		//	if (blogResponse.IsSuccessStatusCode)
+		//		blogs = JsonConvert.DeserializeObject<List<Blog>>(await blogResponse.Content.ReadAsStringAsync()) ?? new List<Blog>();
 
-        //	var ingredientResponse = await _httpClient.GetAsync("AdminAPI/ingredients");
-        //	if (ingredientResponse.IsSuccessStatusCode)
-        //		ingredients = JsonConvert.DeserializeObject<List<Ingredient>>(await ingredientResponse.Content.ReadAsStringAsync()) ?? new List<Ingredient>();
+		//	var ingredientResponse = await _httpClient.GetAsync("AdminAPI/ingredients");
+		//	if (ingredientResponse.IsSuccessStatusCode)
+		//		ingredients = JsonConvert.DeserializeObject<List<Ingredient>>(await ingredientResponse.Content.ReadAsStringAsync()) ?? new List<Ingredient>();
 
-        //	var productsResponse = await _httpClient.GetAsync("AdminAPI/products");
-        //	if (productsResponse.IsSuccessStatusCode)
-        //		products = JsonConvert.DeserializeObject<List<Product>>(await productsResponse.Content.ReadAsStringAsync()) ?? new List<Product>();
+		//	var productsResponse = await _httpClient.GetAsync("AdminAPI/products");
+		//	if (productsResponse.IsSuccessStatusCode)
+		//		products = JsonConvert.DeserializeObject<List<Product>>(await productsResponse.Content.ReadAsStringAsync()) ?? new List<Product>();
 
-        //          var feedbackResponse = await _httpClient.GetAsync("AdminAPI/feedbacks");
-        //          if (feedbackResponse.IsSuccessStatusCode)
-        //              feedbacks = JsonConvert.DeserializeObject<List<FeedBack>>(await feedbackResponse.Content.ReadAsStringAsync()) ?? new List<FeedBack>();
+		//          var feedbackResponse = await _httpClient.GetAsync("AdminAPI/feedbacks");
+		//          if (feedbackResponse.IsSuccessStatusCode)
+		//              feedbacks = JsonConvert.DeserializeObject<List<FeedBack>>(await feedbackResponse.Content.ReadAsStringAsync()) ?? new List<FeedBack>();
 
 
 
-        //          // Filter home ingredients, featured products, etc.
-        //          var homeIngredients = ingredients.Where(i => i.IsActive && i.ShowHome).OrderByDescending(i => i.CreatedAt).Take(6).ToList();
-        //	var latestBlogs = blogs.OrderByDescending(b => b.CreatedAt).Take(10).ToList();
-        //	var featuredProducts = products.OrderBy(p => p.Id).ToList();
+		//          // Filter home ingredients, featured products, etc.
+		//          var homeIngredients = ingredients.Where(i => i.IsActive && i.ShowHome).OrderByDescending(i => i.CreatedAt).Take(6).ToList();
+		//	var latestBlogs = blogs.OrderByDescending(b => b.CreatedAt).Take(10).ToList();
+		//	var featuredProducts = products.OrderBy(p => p.Id).ToList();
 
-        //	// ? Fetch user's wishlist IDs if logged in
-        //	var userId = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        //	List<int> wishlistIds = new List<int>();
-        //	if (!string.IsNullOrEmpty(userId))
-        //	{
-        //		var wishlistResponse = await _httpClient.GetAsync($"AdminAPI/wishlist/{userId}");
-        //		if (wishlistResponse.IsSuccessStatusCode)
-        //		{
-        //			var wishlistItems = await wishlistResponse.Content.ReadFromJsonAsync<List<WishlistItem>>();
-        //			wishlistIds = wishlistItems?.Select(x => x.ProductId).ToList() ?? new List<int>();
-        //		}
-        //	}
+		//	// ? Fetch user's wishlist IDs if logged in
+		//	var userId = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+		//	List<int> wishlistIds = new List<int>();
+		//	if (!string.IsNullOrEmpty(userId))
+		//	{
+		//		var wishlistResponse = await _httpClient.GetAsync($"AdminAPI/wishlist/{userId}");
+		//		if (wishlistResponse.IsSuccessStatusCode)
+		//		{
+		//			var wishlistItems = await wishlistResponse.Content.ReadFromJsonAsync<List<WishlistItem>>();
+		//			wishlistIds = wishlistItems?.Select(x => x.ProductId).ToList() ?? new List<int>();
+		//		}
+		//	}
 
-        //	var vm = new HomeViewModel
-        //	{
-        //		BlogList = latestBlogs,
-        //		Ingredients = homeIngredients,
-        //		PlanList = await GetPlansFromApi(),
-        //		FeaturedProducts = featuredProducts,
-        //		WishlistProductIds = wishlistIds,
-        //              FeedbackList = feedbacks.OrderByDescending(f => f.SubmittedAt).Take(10).ToList()
-        //          };
+		//	var vm = new HomeViewModel
+		//	{
+		//		BlogList = latestBlogs,
+		//		Ingredients = homeIngredients,
+		//		PlanList = await GetPlansFromApi(),
+		//		FeaturedProducts = featuredProducts,
+		//		WishlistProductIds = wishlistIds,
+		//              FeedbackList = feedbacks.OrderByDescending(f => f.SubmittedAt).Take(10).ToList()
+		//          };
 
-        //	return View(vm);
-        //}
-        public async Task<IActionResult> Index()
-        {
-            var blogs = new List<Blog>();
-            var ingredients = new List<Ingredient>();
-            var products = new List<Product>();
-            var feedbacks = new List<FeedbackViewModel>(); 
+		//	return View(vm);
+		//}
+		public async Task<IActionResult> Index()
+		{
+			var blogs = new List<Blog>();
+			var ingredients = new List<Ingredient>();
+			var products = new List<Product>();
+			var feedbacks = new List<FeedbackViewModel>();
 
-            // Fetch blogs
-            var blogResponse = await _httpClient.GetAsync("AdminAPI/blogs");
-            if (blogResponse.IsSuccessStatusCode)
-                blogs = JsonConvert.DeserializeObject<List<Blog>>(await blogResponse.Content.ReadAsStringAsync()) ?? new List<Blog>();
+			// Fetch blogs
+			var blogResponse = await _httpClient.GetAsync("AdminAPI/blogs");
+			if (blogResponse.IsSuccessStatusCode)
+				blogs = JsonConvert.DeserializeObject<List<Blog>>(await blogResponse.Content.ReadAsStringAsync()) ?? new List<Blog>();
 
-            // Fetch ingredients
-            var ingredientResponse = await _httpClient.GetAsync("AdminAPI/ingredients");
-            if (ingredientResponse.IsSuccessStatusCode)
-                ingredients = JsonConvert.DeserializeObject<List<Ingredient>>(await ingredientResponse.Content.ReadAsStringAsync()) ?? new List<Ingredient>();
+			// Fetch ingredients
+			var ingredientResponse = await _httpClient.GetAsync("AdminAPI/ingredients");
+			if (ingredientResponse.IsSuccessStatusCode)
+				ingredients = JsonConvert.DeserializeObject<List<Ingredient>>(await ingredientResponse.Content.ReadAsStringAsync()) ?? new List<Ingredient>();
 
-            // Fetch products
-            var productsResponse = await _httpClient.GetAsync("AdminAPI/products");
-            if (productsResponse.IsSuccessStatusCode)
-                products = JsonConvert.DeserializeObject<List<Product>>(await productsResponse.Content.ReadAsStringAsync()) ?? new List<Product>();
+			// Fetch products
+			var productsResponse = await _httpClient.GetAsync("AdminAPI/products");
+			if (productsResponse.IsSuccessStatusCode)
+				products = JsonConvert.DeserializeObject<List<Product>>(await productsResponse.Content.ReadAsStringAsync()) ?? new List<Product>();
 
-            // Fetch feedbacks via API
-            var feedbackResponse = await _httpClient.GetAsync("AdminAPI/feedbacks");
-            if (feedbackResponse.IsSuccessStatusCode)
-                feedbacks = JsonConvert.DeserializeObject<List<FeedbackViewModel>>(await feedbackResponse.Content.ReadAsStringAsync())
-                            ?? new List<FeedbackViewModel>();
+			// Fetch feedbacks via API
+			var feedbackResponse = await _httpClient.GetAsync("AdminAPI/feedbacks");
+			if (feedbackResponse.IsSuccessStatusCode)
+				feedbacks = JsonConvert.DeserializeObject<List<FeedbackViewModel>>(await feedbackResponse.Content.ReadAsStringAsync())
+							?? new List<FeedbackViewModel>();
 
-            // Filter home ingredients, featured products, etc.
-            var homeIngredients = ingredients
-                .Where(i => i.IsActive && i.ShowHome)
-                .OrderByDescending(i => i.CreatedAt)
-                .Take(6)
-                .ToList();
+			// Filter home ingredients, featured products, etc.
+			var homeIngredients = ingredients
+				.Where(i => i.IsActive && i.ShowHome)
+				.OrderByDescending(i => i.CreatedAt)
+				.Take(6)
+				.ToList();
 
-            var latestBlogs = blogs
-                .OrderByDescending(b => b.CreatedAt)
-                .Take(10)
-                .ToList();
+			var latestBlogs = blogs
+				.OrderByDescending(b => b.CreatedAt)
+				.Take(10)
+				.ToList();
 
-            var featuredProducts = products.OrderBy(p => p.Id).ToList();
+			var featuredProducts = products.OrderBy(p => p.Id).ToList();
 
-            // Fetch user's wishlist IDs if logged in
-            var userId = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            List<int> wishlistIds = new List<int>();
-            if (!string.IsNullOrEmpty(userId))
-            {
-                var wishlistResponse = await _httpClient.GetAsync($"AdminAPI/wishlist/{userId}");
-                if (wishlistResponse.IsSuccessStatusCode)
-                {
-                    var wishlistItems = await wishlistResponse.Content.ReadFromJsonAsync<List<WishlistItem>>();
-                    wishlistIds = wishlistItems?.Select(x => x.ProductId).ToList() ?? new List<int>();
-                }
-            }
+			// Fetch user's wishlist IDs if logged in
+			var userId = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+			List<int> wishlistIds = new List<int>();
+			if (!string.IsNullOrEmpty(userId))
+			{
+				var wishlistResponse = await _httpClient.GetAsync($"AdminAPI/wishlist/{userId}");
+				if (wishlistResponse.IsSuccessStatusCode)
+				{
+					var wishlistItems = await wishlistResponse.Content.ReadFromJsonAsync<List<WishlistItem>>();
+					wishlistIds = wishlistItems?.Select(x => x.ProductId).ToList() ?? new List<int>();
+				}
+			}
 
-            // Build ViewModel
-            var vm = new HomeViewModel
-            {
-                BlogList = latestBlogs,
-                Ingredients = homeIngredients,
-                PlanList = await GetPlansFromApi(),
-                FeaturedProducts = featuredProducts,
-                WishlistProductIds = wishlistIds,
-                FeedbackList = feedbacks
-            };
+			// Build ViewModel
+			var vm = new HomeViewModel
+			{
+				BlogList = latestBlogs,
+				Ingredients = homeIngredients,
+				PlanList = await GetPlansFromApi(),
+				FeaturedProducts = featuredProducts,
+				WishlistProductIds = wishlistIds,
+				FeedbackList = feedbacks
+			};
 
-            return View(vm);
-        }
+			return View(vm);
+		}
 
-        public IActionResult About()
-        {
-            return View();
-        }
-        public async Task<IActionResult> Blog()
-        {
-            // 1️⃣ Get blogs
-            var blogsResponse = await _httpClient.GetAsync("AdminAPI/blogs");
-            var categoriesResponse = await _httpClient.GetAsync("AdminAPI/blogcategories");
+		public IActionResult About()
+		{
+			return View();
+		}
+		public async Task<IActionResult> Blog()
+		{
+			// 1️⃣ Get blogs
+			var blogsResponse = await _httpClient.GetAsync("AdminAPI/blogs");
+			var categoriesResponse = await _httpClient.GetAsync("AdminAPI/blogcategories");
 
 			var blogs = new List<Blog>();
 			var categories = new List<BlogCategory>();
@@ -199,49 +200,49 @@ namespace NuraHerbex.Controllers
 				categories = JsonConvert.DeserializeObject<List<BlogCategory>>(json);
 			}
 
-            // 2️⃣ Get doctors
-            var doctorResponse = await _httpClient.GetAsync("AdminAPI/users/doctor");
-            var doctors = new List<RegisterUser>();
-            if (doctorResponse.IsSuccessStatusCode)
-            {
-                var json = await doctorResponse.Content.ReadAsStringAsync();
-                doctors = JsonConvert.DeserializeObject<List<RegisterUser>>(json);
-            }
+			// 2️⃣ Get doctors
+			var doctorResponse = await _httpClient.GetAsync("AdminAPI/users/doctor");
+			var doctors = new List<RegisterUser>();
+			if (doctorResponse.IsSuccessStatusCode)
+			{
+				var json = await doctorResponse.Content.ReadAsStringAsync();
+				doctors = JsonConvert.DeserializeObject<List<RegisterUser>>(json);
+			}
 
-            // 3️⃣ Get doctor details
-            var doctorDetailResponse = await _httpClient.GetAsync("AdminAPI/doctordetails");
-            var doctorDetails = new List<DoctorDetail>();
-            if (doctorDetailResponse.IsSuccessStatusCode)
-            {
-                var json = await doctorDetailResponse.Content.ReadAsStringAsync();
-                doctorDetails = JsonConvert.DeserializeObject<List<DoctorDetail>>(json);
-            }
+			// 3️⃣ Get doctor details
+			var doctorDetailResponse = await _httpClient.GetAsync("AdminAPI/doctordetails");
+			var doctorDetails = new List<DoctorDetail>();
+			if (doctorDetailResponse.IsSuccessStatusCode)
+			{
+				var json = await doctorDetailResponse.Content.ReadAsStringAsync();
+				doctorDetails = JsonConvert.DeserializeObject<List<DoctorDetail>>(json);
+			}
 
-            // 4️⃣ Merge doctors with details and filter only active
-            var doctorViewModels = doctors
-                .Select(d =>
-                {
-                    var detail = doctorDetails.FirstOrDefault(dd => dd.DoctorId == d.Id && dd.IsWorking);
-                    if (detail == null) return null; 
+			// 4️⃣ Merge doctors with details and filter only active
+			var doctorViewModels = doctors
+				.Select(d =>
+				{
+					var detail = doctorDetails.FirstOrDefault(dd => dd.DoctorId == d.Id && dd.IsWorking);
+					if (detail == null) return null;
 
-                    return new DoctorViewModel
-                    {
-                        Id = d.Id,
-                        FullName = $"{d.FirstName} {d.LastName}",
-                        PhotoPath = detail.PhotoPath,
-                        PrimarySpeciality = detail.PrimarySpecality ?? "General"
-                    };
-                })
-                .Where(d => d != null) 
-                .ToList()!;
+					return new DoctorViewModel
+					{
+						Id = d.Id,
+						FullName = $"{d.FirstName} {d.LastName}",
+						PhotoPath = detail.PhotoPath,
+						PrimarySpeciality = detail.PrimarySpecality ?? "General"
+					};
+				})
+				.Where(d => d != null)
+				.ToList()!;
 
-            // 5️⃣ Create ViewModel
-            var vm = new BlogViewModel
-            {
-                BlogList = blogs,
-                Categories = categories,
-                Doctors = doctorViewModels
-            };
+			// 5️⃣ Create ViewModel
+			var vm = new BlogViewModel
+			{
+				BlogList = blogs,
+				Categories = categories,
+				Doctors = doctorViewModels
+			};
 
 			return View(vm);
 		}
@@ -334,117 +335,117 @@ namespace NuraHerbex.Controllers
 			return plans;
 		}
 
-        public async Task<IActionResult> Shop(int id = 0)
-        {
-            var products = new List<Product>();
-            var feedbacks = new List<FeedbackViewModel>();
+		public async Task<IActionResult> Shop(int id = 0)
+		{
+			var products = new List<Product>();
+			var feedbacks = new List<FeedbackViewModel>();
 
-            // Fetch products
-            var productsResponse = await _httpClient.GetAsync("AdminAPI/products");
-            if (productsResponse.IsSuccessStatusCode)
-                products = JsonConvert.DeserializeObject<List<Product>>(await productsResponse.Content.ReadAsStringAsync()) ?? new List<Product>();
+			// Fetch products
+			var productsResponse = await _httpClient.GetAsync("AdminAPI/products");
+			if (productsResponse.IsSuccessStatusCode)
+				products = JsonConvert.DeserializeObject<List<Product>>(await productsResponse.Content.ReadAsStringAsync()) ?? new List<Product>();
 
-            // Fetch feedbacks
-            var feedbackResponse = await _httpClient.GetAsync("AdminAPI/feedbacks");
-            if (feedbackResponse.IsSuccessStatusCode)
-                feedbacks = JsonConvert.DeserializeObject<List<FeedbackViewModel>>(await feedbackResponse.Content.ReadAsStringAsync())
-                            ?? new List<FeedbackViewModel>();
+			// Fetch feedbacks
+			var feedbackResponse = await _httpClient.GetAsync("AdminAPI/feedbacks");
+			if (feedbackResponse.IsSuccessStatusCode)
+				feedbacks = JsonConvert.DeserializeObject<List<FeedbackViewModel>>(await feedbackResponse.Content.ReadAsStringAsync())
+							?? new List<FeedbackViewModel>();
 
-            // Optional: pre-select a product
-            Product? selected = null;
-            if (id > 0)
-            {
-                var oneResponse = await _httpClient.GetAsync($"AdminAPI/product/{id}");
-                if (oneResponse.IsSuccessStatusCode)
-                    selected = JsonConvert.DeserializeObject<Product>(await oneResponse.Content.ReadAsStringAsync());
-            }
+			// Optional: pre-select a product
+			Product? selected = null;
+			if (id > 0)
+			{
+				var oneResponse = await _httpClient.GetAsync($"AdminAPI/product/{id}");
+				if (oneResponse.IsSuccessStatusCode)
+					selected = JsonConvert.DeserializeObject<Product>(await oneResponse.Content.ReadAsStringAsync());
+			}
 
-            // Helper functions for benefits
-            static (string Heading, string Desc) Unpack(string? s)
-            {
-                if (string.IsNullOrWhiteSpace(s)) return ("", "");
-                var parts = s.Split('|', 2);
-                return (parts[0].Trim(), parts.Length > 1 ? parts[1].Trim() : "");
-            }
+			// Helper functions for benefits
+			static (string Heading, string Desc) Unpack(string? s)
+			{
+				if (string.IsNullOrWhiteSpace(s)) return ("", "");
+				var parts = s.Split('|', 2);
+				return (parts[0].Trim(), parts.Length > 1 ? parts[1].Trim() : "");
+			}
 
-            static List<KeyValuePair<string, string>> Extract(Product? p)
-            {
-                var list = new List<KeyValuePair<string, string>>();
-                if (p == null) return list;
-                foreach (var raw in new[] { p.KeyBenefits1, p.KeyBenefits2, p.KeyBenefits3, p.KeyBenefits4 })
-                {
-                    var (h, d) = Unpack(raw);
-                    if (!string.IsNullOrWhiteSpace(h) || !string.IsNullOrWhiteSpace(d))
-                        list.Add(new KeyValuePair<string, string>(h, d));
-                }
-                return list;
-            }
+			static List<KeyValuePair<string, string>> Extract(Product? p)
+			{
+				var list = new List<KeyValuePair<string, string>>();
+				if (p == null) return list;
+				foreach (var raw in new[] { p.KeyBenefits1, p.KeyBenefits2, p.KeyBenefits3, p.KeyBenefits4 })
+				{
+					var (h, d) = Unpack(raw);
+					if (!string.IsNullOrWhiteSpace(h) || !string.IsNullOrWhiteSpace(d))
+						list.Add(new KeyValuePair<string, string>(h, d));
+				}
+				return list;
+			}
 
-            var vm = new ProductViewModel
-            {
-                ProductList = products,
-                NewProduct = selected ?? new Product(),
-                FeedbackList = feedbacks.Take(10).ToList() 
-            };
+			var vm = new ProductViewModel
+			{
+				ProductList = products,
+				NewProduct = selected ?? new Product(),
+				FeedbackList = feedbacks.Take(10).ToList()
+			};
 
-            ViewBag.SelectedBenefits = Extract(vm.NewProduct);
-            ViewBag.BenefitsByProduct = products.GroupBy(p => p.Id)
-                                                .ToDictionary(g => g.Key, g => Extract(g.First()));
+			ViewBag.SelectedBenefits = Extract(vm.NewProduct);
+			ViewBag.BenefitsByProduct = products.GroupBy(p => p.Id)
+												.ToDictionary(g => g.Key, g => Extract(g.First()));
 
-            return View(vm);
-        }
-        [HttpGet]
-        public async Task<IActionResult> GetProduct(int id)
-        {
-            // call the AdminAPI endpoint from MVC
-            var res = await _httpClient.GetAsync($"AdminAPI/product/{id}");
-            if (!res.IsSuccessStatusCode)
-                return NotFound();
+			return View(vm);
+		}
+		[HttpGet]
+		public async Task<IActionResult> GetProduct(int id)
+		{
+			// call the AdminAPI endpoint from MVC
+			var res = await _httpClient.GetAsync($"AdminAPI/product/{id}");
+			if (!res.IsSuccessStatusCode)
+				return NotFound();
 
-            var json = await res.Content.ReadAsStringAsync();
-            var p = JsonConvert.DeserializeObject<Product>(json);
-            if (p == null)
-                return NotFound();
+			var json = await res.Content.ReadAsStringAsync();
+			var p = JsonConvert.DeserializeObject<Product>(json);
+			if (p == null)
+				return NotFound();
 
-            // split images and prepare front-end fields
-            var imgs = (p.ProductImages ?? string.Empty)
-                .Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-                .ToList();
+			// split images and prepare front-end fields
+			var imgs = (p.ProductImages ?? string.Empty)
+				.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+				.ToList();
 
-            var inr = new System.Globalization.CultureInfo("en-IN");
-            var amount = p.Amount;
-            var disc = p.DiscountPercentage;
-            var final = amount - (amount * (disc / 100m));
+			var inr = new System.Globalization.CultureInfo("en-IN");
+			var amount = p.Amount;
+			var disc = p.DiscountPercentage;
+			var final = amount - (amount * (disc / 100m));
 
-            
 
-            return Json(new
-            {
-                id = p.Id,
-                productName = p.ProductName,
-                description = !string.IsNullOrWhiteSpace(p.Description) ? p.Description : p.SubTitle,
-                amount = p.Amount,
-                discountPercentage = p.DiscountPercentage,
-                productImages = p.ProductImages,
-                keyBenefits1 = p.KeyBenefits1,
-                keyBenefits2 = p.KeyBenefits2,
-                keyBenefits3 = p.KeyBenefits3,
-                keyBenefits4 = p.KeyBenefits4,
-                forThis1 = p.ForThis1,
-                forThis2 = p.ForThis2,
-                forThis3 = p.ForThis3,
-                forThis4 = p.ForThis4
-            });
-        }
 
-        public IActionResult Quiz()
-        {
-            return View();
-        }
-        public async Task<IActionResult> Ingredients()
-        {
-            var ingredientsResponse = await _httpClient.GetAsync("AdminAPI/ingredients");
-            var categoriesResponse = await _httpClient.GetAsync("AdminAPI/ingredientcategories");
+			return Json(new
+			{
+				id = p.Id,
+				productName = p.ProductName,
+				description = !string.IsNullOrWhiteSpace(p.Description) ? p.Description : p.SubTitle,
+				amount = p.Amount,
+				discountPercentage = p.DiscountPercentage,
+				productImages = p.ProductImages,
+				keyBenefits1 = p.KeyBenefits1,
+				keyBenefits2 = p.KeyBenefits2,
+				keyBenefits3 = p.KeyBenefits3,
+				keyBenefits4 = p.KeyBenefits4,
+				forThis1 = p.ForThis1,
+				forThis2 = p.ForThis2,
+				forThis3 = p.ForThis3,
+				forThis4 = p.ForThis4
+			});
+		}
+
+		public IActionResult Quiz()
+		{
+			return View();
+		}
+		public async Task<IActionResult> Ingredients()
+		{
+			var ingredientsResponse = await _httpClient.GetAsync("AdminAPI/ingredients");
+			var categoriesResponse = await _httpClient.GetAsync("AdminAPI/ingredientcategories");
 
 			var ingredients = new List<Ingredient>();
 			var categories = new List<IngredientCategory>();
@@ -556,28 +557,52 @@ namespace NuraHerbex.Controllers
 				Selected = (vm.SelectedAddressId == a.Id)
 			}).ToList();
 
-			// ✅ Load pincodes list into the VM (safe, no exceptions on 401)
-			vm.Pincodes = new List<Pincode>();
-
-			try
+			/// -------- Load pincode FOR THE SELECTED ADDRESS only --------
+			if (vm.SelectedAddressId.HasValue)
 			{
-				var pinResp = await _httpClient.GetAsync("AdminAPI/pincodes");
+				var selectedAddress = vm.Addresses
+					.FirstOrDefault(a => a.Id == vm.SelectedAddressId.Value);
 
-				if (pinResp.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+				var pin = selectedAddress?.Pincode?.Trim();
+
+				if (!string.IsNullOrEmpty(pin))
 				{
-					// handle unauth: you can redirect to login, or just continue with empty pincodes
-					// return RedirectToAction("Login", "Account"); // if you want a hard redirect
+					try
+					{
+						// call your existing GET /AdminAPI/pincodes/{code}
+						//var pinResp = await _httpClient.GetAsync($"AdminAPI/pincodes/{pin}");
+						var client = AuthorizedClient ?? _httpClient;   // be consistent with cart/products
+						var pinResp = await client.GetAsync($"AdminAPI/pincodes/{pin}");
+
+						//if (!pinResp.IsSuccessStatusCode)
+						//{
+						//	ModelState.AddModelError("", "Invalid username or password.");
+						//	return View();
+						//}
+						if (pinResp.IsSuccessStatusCode)
+						{
+							var rate = await pinResp.Content.ReadFromJsonAsync<Pincode>();
+
+							if (rate != null)
+							{
+								vm.Pincodes.Add(rate);                    // so JS still sees it
+								vm.SelectedStandard = rate.StandardDeliveryAmount;
+								vm.SelectedExpress  = rate.ExpressDeliveryAmount;
+								vm.Shipping         = vm.SelectedStandard; // default
+							}
+						}
+						else
+						{
+							_logger.LogWarning("Pincode {Pin} not found. Status {Status}",
+											   pin, pinResp.StatusCode);
+						}
+
+					}
+					catch (Exception ex)
+					{
+						_logger.LogError(ex, "Failed to load pincode {Pin} from AdminAPI.", pin);
+					}
 				}
-				else if (pinResp.IsSuccessStatusCode)
-				{
-					vm.Pincodes = await pinResp.Content.ReadFromJsonAsync<List<Pincode>>() ?? new();
-				}
-				// else: other status codes -> you might want to log
-			}
-			catch (Exception ex)
-			{
-				// log but don't crash the view
-				_logger.LogError(ex, "Failed to load pincodes from AdminAPI.");
 			}
 			return View(vm);
 		}
@@ -800,19 +825,19 @@ namespace NuraHerbex.Controllers
             if (req is null) return BadRequest("Invalid payload.");
             if (req.Rating < 1 || req.Rating > 5) return BadRequest("Rating must be 1..5.");
 
-            if (req.OrderId <= 0) req.OrderId = 1; // fallback so API doesn’t get 0
+			if (req.OrderId <= 0) req.OrderId = 1; // fallback so API doesn’t get 0
 
-            var apiRes = await _httpClient.PostAsJsonAsync("AdminAPI/submitfeedback", req, ct);
-            var payload = await apiRes.Content.ReadAsStringAsync(ct);
+			var apiRes = await _httpClient.PostAsJsonAsync("AdminAPI/submitfeedback", req, ct);
+			var payload = await apiRes.Content.ReadAsStringAsync(ct);
 
-            return new ContentResult
-            {
-                Content = payload,
-                ContentType = "application/json",
-                StatusCode = (int)apiRes.StatusCode
-            };
-        }
-        public IActionResult MyReturns()
+			return new ContentResult
+			{
+				Content = payload,
+				ContentType = "application/json",
+				StatusCode = (int)apiRes.StatusCode
+			};
+		}
+		public IActionResult MyReturns()
 		{
 			return View();
 		}
@@ -1109,178 +1134,178 @@ namespace NuraHerbex.Controllers
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            if (string.IsNullOrEmpty(userId))
-            {
-                TempData["ConsultationMessage"] = "Please login to view consultations.";
-                return RedirectToAction("Index");
-            }
+			if (string.IsNullOrEmpty(userId))
+			{
+				TempData["ConsultationMessage"] = "Please login to view consultations.";
+				return RedirectToAction("Index");
+			}
 
-            var jsonOptions = new JsonSerializerOptions
-            {
-                Converters = { new JsonStringEnumConverter() }
-            };
+			var jsonOptions = new JsonSerializerOptions
+			{
+				Converters = { new JsonStringEnumConverter() }
+			};
 
-            // ✅ Get consultations created by this user (patient)
-            var consultationResponse = await _httpClient.GetAsync($"AdminAPI/consultationbooking/user/{userId}");
-            List<ConsultationBooking> consultations = new List<ConsultationBooking>();
-            if (consultationResponse.IsSuccessStatusCode)
-                consultations = await consultationResponse.Content.ReadFromJsonAsync<List<ConsultationBooking>>(jsonOptions);
+			// ✅ Get consultations created by this user (patient)
+			var consultationResponse = await _httpClient.GetAsync($"AdminAPI/consultationbooking/user/{userId}");
+			List<ConsultationBooking> consultations = new List<ConsultationBooking>();
+			if (consultationResponse.IsSuccessStatusCode)
+				consultations = await consultationResponse.Content.ReadFromJsonAsync<List<ConsultationBooking>>(jsonOptions);
 
-            // ✅ Get all doctors
-            var doctorResponse = await _httpClient.GetAsync("AdminAPI/users");
-            List<RegisterUser> doctors = new List<RegisterUser>();
-            if (doctorResponse.IsSuccessStatusCode)
-                doctors = await doctorResponse.Content.ReadFromJsonAsync<List<RegisterUser>>(jsonOptions);
+			// ✅ Get all doctors
+			var doctorResponse = await _httpClient.GetAsync("AdminAPI/users");
+			List<RegisterUser> doctors = new List<RegisterUser>();
+			if (doctorResponse.IsSuccessStatusCode)
+				doctors = await doctorResponse.Content.ReadFromJsonAsync<List<RegisterUser>>(jsonOptions);
 
-            // ✅ Get doctor details
-            var doctorDetailResponse = await _httpClient.GetAsync("AdminAPI/doctordetails");
-            List<DoctorDetail> doctorDetails = new List<DoctorDetail>();
-            if (doctorDetailResponse.IsSuccessStatusCode)
-                doctorDetails = await doctorDetailResponse.Content.ReadFromJsonAsync<List<DoctorDetail>>(jsonOptions);
+			// ✅ Get doctor details
+			var doctorDetailResponse = await _httpClient.GetAsync("AdminAPI/doctordetails");
+			List<DoctorDetail> doctorDetails = new List<DoctorDetail>();
+			if (doctorDetailResponse.IsSuccessStatusCode)
+				doctorDetails = await doctorDetailResponse.Content.ReadFromJsonAsync<List<DoctorDetail>>(jsonOptions);
 
-            // ✅ Build ViewModel
-            var model = new MyConsultationViewModel();
+			// ✅ Build ViewModel
+			var model = new MyConsultationViewModel();
 
-            foreach (var c in consultations)
-            {
-                var doctor = doctors.FirstOrDefault(d => d.Id == c.PreferredDoctorId);
-                var detail = doctorDetails.FirstOrDefault(dd => dd.DoctorId == c.PreferredDoctorId);
+			foreach (var c in consultations)
+			{
+				var doctor = doctors.FirstOrDefault(d => d.Id == c.PreferredDoctorId);
+				var detail = doctorDetails.FirstOrDefault(dd => dd.DoctorId == c.PreferredDoctorId);
 
-                model.Consultations.Add(new ConsultationWithDoctorViewModel
-                {
-                    Consultation = c,
-                    Doctor = doctor,
-                    DoctorDetail = detail
-                });
-            }
+				model.Consultations.Add(new ConsultationWithDoctorViewModel
+				{
+					Consultation = c,
+					Doctor = doctor,
+					DoctorDetail = detail
+				});
+			}
 
-            return View(model);
-        }
+			return View(model);
+		}
 
-        [HttpGet]
-        public async Task<IActionResult> Consultation(DateOnly? date = null)
-        {
-            var doctorsResponse = await _httpClient.GetAsync("AdminAPI/users/Doctor");
-            var doctorDetailsResponse = await _httpClient.GetAsync("AdminAPI/doctordetails");
-            var specialitiesResponse = await _httpClient.GetAsync("AdminAPI/doctorspecialities");
+		[HttpGet]
+		public async Task<IActionResult> Consultation(DateOnly? date = null)
+		{
+			var doctorsResponse = await _httpClient.GetAsync("AdminAPI/users/Doctor");
+			var doctorDetailsResponse = await _httpClient.GetAsync("AdminAPI/doctordetails");
+			var specialitiesResponse = await _httpClient.GetAsync("AdminAPI/doctorspecialities");
 
-            var doctors = doctorsResponse.IsSuccessStatusCode ?
-                await doctorsResponse.Content.ReadFromJsonAsync<List<RegisterUser>>() : new List<RegisterUser>();
+			var doctors = doctorsResponse.IsSuccessStatusCode ?
+				await doctorsResponse.Content.ReadFromJsonAsync<List<RegisterUser>>() : new List<RegisterUser>();
 
-            var doctorDetails = doctorDetailsResponse.IsSuccessStatusCode ?
-                await doctorDetailsResponse.Content.ReadFromJsonAsync<List<DoctorDetail>>() : new List<DoctorDetail>();
+			var doctorDetails = doctorDetailsResponse.IsSuccessStatusCode ?
+				await doctorDetailsResponse.Content.ReadFromJsonAsync<List<DoctorDetail>>() : new List<DoctorDetail>();
 
-            var specialities = specialitiesResponse.IsSuccessStatusCode ?
-                await specialitiesResponse.Content.ReadFromJsonAsync<List<DoctorSpeciality>>() : new List<DoctorSpeciality>();
+			var specialities = specialitiesResponse.IsSuccessStatusCode ?
+				await specialitiesResponse.Content.ReadFromJsonAsync<List<DoctorSpeciality>>() : new List<DoctorSpeciality>();
 
-            // Convert CSV speciality IDs
-            foreach (var detail in doctorDetails)
-            {
-                if (!string.IsNullOrEmpty(detail.SpecalityIds))
-                {
-                    detail.SelectedSpecialityIds = detail.SpecalityIds
-                        .Split(',', StringSplitOptions.RemoveEmptyEntries)
-                        .Select(int.Parse)
-                        .ToList();
-                }
-            }
+			// Convert CSV speciality IDs
+			foreach (var detail in doctorDetails)
+			{
+				if (!string.IsNullOrEmpty(detail.SpecalityIds))
+				{
+					detail.SelectedSpecialityIds = detail.SpecalityIds
+						.Split(',', StringSplitOptions.RemoveEmptyEntries)
+						.Select(int.Parse)
+						.ToList();
+				}
+			}
 
-            // Only working doctors
-            doctorDetails = doctorDetails.Where(d => d.IsWorking).ToList();
+			// Only working doctors
+			doctorDetails = doctorDetails.Where(d => d.IsWorking).ToList();
 
-            // Determine available doctors based on the selected date
-            List<string> availableDoctorIds;
+			// Determine available doctors based on the selected date
+			List<string> availableDoctorIds;
 
-            if (date.HasValue)
-            {
-                string dayName = date.Value.DayOfWeek.ToString(); // e.g. Monday, Tuesday
-                availableDoctorIds = doctorDetails
-                    .Where(d => IsDoctorAvailableOnDay(d, dayName))
-                    .Select(d => d.DoctorId)
-                    .Distinct()
-                    .ToList();
-            }
-            else
-            {
-                // Default: show all working doctors
-                availableDoctorIds = doctorDetails.Select(d => d.DoctorId).Distinct().ToList();
-            }
+			if (date.HasValue)
+			{
+				string dayName = date.Value.DayOfWeek.ToString(); // e.g. Monday, Tuesday
+				availableDoctorIds = doctorDetails
+					.Where(d => IsDoctorAvailableOnDay(d, dayName))
+					.Select(d => d.DoctorId)
+					.Distinct()
+					.ToList();
+			}
+			else
+			{
+				// Default: show all working doctors
+				availableDoctorIds = doctorDetails.Select(d => d.DoctorId).Distinct().ToList();
+			}
 
-            var filteredDoctors = doctors.Where(d => availableDoctorIds.Contains(d.Id)).ToList();
+			var filteredDoctors = doctors.Where(d => availableDoctorIds.Contains(d.Id)).ToList();
 
-            var viewModel = new ConsultationPageViewModel
-            {
-                BookingModel = new ConsultationBookingViewModel
-                {
-                    PreferredDate = date ?? DateOnly.FromDateTime(DateTime.Today)
-                },
-                DoctorDetailsModel = new DoctorDetailViewModel
-                {
-                    Doctors = filteredDoctors,
-                    DoctorDetailList = doctorDetails,
-                    Specialities = specialities
-                }
-            };
+			var viewModel = new ConsultationPageViewModel
+			{
+				BookingModel = new ConsultationBookingViewModel
+				{
+					PreferredDate = date ?? DateOnly.FromDateTime(DateTime.Today)
+				},
+				DoctorDetailsModel = new DoctorDetailViewModel
+				{
+					Doctors = filteredDoctors,
+					DoctorDetailList = doctorDetails,
+					Specialities = specialities
+				}
+			};
 
-            // ✅ Populate dropdown
-            ViewBag.DoctorList = new SelectList(
-                filteredDoctors.Select(d => new
-                {
-                    Id = d.Id,
-                    Name = d.FullName ?? $"{d.FirstName} {d.LastName}"
-                }),
-                "Id",
-                "Name"
-            );
+			// ✅ Populate dropdown
+			ViewBag.DoctorList = new SelectList(
+				filteredDoctors.Select(d => new
+				{
+					Id = d.Id,
+					Name = d.FullName ?? $"{d.FirstName} {d.LastName}"
+				}),
+				"Id",
+				"Name"
+			);
 
-            return View(viewModel);
-        }
+			return View(viewModel);
+		}
 
-        // helper function
-        private bool IsDoctorAvailableOnDay(DoctorDetail detail, string day)
-        {
-            return day switch
-            {
-                "Monday" => detail.MondayStartTime.HasValue && detail.MondayEndTime.HasValue,
-                "Tuesday" => detail.TuesdayStartTime.HasValue && detail.TuesdayEndTime.HasValue,
-                "Wednesday" => detail.WednesdayStartTime.HasValue && detail.WednesdayEndTime.HasValue,
-                "Thursday" => detail.ThursdayStartTime.HasValue && detail.ThursdayEndTime.HasValue,
-                "Friday" => detail.FridayStartTime.HasValue && detail.FridayEndTime.HasValue,
-                "Saturday" => detail.SaturdayStartTime.HasValue && detail.SaturdayEndTime.HasValue,
-                "Sunday" => detail.SundayStartTime.HasValue && detail.SundayEndTime.HasValue,
-                _ => false
-            };
-        }
+		// helper function
+		private bool IsDoctorAvailableOnDay(DoctorDetail detail, string day)
+		{
+			return day switch
+			{
+				"Monday" => detail.MondayStartTime.HasValue && detail.MondayEndTime.HasValue,
+				"Tuesday" => detail.TuesdayStartTime.HasValue && detail.TuesdayEndTime.HasValue,
+				"Wednesday" => detail.WednesdayStartTime.HasValue && detail.WednesdayEndTime.HasValue,
+				"Thursday" => detail.ThursdayStartTime.HasValue && detail.ThursdayEndTime.HasValue,
+				"Friday" => detail.FridayStartTime.HasValue && detail.FridayEndTime.HasValue,
+				"Saturday" => detail.SaturdayStartTime.HasValue && detail.SaturdayEndTime.HasValue,
+				"Sunday" => detail.SundayStartTime.HasValue && detail.SundayEndTime.HasValue,
+				_ => false
+			};
+		}
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Consultation(ConsultationPageViewModel model)
-        {
-            // explicitly clear validation for DoctorDetailsModel
-            ModelState.ClearValidationState(nameof(model.DoctorDetailsModel));
+		[HttpPost]
+		[ValidateAntiForgeryToken]
+		public async Task<IActionResult> Consultation(ConsultationPageViewModel model)
+		{
+			// explicitly clear validation for DoctorDetailsModel
+			ModelState.ClearValidationState(nameof(model.DoctorDetailsModel));
 
-            var booking = model.BookingModel;
+			var booking = model.BookingModel;
 
-            if (!TryValidateModel(booking, nameof(model.BookingModel)))
-            {
-                // reload doctor list for view
-                var doctorsResponse = await _httpClient.GetAsync("AdminAPI/users/Doctor");
-                var doctors = doctorsResponse.IsSuccessStatusCode
-                    ? await doctorsResponse.Content.ReadFromJsonAsync<List<RegisterUser>>()
-                    : new List<RegisterUser>();
+			if (!TryValidateModel(booking, nameof(model.BookingModel)))
+			{
+				// reload doctor list for view
+				var doctorsResponse = await _httpClient.GetAsync("AdminAPI/users/Doctor");
+				var doctors = doctorsResponse.IsSuccessStatusCode
+					? await doctorsResponse.Content.ReadFromJsonAsync<List<RegisterUser>>()
+					: new List<RegisterUser>();
 
-                ViewBag.DoctorList = new SelectList(
-                    doctors.Select(d => new
-                    {
-                        Id = d.Id,
-                        Name = d.FullName ?? $"{d.FirstName} {d.LastName}"
-                    }),
-                    "Id",
-                    "Name"
-                );
+				ViewBag.DoctorList = new SelectList(
+					doctors.Select(d => new
+					{
+						Id = d.Id,
+						Name = d.FullName ?? $"{d.FirstName} {d.LastName}"
+					}),
+					"Id",
+					"Name"
+				);
 
-                return View(model);
-            }
+				return View(model);
+			}
 
 			var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 			if (string.IsNullOrEmpty(userId))
@@ -1289,23 +1314,23 @@ namespace NuraHerbex.Controllers
 				return RedirectToAction("Index");
 			}
 
-            var bookingEntity = new ConsultationBooking
-            {
-                FirstName = booking.FirstName,
-                LastName = booking.LastName,
-                Email = booking.Email,
-                Phone = booking.Phone,
-                ConsultationType = (ConsultationType)booking.ConsultationType,
-                PreferredDoctorId = booking.PreferredDoctorId,
-                PreferredTimeSlot = (TimeSlot)booking.PreferredTimeSlot,
-                PreferredDate = booking.PreferredDate,
-                Concerns = booking.Concerns,
-                Medications = booking.Medications,
-                CreatedBy = userId,
-                SubmittedAt = DateTime.Now
-            };
+			var bookingEntity = new ConsultationBooking
+			{
+				FirstName = booking.FirstName,
+				LastName = booking.LastName,
+				Email = booking.Email,
+				Phone = booking.Phone,
+				ConsultationType = (ConsultationType)booking.ConsultationType,
+				PreferredDoctorId = booking.PreferredDoctorId,
+				PreferredTimeSlot = (TimeSlot)booking.PreferredTimeSlot,
+				PreferredDate = booking.PreferredDate,
+				Concerns = booking.Concerns,
+				Medications = booking.Medications,
+				CreatedBy = userId,
+				SubmittedAt = DateTime.Now
+			};
 
-            var response = await _httpClient.PostAsJsonAsync("AdminAPI/consultationbooking", bookingEntity);
+			var response = await _httpClient.PostAsJsonAsync("AdminAPI/consultationbooking", bookingEntity);
 
 			if (response.IsSuccessStatusCode)
 			{
@@ -1313,58 +1338,58 @@ namespace NuraHerbex.Controllers
 				return RedirectToAction("MyConsultation");
 			}
 
-            var errorMsg = await response.Content.ReadAsStringAsync();
-            ModelState.AddModelError(string.Empty, "Failed to book consultation: " + errorMsg);
+			var errorMsg = await response.Content.ReadAsStringAsync();
+			ModelState.AddModelError(string.Empty, "Failed to book consultation: " + errorMsg);
 
-            return View(model);
-        }
+			return View(model);
+		}
 
-        [HttpGet]
-        public async Task<IActionResult> GetAvailableDoctors(DateOnly date)
-        {
-            var doctorsResponse = await _httpClient.GetAsync("AdminAPI/users/Doctor");
-            var doctorDetailsResponse = await _httpClient.GetAsync("AdminAPI/doctordetails");
+		[HttpGet]
+		public async Task<IActionResult> GetAvailableDoctors(DateOnly date)
+		{
+			var doctorsResponse = await _httpClient.GetAsync("AdminAPI/users/Doctor");
+			var doctorDetailsResponse = await _httpClient.GetAsync("AdminAPI/doctordetails");
 
-            var doctors = doctorsResponse.IsSuccessStatusCode
-                ? await doctorsResponse.Content.ReadFromJsonAsync<List<RegisterUser>>()
-                : new List<RegisterUser>();
+			var doctors = doctorsResponse.IsSuccessStatusCode
+				? await doctorsResponse.Content.ReadFromJsonAsync<List<RegisterUser>>()
+				: new List<RegisterUser>();
 
-            var doctorDetails = doctorDetailsResponse.IsSuccessStatusCode
-                ? await doctorDetailsResponse.Content.ReadFromJsonAsync<List<DoctorDetail>>()
-                : new List<DoctorDetail>();
+			var doctorDetails = doctorDetailsResponse.IsSuccessStatusCode
+				? await doctorDetailsResponse.Content.ReadFromJsonAsync<List<DoctorDetail>>()
+				: new List<DoctorDetail>();
 
-            // Convert CSV speciality IDs
-            foreach (var detail in doctorDetails)
-            {
-                if (!string.IsNullOrEmpty(detail.SpecalityIds))
-                {
-                    detail.SelectedSpecialityIds = detail.SpecalityIds
-                        .Split(',', StringSplitOptions.RemoveEmptyEntries)
-                        .Select(int.Parse)
-                        .ToList();
-                }
-            }
+			// Convert CSV speciality IDs
+			foreach (var detail in doctorDetails)
+			{
+				if (!string.IsNullOrEmpty(detail.SpecalityIds))
+				{
+					detail.SelectedSpecialityIds = detail.SpecalityIds
+						.Split(',', StringSplitOptions.RemoveEmptyEntries)
+						.Select(int.Parse)
+						.ToList();
+				}
+			}
 
-            doctorDetails = doctorDetails.Where(d => d.IsWorking).ToList();
+			doctorDetails = doctorDetails.Where(d => d.IsWorking).ToList();
 
-            string dayName = date.DayOfWeek.ToString();
-            var availableDoctorIds = doctorDetails
-                .Where(d => IsDoctorAvailableOnDay(d, dayName))
-                .Select(d => d.DoctorId)
-                .Distinct()
-                .ToList();
+			string dayName = date.DayOfWeek.ToString();
+			var availableDoctorIds = doctorDetails
+				.Where(d => IsDoctorAvailableOnDay(d, dayName))
+				.Select(d => d.DoctorId)
+				.Distinct()
+				.ToList();
 
-            var filteredDoctors = doctors
-                .Where(d => availableDoctorIds.Contains(d.Id))
-                .Select(d => new
-                {
-                    id = d.Id,
-                    name = d.FullName ?? $"{d.FirstName} {d.LastName}"
-                })
-                .ToList();
+			var filteredDoctors = doctors
+				.Where(d => availableDoctorIds.Contains(d.Id))
+				.Select(d => new
+				{
+					id = d.Id,
+					name = d.FullName ?? $"{d.FirstName} {d.LastName}"
+				})
+				.ToList();
 
-            return Json(filteredDoctors);
-        }
+			return Json(filteredDoctors);
+		}
 
 
 		//        [HttpPost]
@@ -1702,38 +1727,86 @@ namespace NuraHerbex.Controllers
 		public async Task<IActionResult> ProceedToPayment([FromForm] OrderSummaryViewModel input)
 		{
 			var userId = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "";
-			if (string.IsNullOrEmpty(userId)) return Unauthorized();
-
+			if (string.IsNullOrEmpty(userId))
+				return Unauthorized();
 			// 1) Load cart
 			var cart = await BuildCartViewModelAsync();
 			var items = cart.Items?.ToList() ?? new();
-			if (items.Count == 0) return BadRequest("Cart is empty.");
+			if (items.Count == 0)
+				return BadRequest("Cart is empty.");
+			AddressDetail address;
+			// -------------------------------------------------------
+			// CASE 1: USER CHOSE A CUSTOM ADDRESS
+			// -------------------------------------------------------
+			if (input.UseCustomAddress)
+			{
+				//  Keep your original mapping so address API keeps working
+				var custom = new AddressDetail
+				{
+					UserId = userId,
+					Name = $"{input.FirstName} {input.LastName}".Trim(),
+					DoorNo = input.StreetAddress,        // as you had
+					Address = input.StreetAddress,       // as you had
+					Location = input.City,
+					State = int.TryParse(input.State, out var s) ? s : 1,
+					Pincode = input.ZipCode,
+					Country = 1,                         // your default
+					PhoneNumber = input.Phone,
+					IsDefault = false
+				};
 
-			// 2) Get address
-			var resp = await _httpClient.GetAsync($"AdminAPI/addresses/{userId}");
-			var addrList = resp.IsSuccessStatusCode
-				? await resp.Content.ReadFromJsonAsync<List<AddressDetail>>() ?? new()
-				: new();
-			var address = addrList.FirstOrDefault(a => a.Id == input.SelectedAddressId);
-			if (address == null) return BadRequest("Address not found.");
+				var createAddr = await _httpClient.PostAsJsonAsync("AdminAPI/address", custom);
 
-			// 3) Compute totals (with live PIN lookup)
+				if (!createAddr.IsSuccessStatusCode)
+				{
+					var body = await createAddr.Content.ReadAsStringAsync();
+					ModelState.AddModelError("", $"Failed to save custom address: {body}");
+					return await OrderSummary(null);
+				}
+
+				// 🔹 Now re-load addresses for this user
+				var resp = await _httpClient.GetAsync($"AdminAPI/addresses/{userId}");
+				var addrList = resp.IsSuccessStatusCode
+					? await resp.Content.ReadFromJsonAsync<List<AddressDetail>>() ?? new()
+					: new List<AddressDetail>();
+
+				// Pick the newest address for this user (by Id or CreatedAt)
+				address = addrList.OrderByDescending(a => a.Id).FirstOrDefault();
+				if (address == null)
+				{
+					ModelState.AddModelError("", "Failed to load saved address.");
+					return await OrderSummary(null);
+				}
+				input.SelectedAddressId = address.Id;
+			}
+			else
+			{
+				// -------------------------------------------------------
+				// CASE 2: EXISTING ADDRESS CHOSEN
+				// -------------------------------------------------------
+				var resp = await _httpClient.GetAsync($"AdminAPI/addresses/{userId}");
+				var addrList = resp.IsSuccessStatusCode ? await resp.Content.ReadFromJsonAsync<List<AddressDetail>>() ?? new() : new();
+				address = addrList.FirstOrDefault(a => a.Id == input.SelectedAddressId);
+				if (address == null)
+					return BadRequest("Address not found.");
+			}
+
+			// -------------------------------------------------------
+			// SHIPPING CALCULATION
+			// -------------------------------------------------------
 			decimal subtotal = items.Sum(i => i.LineTotal);
 
 			Pincode? pin = null;
 			if (!string.IsNullOrWhiteSpace(address.Pincode))
 				pin = await _httpClient.GetFromJsonAsync<Pincode>($"AdminAPI/pincodes/{address.Pincode}");
-
-			decimal shipping =
-				(input.DeliveryOption == "express")
-				? (pin?.ExpressDeliveryAmount  ?? 0m)
-				: (pin?.StandardDeliveryAmount ?? 0m);
-
+			decimal shipping = input.DeliveryOption == "express" ? (pin?.ExpressDeliveryAmount ?? 0m) : (pin?.StandardDeliveryAmount ?? 0m);
 			decimal tax = 0m;
 			decimal discount = 0m;
-			decimal total = subtotal + shipping + tax - discount;
+			decimal total = subtotal + shipping;
 
-			// 4) Build payload for API
+			// -------------------------------------------------------
+			// BUILD ORDER PAYLOAD
+			// -------------------------------------------------------
 			var vm = new OrderSummaryViewModel
 			{
 				Order = new Order
@@ -1742,11 +1815,16 @@ namespace NuraHerbex.Controllers
 					AddressId = address.Id,
 					DoorNo = address.DoorNo,
 					PhoneNo = address.PhoneNumber,
-					Address = string.Join(", ", new[] { address.DoorNo, address.Address }.Where(s => !string.IsNullOrWhiteSpace(s))), // ensure not empty
+					Address = string.Join(", ", new[]
+					{
+				address.DoorNo,
+				address.Address,
+				address.Location
+			}.Where(x => !string.IsNullOrWhiteSpace(x))),
 					State = address.State,
 					PinCode = address.Pincode,
 					Country = address.Country,
-					OrderDate = DateTime.UtcNow,
+					OrderDate = DateTime.Now,
 					Status = OrderStatus.OrderPlaced,
 					Subtotal = subtotal,
 					Tax = tax,
@@ -1758,28 +1836,74 @@ namespace NuraHerbex.Controllers
 				{
 					ProductId = i.ProductId,
 					Quantity = i.Quantity,
-					UnitPrice = i.UnitPrice,
-					//ProductDiscount = i.ProductDiscount ?? 0m
+					UnitPrice = i.UnitPrice
 				}).ToList()
 			};
 
-			// 5) POST to API (correct route)
+			// -------------------------------------------------------
+			// SAVE ORDER (Order + OrderDetails)
+			// -------------------------------------------------------
 			var response = await _httpClient.PostAsJsonAsync("AdminAPI/orders", vm);
-			var body = await response.Content.ReadAsStringAsync();
+
 			if (!response.IsSuccessStatusCode)
 			{
-				// Show error on the same page
-				ModelState.AddModelError(string.Empty, $"Order creation failed: {(int)response.StatusCode} {response.StatusCode}. {body}");
+				var body = await response.Content.ReadAsStringAsync();
+				ModelState.AddModelError("", $"Order creation failed: {body}");
 				return await OrderSummary(input.SelectedAddressId);
 			}
 
 			var result = await response.Content.ReadFromJsonAsync<Dictionary<string, int>>();
 			var orderId = result?["id"] ?? 0;
 
-			return RedirectToAction("Payment", "Checkout", new { orderId });
+			return RedirectToAction("Home", "Payment", new { orderId });
 		}
 
 
+		[HttpGet]
+		public async Task<IActionResult> GetZipInfo(string zip)
+		{
+			if (string.IsNullOrWhiteSpace(zip))
+				return BadRequest("ZIP is required.");
+
+			zip = zip.Trim();
+
+			// ✅ same validation as AdminAPI GetByCode (fix the regex: only ONE backslash)
+			if (!Regex.IsMatch(zip, @"^\d{6}$"))
+				return BadRequest("PIN must be exactly 6 digits.");
+
+			try
+			{
+				// ✅ be consistent with OrderSummary / BuildCartViewModel
+				var client = AuthorizedClient ?? _httpClient;
+
+				// reuse your existing AdminAPI endpoint
+				var resp = await client.GetAsync($"AdminAPI/pincodes/{zip}");
+
+				if (resp.StatusCode == HttpStatusCode.NotFound)
+					return NotFound(); // 404 – pincode not configured
+
+				if (!resp.IsSuccessStatusCode)
+					return StatusCode((int)resp.StatusCode);
+
+				var pin = await resp.Content.ReadFromJsonAsync<Pincode>();
+				if (pin == null)
+					return NotFound();
+
+				// Return only what the UI needs
+				return Json(new
+				{
+					code = pin.Code,
+					standard = pin.StandardDeliveryAmount,
+					express = pin.ExpressDeliveryAmount,
+					desc = pin.Description
+				});
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Failed to load pincode {Zip} via GetZipInfo.", zip);
+				return StatusCode(500, "Error while fetching pincode.");
+			}
+		}
 
 	}
 }

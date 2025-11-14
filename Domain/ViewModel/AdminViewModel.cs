@@ -328,7 +328,7 @@ namespace Domain.ViewModel
     public class CartItemViewModel
     {
         public int CartItemId { get; set; }
-        public int ProductId { get; set; }
+        public int? ProductId { get; set; }
 
         // product display
         public string ProductName { get; set; } = string.Empty;
@@ -383,19 +383,31 @@ namespace Domain.ViewModel
 		//public string? CouponCode { get; set; }
 
 		// UI-only (server will recompute on POST)
-		public decimal Shipping { get; set; } = 0m;
+		public decimal? Shipping { get; set; } = 0m;
 		public decimal Tax { get; set; } = 0m;
 		public decimal TotalDiscount { get; set; } = 0m;
-		public decimal GrandTotal => SubTotal + Shipping + Tax - TotalDiscount;
+		public decimal? GrandTotal => SubTotal + Shipping + Tax - TotalDiscount;
 		// ✅ Use Pincode directly
 		public List<Pincode> Pincodes { get; set; } = new();
 
 		// For initial render (selected address’s pincode)
-		public decimal SelectedStandard { get; set; } = 0m;
-		public decimal SelectedExpress { get; set; } = 0m;
+		public decimal? SelectedStandard { get; set; } = 0m;
+		public decimal? SelectedExpress { get; set; } = 0m;
+		// ---------- NEW: custom address ----------
+		public bool UseCustomAddress { get; set; } = false;
+
+		public string? FirstName { get; set; }
+		public string? LastName { get; set; }
+		public string? StreetAddress { get; set; }
+		public string? City { get; set; }
+		public string? State { get; set; }
+		public string? ZipCode { get; set; }
+		public string? Phone { get; set; }
+      
         public string FullName { get; set; } = string.Empty;
         public string CountryName { get; set; } = string.Empty;
         public string StateName { get; set; } = string.Empty;
+
 
     }
     public class PincodeViewModel
