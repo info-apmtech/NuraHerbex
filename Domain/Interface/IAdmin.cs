@@ -127,6 +127,8 @@ namespace Domain.Interface
 		Task<int> CreateAsync(Order order, List<OrderDetail> details);
         Task<List<Order>> GetAllOrdersAsync();
         Task<bool> UpdateOrderStatusAsync(int orderId, OrderStatus newStatus);
+        Task<List<OrderDetail>> GetOrderDetailsAsync(int orderId);
+        Task<Order?> GetOrderByIdAsync(int orderId);
 
     }
 }

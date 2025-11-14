@@ -1,117 +1,151 @@
 ﻿@using Domain.Models
 @using Domain.ViewModel
 @model ConsultationListViewModel
-@{ 
+
+@{
     ViewData["Title"] = "Doctor Consultation";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
 }
+
 <div class="pcoded-main-container">
     <div class="pcoded-content">
-        <div class="d-flex flex-column align-items-center" style="min-height: 90vh;">
-            <div class="w-100" style="max-width: 1100px;">
-                <div class="d-flex justify-content-between align-items-center mt-4 mb-3">
-                    <h4 class="mb-0">Consultation Bookings</h4>
-                </div>
 
-                <div class="card shadow-sm">
-                    <div class="card-header bg-white border-bottom-0">
-                        <h5 class="mb-0">Consultations List</h5>
-                    </div>
-                    <div class="card-body p-3">
-                        <div class="table-responsive">
-                            <table class="table table-striped">
-                                <thead>
+        <div class="row heading-bg mb-3">
+            <div class="col-12">
+                <h4>Consultation Bookings</h4>
+            </div>
+        </div>
+
+        <div class="card shadow-sm">
+            <div class="card-header bg-white border-bottom-0">
+                <h5 class="mb-0">Consultations List</h5>
+            </div>
+
+            <div class="card-body p-3">
+                <div class="table-responsive">
+
+                    <table class="table table-striped table-bordered w-100">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>#</th>
+                                <th>Patient Name</th>
+                                <th>Email</th>
+                                <th>Phone</th>
+                                <th>Consultation Type</th>
+                                <th>Preferred Doctor</th>
+                                <th>Preferred Time</th>
+                                <th>Submitted At</th>
+                                <th>Preferred Date</th>
+
+                                @if (Model.UserRole == "Doctor")
+                                {
+                                    <th style="min-width:180px;">Actions</th>
+                                }
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            @if (Model.Consultations.Any())
+                            {
+                                var count = 1;
+                                foreach (var c in Model.Consultations)
+                                {
                                     <tr>
-                                        <th>#</th>
-                                        <th>Patient Name</th>
-                                        <th>Email</th>
-                                        <th>Phone</th>
-                                        <th>Consultation Type</th>
-                                        <th>Preferred Doctor</th>
-                                        <th>Preferred Time</th>
-                                        <th>Submitted At</th>
-                                        <th>Preferred Date</th>
+                                        <td>@count</td>
+                                        <td>@c.Consultation.FirstName</td>
+                                        <td>@c.Consultation.Email</td>
+                                        <td>@c.Consultation.Phone</td>
+                                        <td>@c.Consultation.ConsultationType.ToString()</td>
+                                        <td>@(c.Doctor?.FullName ?? "Unknown")</td>
+                                        <td>@c.Consultation.PreferredTimeSlot</td>
+                                        <td>@c.Consultation.SubmittedAt.ToString("dd MMM yyyy HH:mm")</td>
+                                        <td>@c.Consultation.PreferredDate.ToString("dd MMM yyyy")</td>
+
                                         @if (Model.UserRole == "Doctor")
                                         {
-                                            <th>Action</th>
-                                        }
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @if (Model.Consultations.Any())
-                                    {
-                                        int counter = 1;
-                                        foreach (var c in Model.Consultations)
-                                        {
-                                            <tr>
-                                                <td>@counter</td>
-                                                <td>@c.Consultation.FirstName</td>
-                                                <td>@c.Consultation.Email</td>
-                                                <td>@c.Consultation.Phone</td>
-                                                <td>@c.Consultation.ConsultationType.ToString()</td>
-                                                <td>@(c.Doctor?.FullName ?? "Unknown")</td>
-                                                <td>@c.Consultation.PreferredTimeSlot</td>
-                                                <td>@c.Consultation.SubmittedAt.ToString("yyyy-MM-dd HH:mm")</td>
-                                                <td>@c.Consultation.PreferredDate.ToString("yyyy-MM-dd")</td>
-                                                @if (Model.UserRole == "Doctor")
+                                            <td>
+                                                @if (c.Consultation.Status == ConsultationStatus.Pending)
                                                 {
-                                                    <td>
-                                                        @if (c.Consultation.Status == ConsultationStatus.Pending)
-                                                        {
-                                                            <form asp-action="AcceptConsultation" method="post" class="d-inline">
-                                                                @Html.AntiForgeryToken()
-                                                                <input type="hidden" name="consultationId" value="@c.Consultation.Id" />
-                                                                <input type="url" name="meetingLink" placeholder="Meeting link" required class="form-control d-inline-block" style="width: 250px; margin-right: 5px;" />
-                                                                <button type="submit" class="btn btn-success btn-sm">Accept</button>
-                                                            </form>
+                                                    <!-- Accept -->
+                                                    <form asp-action="AcceptConsultation" method="post" class="d-flex align-items-center mb-1">
+                                                        @Html.AntiForgeryToken()
+                                                        <input type="hidden" name="consultationId" value="@c.Consultation.Id" />
 
-                                                            <form asp-action="RejectConsultation" method="post" class="d-inline ms-2">
-                                                                @Html.AntiForgeryToken()
-                                                                <input type="hidden" name="consultationId" value="@c.Consultation.Id" />
-                                                                <button type="submit" class="btn btn-danger btn-sm">Reject</button>
-                                                            </form>
-                                                        }
-                                                        else
-                                                        {
-                                                            <span>@c.Consultation.Status.ToString()</span>
-                                                        }
-                                                    </td>
+                                                        <input type="url"
+                                                               name="meetingLink"
+                                                               placeholder="Meeting link"
+                                                               required
+                                                               class="form-control form-control-sm me-2"
+                                                               style="max-width: 220px;" />
+
+                                                        <button type="submit" class="btn btn-success btn-sm">
+                                                            Accept
+                                                        </button>
+                                                    </form>
+
+                                                    <!-- Reject -->
+                                                    <form asp-action="RejectConsultation"
+                                                          method="post">
+                                                        @Html.AntiForgeryToken()
+                                                        <input type="hidden" name="consultationId" value="@c.Consultation.Id" />
+                                                        <button type="submit" class="btn btn-danger btn-sm w-100">
+                                                            Reject
+                                                        </button>
+                                                    </form>
                                                 }
-
-                                            </tr>
-                                            counter++;
+                                                else
+                                                {
+                                                    <span class="badge bg-info text-dark">
+                                                        @c.Consultation.Status.ToString()
+                                                    </span>
+                                                }
+                                            </td>
                                         }
-                                    }
-                                    else
-                                    {
-                                        <tr>
-                                            <td colspan="@(Model.UserRole == "Doctor" ? 10 : 9)" class="text-center">No consultations found.</td>
-                                        </tr>
-                                    }
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
+
+                                    </tr>
+                                    count++;
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="@(Model.UserRole == "Doctor" ? 10 : 9)" class="text-center">
+                                        No consultations found.
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+
                 </div>
             </div>
         </div>
+
     </div>
 </div>
+
+<!-- ======================================
+      ACCEPT CONSULTATION MODAL 
+======================================= -->
 <div class="modal fade" id="acceptModal" tabindex="-1" aria-labelledby="acceptModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
+
             <div class="modal-header">
                 <h5 class="modal-title" id="acceptModalLabel">Accept Consultation</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
+
             <div class="modal-body">
-                <label for="meetingLinkInput">Meeting Link</label>
+                <label class="form-label">Meeting Link</label>
                 <input type="url" id="meetingLinkInput" class="form-control" placeholder="Enter the meeting link" />
             </div>
+
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary" id="confirmAcceptBtn">Accept</button>
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button class="btn btn-primary" id="confirmAcceptBtn">Accept</button>
             </div>
+
         </div>
     </div>
 </div>

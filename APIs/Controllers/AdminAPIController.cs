@@ -833,6 +833,8 @@ namespace APIs.Controllers
 
             return BadRequest(result.Errors);
         }
+
+        //Orders
         [AllowAnonymous]
         [HttpPost("orders")]
         public async Task<IActionResult> Create([FromBody] OrderSummaryViewModel vm)
@@ -859,6 +861,47 @@ namespace APIs.Controllers
         {
             var orders = await _adminservice.GetAllOrdersAsync();
             return Ok(orders);
+        }
+        [AllowAnonymous]
+        [HttpGet("orderdetails")]
+        public async Task<IActionResult> GetOrderDetails([FromQuery] int orderId)
+        {
+            var details = await _adminservice.GetOrderDetailsAsync(orderId);
+            if (details == null || !details.Any())
+                return NotFound();
+            return Ok(details);
+        }
+        [AllowAnonymous]
+        [HttpGet("user/orders/{userId}")]
+        public async Task<IActionResult> GetOrdersByUserId(string userId)
+        {
+            var allOrders = await _adminservice.GetAllOrdersAsync();
+            var userOrders = allOrders.Where(o => o.UserId == userId).ToList();
+            return Ok(userOrders);
+        }
+        [AllowAnonymous]
+        [HttpGet("orderdetails/user/{userId}")]
+        public async Task<IActionResult> GetOrderDetailsByUserId(string userId)
+        {
+            var allOrders = await _adminservice.GetAllOrdersAsync();
+            var userOrders = allOrders.Where(o => o.UserId == userId).Select(o => o.Id).ToList();
+
+            var details = new List<OrderDetail>();
+            foreach (var orderId in userOrders)
+                details.AddRange(await _adminservice.GetOrderDetailsAsync(orderId));
+
+            if (!details.Any())
+                return NotFound();
+
+            return Ok(details);
+        }
+        [AllowAnonymous]
+        [HttpGet("orders/{orderId}")]
+        public async Task<IActionResult> GetOrderById(int orderId)
+        {
+            var order = await _adminservice.GetOrderByIdAsync(orderId);
+            if (order == null) return NotFound();
+            return Ok(order);
         }
 
         //payment

@@ -574,21 +574,176 @@ namespace NuraHerbex.Controllers
 		{
 			return View();
 		}
-		public IActionResult TrackOrder()
-		{
-			return View();
-		}
-        public IActionResult MyOrders()
+        //public async Task<IActionResult> TrackOrder()
+        //{
+        //    var client = _httpClient;
+
+        //    var response = await client.GetAsync("AdminAPI/orders");
+        //    if (!response.IsSuccessStatusCode)
+        //        return View(new TrackOrderViewModel());
+
+        //    var jsonOptions = new JsonSerializerOptions
+        //    {
+        //        PropertyNameCaseInsensitive = true,
+        //        Converters = { new JsonStringEnumConverter() }
+        //    };
+
+        //    var orders = await response.Content.ReadFromJsonAsync<List<Order>>(jsonOptions);
+        //    var order = orders?.OrderByDescending(o => o.OrderDate).FirstOrDefault();
+        //    var orderDetails = new List<OrderDetail>();
+        //    var products = new List<Product>();
+
+        //    if (order != null)
+        //    {
+        //        var detailsResponse = await client.GetAsync($"AdminAPI/orderdetails?orderId={order.Id}");
+        //        if (detailsResponse.IsSuccessStatusCode)
+        //        {
+        //            orderDetails = await detailsResponse.Content.ReadFromJsonAsync<List<OrderDetail>>(jsonOptions) ?? new List<OrderDetail>();
+
+        //            // Fetch product info for each order detail
+        //            foreach (var detail in orderDetails)
+        //            {
+        //                if (detail.ProductId.HasValue)
+        //                {
+        //                    var prodResponse = await client.GetAsync($"AdminAPI/product/{detail.ProductId.Value}");
+        //                    if (prodResponse.IsSuccessStatusCode)
+        //                    {
+        //                        var product = await prodResponse.Content.ReadFromJsonAsync<Product>(jsonOptions);
+        //                        if (product != null)
+        //                            products.Add(product);
+        //                    }
+        //                }
+        //            }
+        //        }
+        //    }
+
+        //    var model = new TrackOrderViewModel
+        //    {
+        //        Order = order,
+        //        OrderDetails = orderDetails,
+        //        Products = products,
+        //        UserRole = User.FindFirstValue(ClaimTypes.Role) ?? "User"
+        //    };
+
+        //    return View(model);
+        //}
+        public async Task<IActionResult> TrackOrder(int? orderId)
         {
-            var vm = new MyOrdersViewModel
+            if (!orderId.HasValue)
             {
-                OrderId = 1, // or latest order id
-                CustomerId = "304e12ef-050d-4bb2-8b3e-958a67a69850",
-                // ... other fields
+                // No orderId supplied, redirect to MyOrders or show message
+                TempData["ErrorMessage"] = "Please select an order to track.";
+                return RedirectToAction("MyOrders");
+            }
+
+            var client = _httpClient;
+            var jsonOptions = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true,
+                Converters = { new JsonStringEnumConverter() }
             };
-            return View(vm);
+
+            var orderResponse = await client.GetAsync($"AdminAPI/orders/{orderId.Value}");
+            if (!orderResponse.IsSuccessStatusCode)
+            {
+                TempData["ErrorMessage"] = "Order not found.";
+                return RedirectToAction("MyOrders");
+            }
+
+            var order = await orderResponse.Content.ReadFromJsonAsync<Order>(jsonOptions);
+
+            var orderDetails = new List<OrderDetail>();
+            var products = new List<Product>();
+
+            if (order != null)
+            {
+                var detailsResponse = await client.GetAsync($"AdminAPI/orderdetails?orderId={order.Id}");
+                if (detailsResponse.IsSuccessStatusCode)
+                {
+                    orderDetails = await detailsResponse.Content.ReadFromJsonAsync<List<OrderDetail>>(jsonOptions) ?? new List<OrderDetail>();
+
+                    foreach (var detail in orderDetails)
+                    {
+                        if (detail.ProductId.HasValue)
+                        {
+                            var prodResponse = await client.GetAsync($"AdminAPI/product/{detail.ProductId.Value}");
+                            if (prodResponse.IsSuccessStatusCode)
+                            {
+                                var product = await prodResponse.Content.ReadFromJsonAsync<Product>(jsonOptions);
+                                if (product != null)
+                                    products.Add(product);
+                            }
+                        }
+                    }
+                }
+            }
+
+            var model = new TrackOrderViewModel
+            {
+                Order = order,
+                OrderDetails = orderDetails,
+                Products = products,
+                UserRole = User.FindFirstValue(ClaimTypes.Role) ?? "User"
+            };
+
+            return View(model);
         }
-  
+
+        //public IActionResult MyOrders()
+        //{
+        //    var vm = new MyOrdersViewModel
+        //    {
+        //        OrderId = 1, // or latest order id
+        //        CustomerId = "304e12ef-050d-4bb2-8b3e-958a67a69850",
+        //        // ... other fields
+        //    };
+        //    return View(vm);
+        //}
+        public async Task<IActionResult> MyOrders()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+            {
+                TempData["OrderMessage"] = "Please login to view your orders.";
+                return RedirectToAction("Index");
+            }
+
+            var jsonOptions = new JsonSerializerOptions
+            {
+                Converters = { new JsonStringEnumConverter() }
+            };
+
+            // Fetch orders for logged-in user
+            var orderResponse = await _httpClient.GetAsync($"AdminAPI/user/orders/{userId}");
+            List<Order> orders = new();
+            if (orderResponse.IsSuccessStatusCode)
+                orders = await orderResponse.Content.ReadFromJsonAsync<List<Order>>(jsonOptions);
+
+            // Fetch all order details for the user
+            var orderDetailsResponse = await _httpClient.GetAsync($"AdminAPI/orderdetails/user/{userId}");
+            var orderDetails = orderDetailsResponse.IsSuccessStatusCode
+                ? await orderDetailsResponse.Content.ReadFromJsonAsync<List<OrderDetail>>(jsonOptions)
+                : new List<OrderDetail>();
+
+            // Fetch products
+            var productResponse = await _httpClient.GetAsync("AdminAPI/products");
+            var products = productResponse.IsSuccessStatusCode
+                ? await productResponse.Content.ReadFromJsonAsync<List<Product>>(jsonOptions)
+                : new List<Product>();
+
+            var model = new OrderListViewModel
+            {
+                UserRole = "User",
+                Orders = orders
+            };
+
+            ViewBag.OrderDetails = orderDetails;
+            ViewBag.Products = products;
+            ViewBag.UserId = userId;
+
+            return View(model);
+        }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> SubmitFeedback([FromBody] SubmitFeedbackRequest req, CancellationToken ct)
