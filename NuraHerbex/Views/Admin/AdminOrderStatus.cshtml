@@ -75,13 +75,19 @@
                                                 <input type="hidden" name="orderId" value="@order.Id" />
 
                                                 <select name="status" class="form-select form-select-sm me-2">
+
                                                     @foreach (OrderStatus s in Enum.GetValues(typeof(OrderStatus)))
                                                     {
-                                                        <option value="@s" selected="@(order.Status == s ? "selected" : null)">
-                                                            @s
-                                                        </option>
+                                                        if (s != OrderStatus.Cancelled)   
+                                                        {
+                                                            <option value="@s" selected="@(order.Status == s ? "selected" : null)">
+                                                                @s
+                                                            </option>
+                                                        }
                                                     }
+
                                                 </select>
+
 
                                                 <button type="submit" class="btn btn-primary btn-sm">Update</button>
                                             </form>

@@ -743,6 +743,42 @@ namespace NuraHerbex.Controllers
 
             return View(model);
         }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CancelOrder(int orderId)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+            {
+                TempData["OrderError"] = "Please login to cancel orders.";
+                return RedirectToAction("Index");
+            }
+
+            var payload = new UpdateOrderStatusRequest
+            {
+                OrderId = orderId,
+                Status = OrderStatus.Cancelled
+            };
+
+            // Call the API endpoint internally using _httpClient (just like MyOrders)
+            var jsonOptions = new JsonSerializerOptions
+            {
+                Converters = { new JsonStringEnumConverter() }
+            };
+
+            var res = await _httpClient.PostAsJsonAsync("AdminAPI/updateStatus", payload);
+            if (res.IsSuccessStatusCode)
+            {
+                TempData["OrderMessage"] = "Order cancelled successfully.";
+            }
+            else
+            {
+                var errMsg = await res.Content.ReadAsStringAsync();
+                TempData["OrderError"] = "Failed to cancel order: " + errMsg;
+            }
+
+            return RedirectToAction("MyOrders");
+        }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
