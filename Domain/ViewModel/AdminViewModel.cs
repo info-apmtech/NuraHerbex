@@ -428,5 +428,48 @@ namespace Domain.ViewModel
         public string? RazorpaySignature { get; set; }
     }
 
+    public class InvoiceOrderSummaryDto
+    {
+        public InvoiceOrderDto Order { get; set; }
+        public List<InvoiceOrderDetailDto> Details { get; set; }
+    }
+
+    public class InvoiceOrderDto
+    {
+        public int Id { get; set; }
+        public string UserId { get; set; }
+
+        // IMPORTANT: Status as string, so any JSON value is accepted
+        public string Status { get; set; }
+
+        public decimal Subtotal { get; set; }
+        public decimal Tax { get; set; }
+        public decimal Shipping { get; set; }
+        public decimal TotalDiscount { get; set; }
+        public decimal Total { get; set; }
+
+        public int AddressId { get; set; }
+        public string DoorNo { get; set; }
+        public string PhoneNo { get; set; }
+        public string Address { get; set; }
+        public int State { get; set; }
+        public string PinCode { get; set; }
+        public int Country { get; set; }
+
+        public DateTime OrderDate { get; set; }
+    }
+
+    public class InvoiceOrderDetailDto
+    {
+        public int Id { get; set; }
+        public int OrderId { get; set; }
+        public int ProductId { get; set; }
+        public int Quantity { get; set; }
+        public decimal UnitPrice { get; set; }
+
+        // match your API JSON name exactly
+        public string productName { get; set; }
+    }
+
 }
 

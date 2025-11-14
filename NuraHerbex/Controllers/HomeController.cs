@@ -5,13 +5,12 @@ using Domain.ViewModel;
 using MailKit;
 using MailKit.Net.Smtp;
 using MailKit.Security;
-using MailKit.Security;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.Json;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Options;
-using MimeKit;
 using MimeKit;
 using Newtonsoft.Json;
 using NuraHerbex.Models;
@@ -24,6 +23,8 @@ using System.Security.Claims;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using SmtpClient = MailKit.Net.Smtp.SmtpClient;
+using System.Text.Json.Serialization;
+using JsonSerializer = System.Text.Json.JsonSerializer;
 //using static ServiceStack.Diagnostics.Events;
 
 namespace NuraHerbex.Controllers
@@ -36,8 +37,9 @@ namespace NuraHerbex.Controllers
 		private readonly IHttpContextAccessor _httpContextAccessor;
 
 		private readonly HttpClient _httpClient;
+        private JsonSerializerOptions? _jsonOptions;
 
-		public HomeController(ILogger<HomeController> logger, IHttpClientFactory httpClientFactory, IOptions<EmailSettings> emailSettings, IHttpContextAccessor httpContextAccessor)
+        public HomeController(ILogger<HomeController> logger, IHttpClientFactory httpClientFactory, IOptions<EmailSettings> emailSettings, IHttpContextAccessor httpContextAccessor)
 		{
 			_logger = logger;
 			_emailSettings = emailSettings.Value;
@@ -699,13 +701,120 @@ namespace NuraHerbex.Controllers
 			return View(wishlistProducts.ToList());
 		}
 
-        public IActionResult Invoice()
+        //[HttpGet("Home/Invoice/{orderId:int}")]
+        //public async Task<IActionResult> Invoice(int orderId)
+        //{
+        //	var response = await _httpClient.GetAsync($"AdminAPI/orders/{orderId}");
+        //	if (!response.IsSuccessStatusCode) return NotFound();
+
+        //	var vm = await response.Content.ReadFromJsonAsync<OrderSummaryViewModel>(_jsonOptions);
+        //	if (vm == null) return NotFound();
+
+        //	return View(vm);
+        //}
+        [HttpGet("Home/Invoice/{orderId:int}")]
+        public async Task<IActionResult> Invoice(int orderId)
         {
-            return View();
+            var response = await _httpClient.GetAsync($"AdminAPI/orders/{orderId}");
+            if (!response.IsSuccessStatusCode) return NotFound();
+
+            // 1) Read raw JSON (helps if you want to inspect it in logs)
+            var json = await response.Content.ReadAsStringAsync();
+            // Console.WriteLine(json); // optional for debugging
+
+            // 2) Deserialize into DTO where Status is string (no enum issues)
+            var dto = JsonSerializer.Deserialize<InvoiceOrderSummaryDto>(
+                json,
+                new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                });
+
+            if (dto == null || dto.Order == null)
+                return NotFound();
+
+            // 3) Map DTO -> your Domain.ViewModel.OrderSummaryViewModel
+            var order = new Order
+            {
+                Id = dto.Order.Id,
+                UserId = dto.Order.UserId,
+                AddressId = dto.Order.AddressId,
+                DoorNo = dto.Order.DoorNo,
+                PhoneNo = dto.Order.PhoneNo,
+                Address = dto.Order.Address,
+                State = dto.Order.State,
+                PinCode = dto.Order.PinCode,
+                Country = dto.Order.Country,
+                OrderDate = dto.Order.OrderDate,
+
+                // SAFE enum mapping: if parse fails, fall back to a default
+                Status = ParseOrderStatus(dto.Order.Status),
+
+                Subtotal = dto.Order.Subtotal,
+                Tax = dto.Order.Tax,
+                Shipping = dto.Order.Shipping,
+                TotalDiscount = dto.Order.TotalDiscount,
+                Total = dto.Order.Total
+            };
+
+            var details = dto.Details?.Select(d => new OrderDetail
+            {
+                Id = d.Id,
+                OrderId = d.OrderId,
+                ProductId = d.ProductId,
+                Quantity = d.Quantity,
+                UnitPrice = d.UnitPrice,
+                productName = d.productName
+            }).ToList() ?? new List<OrderDetail>();
+
+            var vm = new OrderSummaryViewModel
+            {
+                Order = order,
+                Details = details
+            };
+
+            return View(vm);
         }
-        public IActionResult Payment()
+
+        // helper method in HomeController
+        private OrderStatus ParseOrderStatus(string status)
         {
-            return View();
+            if (string.IsNullOrWhiteSpace(status))
+                return OrderStatus.OrderPlaced; // or whatever default you want
+
+            // try enum name first (case-insensitive)
+            if (Enum.TryParse<OrderStatus>(status, ignoreCase: true, out var parsed))
+                return parsed;
+
+            // try if API sent number as string, like "1"
+            if (int.TryParse(status, out var number) && Enum.IsDefined(typeof(OrderStatus), number))
+                return (OrderStatus)number;
+
+            // final fallback
+            return OrderStatus.OrderPlaced;
+        }
+
+
+        public async Task<IActionResult> Payment(int orderId)
+        {
+            var resp = await _httpClient.GetAsync($"AdminAPI/orders/{orderId}");
+            if (!resp.IsSuccessStatusCode) return NotFound();
+
+            var order = await resp.Content.ReadFromJsonAsync<Order>();
+            if (order == null) return NotFound();
+
+            var amountRupees = order.Total;
+            var amountPaise = (int)Math.Round(amountRupees * 100, MidpointRounding.AwayFromZero);
+
+            var vm = new PaymentViewModel
+            {
+                OrderId = order.Id,
+                CustomerId = order.UserId,   // ← your customerId
+                AmountRupees = amountRupees,
+                AmountPaise = amountPaise
+            };
+
+            return View(vm);
         }
         public async Task<IActionResult> MyConsultation()
         {

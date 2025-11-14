@@ -356,7 +356,8 @@ namespace Domain.Models
 
 		[Column(TypeName = "decimal(18,2)")]
 		public decimal Total { get; set; }
-	}
+        public List<OrderDetail> OrderDetails { get; set; }
+    }
 	public class OrderDetail
 	{
 		public int Id { get; set; }
@@ -374,5 +375,7 @@ namespace Domain.Models
 
 		[Column(TypeName = "decimal(18,2)"), Range(0, 1_000_000_000)]
 		public decimal ProductDiscount { get; set; } = 0m;
-	}
+        [NotMapped]
+        public string productName { get; set; }
+        }
 }

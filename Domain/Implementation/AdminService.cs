@@ -1312,7 +1312,66 @@ namespace Domain.Implementation
 		public async Task<Pincode?> GetPincodeByCodeAsync(string code)
 	   => await _db.Pincodes.AsNoTracking()
 			 .FirstOrDefaultAsync(p => p.Code == code);
-	}
+
+        public async Task<OrderSummaryViewModel?> GetOrderAsync(int orderId)
+        {
+				var order = await _db.Orders
+                .Include(o => o.OrderDetails)
+                .FirstOrDefaultAsync(o => o.Id == orderId);
+
+            if (order == null)
+                return null;
+
+            // get user address (if needed)
+            AddressDetail? address = null;
+            if (order.AddressId > 0)
+            {
+                address = await _db.AddressDetails
+                    .FirstOrDefaultAsync(a => a.Id == order.AddressId);
+            }
+
+            var vm = new OrderSummaryViewModel
+            {
+                Order = new Order
+                {
+                    Id = order.Id,
+                    UserId = order.UserId,
+                    AddressId = order.AddressId,
+                    DoorNo = order.DoorNo,
+                    PhoneNo = order.PhoneNo,
+                    Address = order.Address,
+                    State = order.State,
+                    PinCode = order.PinCode,
+                    Country = order.Country,
+
+                    OrderDate = order.OrderDate,
+                    Status = order.Status,
+
+                    Subtotal = order.Subtotal,
+                    Tax = order.Tax,
+                    Shipping = order.Shipping,
+                    TotalDiscount = order.TotalDiscount,
+                    Total = order.Total
+                },
+
+                Details = order.OrderDetails.Select(d => new OrderDetail
+                {
+                    Id = d.Id,
+                    OrderId = d.OrderId,
+                    ProductId = d.ProductId,
+                    Quantity = d.Quantity,
+                    UnitPrice = d.UnitPrice,
+
+                    // if you have these:
+                    productName = d.productName,
+                    //HSNCode = d.HSNCode
+                }).ToList()
+            };
+
+            return vm;
+        }
+
+    }
 }
 
 

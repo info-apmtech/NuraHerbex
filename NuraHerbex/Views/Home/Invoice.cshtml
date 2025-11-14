@@ -1,37 +1,49 @@
-﻿@{
+﻿@using Domain.Models
+@model Domain.ViewModel.OrderSummaryViewModel
+
+@{
     Layout = null;
     ViewData["Title"] = "Purchase Order";
 
-    // ===== Supplier Info =====
-    var supplierName = "ABC Components Pvt. Ltd.";
-    var supplierAddress = "No. 45, Industrial Estate, Peenya, Bengaluru - 560058";
-    var supplierGSTIN = "29AACCA1234D1ZB";
-    var supplierEmail = "contact@abccomponents.com";
-    var supplierPhone = "+91 98765 43210";
-
-    // ===== Company Info =====
+    // ===== Company Info (your company) =====
     var companyName = "NMSIM Technologies Pvt. Ltd.";
     var companyAddress = "No. 12, 2nd Floor, Tech Park Road, Chennai - 600042";
     var companyGSTIN = "33AAFCN5678G1ZT";
     var companyEmail = "accounts@nmsimtech.com";
     var companyPhone = "+91 91234 56789";
 
-    // ===== Purchase Order Info =====
-    var poNumber = "PO/2025/0012";
-    var poDate = "28-Oct-2025";
+    // ===== Order & Customer Info FROM MODEL =====
+    var order = Model.Order ?? new Order();
 
-    // ===== Item List (dummy) =====
-    var items = new List<dynamic>
-    {
-        new { SNo = 1, Description = "GPS Tracking Module - AIS140<br/>Model: NMSIM-GT06", HSN = "8526", Qty = 50, UnitPrice = 2000.00, GST = 18, GSTAmount = 18000.00, Total = 118000.00 },
-        new { SNo = 2, Description = "SIM Card (IoT Data SIM)<br/>Data Plan: 1 Year Validity", HSN = "8517", Qty = 50, UnitPrice = 150.00, GST = 18, GSTAmount = 1350.00, Total = 8850.00 }
-    };
+    var poNumber = $"PO/{order.Id:0000}";
+    var poDate = order.OrderDate.ToString("dd-MMM-yyyy");
 
-    // ===== Totals =====
-    var subtotal = 109850.00;
-    var totalGST = 19350.00;
-    var grandTotal = 129200.00;
+    // Customer-related props
+    var customerName = order.UserId ?? "";
+    var customerDoorNo = order.DoorNo;
+    var customerBaseAddress = order.Address;
+    var customerStateText = order.State > 0 ? order.State.ToString() : "";
+    var customerPinCode = order.PinCode;
+    var customerCountryText = order.Country > 0 ? order.Country.ToString() : "";
+    var customerPhone = order.PhoneNo;
+
+    var customerAddressLine1 = string.Join(", ",
+        new[] { customerDoorNo, customerBaseAddress }
+            .Where(s => !string.IsNullOrWhiteSpace(s)));
+
+    var customerAddressLine2 = string.Join(", ",
+        new[] { customerStateText, customerPinCode }
+            .Where(s => !string.IsNullOrWhiteSpace(s)));
+
+    // ===== Items FROM MODEL =====
+    var items = Model.Details ?? new List<OrderDetail>();
+
+    // we'll recompute totals here using GST-inclusive logic
+    decimal subtotalNet = 0m;
+    decimal totalGST = 0m;
+    decimal grandTotal = 0m;
 }
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -139,16 +151,48 @@
 
         <!-- Parties -->
         <div class="row mb-4">
+            <!-- LEFT: CUSTOMER -->
             <div class="col-md-6">
-                <h5>Supplier</h5>
+                <h5>Customer</h5>
                 <div>
-                    <strong>@supplierName</strong><br />
-                    @supplierAddress<br />
-                    GSTIN: @supplierGSTIN<br />
-                    Email: @supplierEmail<br />
-                    Phone: @supplierPhone
+                    @if (!string.IsNullOrWhiteSpace(customerName))
+                    {
+                        <strong>@customerName</strong>
+                    
+                        <br />
+                    }
+
+                    @if (!string.IsNullOrWhiteSpace(customerAddressLine1))
+                    {
+                        @customerAddressLine1
+                    
+                        <br />
+                    }
+
+                    @if (!string.IsNullOrWhiteSpace(customerAddressLine2))
+                    {
+                        @customerAddressLine2
+                    
+                        <br />
+                    }
+
+                    @if (!string.IsNullOrWhiteSpace(customerCountryText))
+                    {
+                        @customerCountryText
+                    
+                        <br />
+                    }
+
+                    @if (!string.IsNullOrWhiteSpace(customerPhone))
+                    {
+                        <span>Phone: @customerPhone</span>
+                    
+                        <br />
+                    }
                 </div>
             </div>
+
+            <!-- RIGHT: YOUR COMPANY -->
             <div class="col-md-6 text-md-end">
                 <h5>Company</h5>
                 <div>
@@ -178,27 +222,61 @@
                     <tr>
                         <th style="width:4rem;">#</th>
                         <th>Description</th>
-                        <th>HSN</th>
                         <th>Qty</th>
                         <th>Unit Price (₹)</th>
-                        <th>GST %</th>
-                        <th>GST Amount (₹)</th>
+                        @* <th>GST %</th> *@
+                        @* <th>GST Amount (₹)</th> *@
                         <th>Total (₹)</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var item in items)
+                    @{
+                        var index = 1;
+                        const decimal gstPercent = 18m;   // all products at 18%, GST INCLUDED
+                    }
+                    @foreach (var d in items)
                     {
+                        var qty = d.Quantity;
+                        var unitPrice = d.UnitPrice;
+
+                        decimal gross = qty * unitPrice;     // includes GST
+                        decimal baseAmount = 0m;
+                        decimal gstAmount = 0m;
+                        decimal lineTotal = 0m;
+
+                        if (qty > 0 && unitPrice > 0)
+                        {
+                            // GST-INCLUSIVE LOGIC
+                            baseAmount = (gross * 100m) / (100m + gstPercent);   // amount without GST
+                            gstAmount = gross - baseAmount;                     // GST portion
+                            lineTotal = gross;                                   // customer pays this
+                        }
+
+                        // accumulate totals for the bottom summary
+                        subtotalNet += baseAmount;
+                        totalGST += gstAmount;
+                        grandTotal += lineTotal;
                         <tr>
-                            <td class="text-center">@item.SNo</td>
-                            <td>@Html.Raw(item.Description)</td>
-                            <td class="text-center">@item.HSN</td>
-                            <td class="text-end">@item.Qty</td>
-                            <td class="text-end">@item.UnitPrice.ToString("N2")</td>
-                            <td class="text-end">@item.GST%</td>
-                            <td class="text-end">@item.GSTAmount.ToString("N2")</td>
-                            <td class="text-end">@item.Total.ToString("N2")</td>
+                            <td class="text-center">@index</td>
+                            <td>
+                                @if (!string.IsNullOrWhiteSpace(d.productName))
+                                {
+                                    @d.productName
+                                }
+                                else
+                                {
+                                    @($"Product #{d.ProductId}")
+                                }
+                            </td>
+
+                            <td class="text-end">@qty</td>
+                            <td class="text-end">@unitPrice.ToString("N2")</td>
+                            @* <td class="text-end">@gstPercent</td> *@
+                            @* <td class="text-end">@gstAmount.ToString("N2")</td> *@
+                            <td class="text-end">@lineTotal.ToString("N2")</td>
                         </tr>
+
+                        index++;
                     }
                 </tbody>
             </table>
@@ -210,7 +288,7 @@
                 <table class="table table-borderless">
                     <tr class="totals">
                         <td class="text-end fw-bold">Subtotal (Net):</td>
-                        <td class="text-end">₹@subtotal.ToString("N2")</td>
+                        <td class="text-end">₹@subtotalNet.ToString("N2")</td>
                     </tr>
                     <tr class="totals">
                         <td class="text-end fw-bold">Total GST:</td>
@@ -245,6 +323,3 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
-<script type="text/javascript">
-    window.onload = function () { window.print(); }
-</script>

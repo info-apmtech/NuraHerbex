@@ -125,6 +125,7 @@ namespace Domain.Interface
 		Task<Pincode?> GetPincodeByCodeAsync(string code);
 		//order
 		Task<int> CreateAsync(Order order, List<OrderDetail> details);
+        Task <OrderSummaryViewModel> GetOrderAsync(int orderId);
         Task<List<Order>> GetAllOrdersAsync();
         Task<bool> UpdateOrderStatusAsync(int orderId, OrderStatus newStatus);
 

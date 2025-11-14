@@ -861,7 +861,15 @@ namespace APIs.Controllers
             var orders = await _adminservice.GetAllOrdersAsync();
             return Ok(orders);
         }
-
+        [AllowAnonymous]
+        //[HttpGet("{orderId:int}")]
+        [HttpGet("orders/{orderId:int}")]
+        public async Task<IActionResult> GetOrder(int orderId)
+        {
+            var order = await _adminservice.GetOrderAsync(orderId);
+            if (order == null) return NotFound();
+            return Ok(order);
+        }
         //payment
         [AllowAnonymous]
         [HttpPost("PaymentDetails")]

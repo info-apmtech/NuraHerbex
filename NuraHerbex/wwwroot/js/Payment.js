@@ -35,7 +35,7 @@ function razorpayIntegrationPaymentConfirm(hasSticker) {
     // The form that posts to ProceedToPayment
     var form = document.querySelector('.proceed-section form');
     if (!form) {
-        console.error("ProceedToPayment form not found.");
+        console.error("ProceedToPayment form not found by id.");
         return;
     }
 
