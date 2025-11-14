@@ -89,7 +89,7 @@
                         }
 
                         <div class="orders-card-actions">
-                            <button class="orders-invoice-btn" onclick="window.location.href='@Url.Action("Invoice", "Home", new { orderId = order.Id })'">View Invoice</button>
+                            <button class="orders-ghost-btn" onclick="window.location.href='@Url.Action("Invoice", "Home", new { orderId = order.Id })'">View Invoice</button>
 
                             <button class="orders-ghost-btn"
                                     onclick="window.location.href='/Home/TrackOrder?orderId=@order.Id'">
