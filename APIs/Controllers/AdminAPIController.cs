@@ -796,8 +796,7 @@ namespace APIs.Controllers
             var pincodes = await _adminservice.GetPincodesAsync();
             return Ok(pincodes);
         }
-
-        [Authorize(Roles = "Admin,Employee")]
+		[Authorize(Roles = "Admin,Employee")]
         [HttpGet("pincode/{id}")]
         public async Task<IActionResult> GetPincode(int id)
         {
@@ -887,8 +886,9 @@ namespace APIs.Controllers
 
             
         }
-		// GET /AdminAPI/pincodes/600001
-		[HttpGet("{code:length(6)}")]
+		// GET /api/AdminAPI/pincodes/600001
+		[AllowAnonymous]                                      // <-- override [Authorize]
+		[HttpGet("pincodes/{code:length(6)}")]
 		public async Task<ActionResult<Pincode>> GetByCode(string code)
 		{
 			if (!System.Text.RegularExpressions.Regex.IsMatch(code, @"^\d{6}$"))
@@ -897,5 +897,6 @@ namespace APIs.Controllers
 			var pin = await _adminservice.GetPincodeByCodeAsync(code);
 			return pin is null ? NotFound() : Ok(pin);
 		}
+
 	}
 }

@@ -361,7 +361,7 @@ namespace Domain.Models
 	{
 		public int Id { get; set; }
 
-		[Required]
+		//[Required]
 		public int OrderId { get; set; }
 
 		public int? ProductId { get; set; }
