@@ -393,8 +393,11 @@ namespace Domain.ViewModel
 		// For initial render (selected address’s pincode)
 		public decimal SelectedStandard { get; set; } = 0m;
 		public decimal SelectedExpress { get; set; } = 0m;
+        public string FullName { get; set; } = string.Empty;
+        public string CountryName { get; set; } = string.Empty;
+        public string StateName { get; set; } = string.Empty;
 
-	}
+    }
     public class PincodeViewModel
     {
         public List<Pincode> PincodeList { get; set; } = new();
