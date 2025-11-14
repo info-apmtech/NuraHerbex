@@ -471,5 +471,16 @@ namespace Domain.ViewModel
         public string productName { get; set; }
     }
 
+    public class TrackOrderViewModel
+    {
+        public Order? Order { get; set; }
+        public string UserRole { get; set; } = "User";
+        public List<OrderDetail>? OrderDetails { get; set; } = new List<OrderDetail>();
+        public List<Product>? Products { get; set; }
+
+
+    }
+
+
 }
 

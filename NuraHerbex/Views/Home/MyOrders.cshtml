@@ -1,12 +1,717 @@
-﻿@model Domain.ViewModel.MyOrdersViewModel
-
+﻿@using Domain.Models
+@model Domain.ViewModel.OrderListViewModel
 
 @{
     Layout = "~/Views/Shared/_Layout.cshtml";
-    var defaultOrderId = Model?.OrderId ?? 1; // fallback
-    var defaultCustomerId = Model?.CustomerId ?? "304e12ef-050d-4bb2-8b3e-958a67a69850";
     ViewData["Title"] = "My Orders";
+    var orderDetails = ViewBag.OrderDetails as List<Domain.Models.OrderDetail>;
+    var products = ViewBag.Products as List<Domain.Models.Product>;
+    var userId = ViewBag.UserId as string ?? "00000000-0000-0000-0000-000000000000";
+
+    string GetStatusClass(OrderStatus status)
+    {
+        return status switch
+        {
+            OrderStatus.Delivered => "delivered",
+            OrderStatus.Cancelled => "cancelled",
+            OrderStatus.OrderPlaced => "in-progress",
+            OrderStatus.Packed => "in-progress",
+            OrderStatus.Shipped => "in-progress",
+            OrderStatus.OutForDelivery => "in-progress",
+            _ => "unknown"
+        };
+    }
+
+    string GetStatusText(OrderStatus status)
+    {
+        return status switch
+        {
+            OrderStatus.OrderPlaced => "Order Placed",
+            OrderStatus.Packed => "Packed",
+            OrderStatus.Shipped => "Shipped",
+            OrderStatus.OutForDelivery => "Out For Delivery",
+            OrderStatus.Delivered => "Delivered",
+            OrderStatus.Cancelled => "Cancelled",
+            _ => status.ToString()
+        };
+    }
 }
+
+<div class="orders-layout">
+    @Html.Partial("_UserSidebar")
+    <div class="orders-main">
+        <h2 class="orders-headline">My Orders</h2>
+        <p class="orders-subhead">Track and Manage your orders</p>
+
+        <div class="orders-tabs">
+            <button class="orders-tab active">All</button>
+            <button class="orders-tab">In Progress</button>
+            <button class="orders-tab">Delivered</button>
+            <button class="orders-tab">Cancelled</button>
+        </div>
+
+        <div class="orders-list">
+            @if (Model?.Orders != null && Model.Orders.Any())
+            {
+                foreach (var order in Model.Orders.OrderByDescending(o => o.OrderDate))
+                {
+                    var details = orderDetails?.Where(d => d.OrderId == order.Id).ToList() ?? new List<Domain.Models.OrderDetail>();
+                    var statusClass = GetStatusClass(order.Status);
+                    var statusText = GetStatusText(order.Status);
+
+                    <div class="orders-card" data-status="@statusClass">
+                        <div class="orders-card-header-container">
+                            <div class="orders-card-headerrow">
+                                <div class="orders-card-id-status">
+                                    <span class="orders-card-id">Order ORD-@order.Id</span>
+                                    <span class="orders-card-status @statusClass">@statusText</span>
+                                </div>
+                                <div class="orders-card-date">Placed on @order.OrderDate.ToString("MMMM dd, yyyy")</div>
+                            </div>
+
+                            <div class="orders-totalbar">
+                                <span class="orders-card-label">Total Amount</span>
+                                <span class="orders-card-amount">@order.Total.ToString("C")</span>
+                            </div>
+                        </div>
+
+                        @foreach (var detail in details)
+                        {
+                            var product = products?.FirstOrDefault(p => p.Id == detail.ProductId);
+                            <div class="orders-card-bodyrow">
+                                <img class="orders-card-img" src="@(product?.ProductImages ?? "~/image/userSidebar/default.png")" alt="@product?.ProductName" />
+                                <div class="orders-card-desc">
+                                    <div class="orders-card-title">@product?.ProductName</div>
+                                    <div class="orders-card-qty">Quantity: @detail.Quantity</div>
+                                </div>
+                                <div class="orders-card-single">@detail.UnitPrice.ToString("C")</div>
+                            </div>
+                        }
+
+                        <div class="orders-card-actions">
+                            <button class="orders-ghost-btn">
+                                <img class="orders-btn-icon" src="~/image/userSidebar/receipt.png" alt="Invoice" />View Invoice
+                            </button>
+                            <button class="orders-ghost-btn"
+                                    onclick="window.location.href='/Home/TrackOrder?orderId=@order.Id'">
+                                <img class="orders-btn-icon" src="~/image/userSidebar/Group.png" alt="Track" />Track Order
+                            </button>
+
+                            @switch (order.Status)
+                            {
+                                case OrderStatus.Delivered:
+                                    <button class="orders-ghost-btn">
+                                        <img class="orders-btn-icon" src="~/image/userSidebar/Vector.png" alt="Return" />Return Item
+                                    </button>
+                                    <button class="orders-buyagain">Buy Again</button>
+                                    <button class="orders-ghost-btn open-feedback"
+                                            data-order-id="@order.Id"
+                                            data-customer-id="@userId">
+                                        <img class="orders-btn-icon" src="~/image/homepage/feedback1.svg" alt="Feedback" />Feedback
+                                    </button>
+                                    break;
+
+                                case OrderStatus.Cancelled:
+                                    <button class="orders-buyagain">Buy Again</button>
+                                    break;
+
+                                case OrderStatus.OrderPlaced:
+                                    <form method="post" asp-action="CancelOrder" class="d-inline">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="orderId" value="@order.Id" />
+                                        <button type="submit" class="orders-ghost-btn text-danger">
+                                            Cancel Order
+                                        </button>
+                                    </form>
+                                    break;
+
+                                default:
+                                    @* For in-progress statuses, no extra buttons *@
+                                    break;
+                            }
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <p>No orders found for your account.</p>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- FEEDBACK POPUP  -->
+<div class="cart-popup" id="feedbackPopup" style="display:none">
+    @Html.AntiForgeryToken()
+    <input type="hidden" id="fbOrderId" value="0" />
+    <input type="hidden" id="fbCustomerId" value="@userId" />
+
+    <div class="cart-header">
+        <span>Rate Your Experience</span>
+        <span class="close-btn" data-close="#feedbackPopup">&times;</span>
+    </div>
+
+    <div class="cart-content" style="display:block; gap:16px">
+        <div class="rating-stars" role="radiogroup" aria-label="Rate from 1 to 5">
+            @for (int i = 1; i <= 5; i++)
+            {
+                <button type="button" class="star" data-val="@i" aria-label="@i star">★</button>
+            }
+            <span class="rating-hint" style="margin-left:8px;color:#888"></span>
+        </div>
+
+        <label for="fbMessage" class="sr-only">Feedback</label>
+        <textarea id="fbMessage" class="cart-textarea" rows="4" placeholder="Tell us more (optional)"></textarea>
+    </div>
+
+    <div class="cart-footer">
+        <button type="button" class="checkout-btn" id="btnSubmitFeedback">Submit</button>
+    </div>
+</div>
+
+<script>
+    window.AF_TOKEN = document.querySelector('input[name="__RequestVerificationToken"]')?.value || '';
+
+    document.querySelectorAll('.orders-tab').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.orders-tab').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            const status = btn.textContent.toLowerCase().replace(" ", "-");
+            document.querySelectorAll('.orders-card').forEach(card => {
+                card.style.display = (status === 'all' || card.dataset.status === status) ? 'block' : 'none';
+            });
+        });
+    });
+
+    document.addEventListener('click', e => {
+        const fbBtn = e.target.closest('.open-feedback');
+        if (fbBtn) {
+            document.getElementById('fbOrderId').value = fbBtn.dataset.orderId;
+            document.getElementById('fbCustomerId').value = fbBtn.dataset.customerId;
+            showFeedbackPopup();
+        }
+        const closeBtn = e.target.closest('[data-close="#feedbackPopup"]');
+        if (closeBtn) hideFeedbackPopup();
+    });
+
+    function showFeedbackPopup() {
+        const popup = document.getElementById('feedbackPopup');
+        popup.style.display = 'block';
+        document.body.classList.add('showing-feedback');
+        popup.querySelector('.star')?.focus();
+    }
+
+    function hideFeedbackPopup() {
+        const popup = document.getElementById('feedbackPopup');
+        popup.style.display = 'none';
+        document.body.classList.remove('showing-feedback');
+    }
+
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') hideFeedbackPopup(); });
+
+    let selectedRating = 0;
+    document.querySelectorAll('.rating-stars .star').forEach(star => {
+        star.addEventListener('click', () => {
+            selectedRating = parseInt(star.dataset.val);
+            document.querySelectorAll('.rating-stars .star').forEach(s => {
+                s.style.color = s.dataset.val <= selectedRating ? 'gold' : '#ccc';
+            });
+        });
+    });
+
+    document.getElementById('btnSubmitFeedback').addEventListener('click', async () => {
+        const orderId = parseInt(document.getElementById('fbOrderId').value);
+        const customerId = document.getElementById('fbCustomerId').value;
+        const message = document.getElementById('fbMessage').value;
+
+        if (selectedRating === 0) {
+            alert('Please select a rating.');
+            return;
+        }
+
+        const payload = { OrderId: orderId, CustomerId: customerId, Rating: selectedRating, Message: message };
+
+        try {
+            const res = await fetch('/Home/SubmitFeedback', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': window.AF_TOKEN },
+                body: JSON.stringify(payload)
+            });
+
+            if (!res.ok) {
+                const errText = await res.text();
+                throw new Error(errText || 'Failed to submit feedback');
+            }
+
+            alert('Feedback submitted successfully!');
+            hideFeedbackPopup();
+        } catch (err) {
+            console.error(err);
+            alert('Error submitting feedback: ' + err.message);
+        }
+    });
+</script>
+
+
+
+
+<style>
+    .orders-card-header-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 20px; /* spacing between header info & total */
+        margin-bottom: 12px; /* to separate from the next content */
+        flex-wrap: wrap; /* Responsive wrap if needed */
+        width: 100%; /* full width */
+    }
+    .orders-layout {
+        display: flex;
+        gap: 2.5rem;
+        align-items: flex-start;
+        background: #fff;
+        min-height: 100vh;
+    }
+
+    .orders-main {
+        flex: 1;
+        padding: 32px 0 24px 0;
+    }
+
+    .orders-headline {
+        font-size: 1.17rem;
+        font-weight: 600;
+        margin-bottom: 2px;
+        color: #222;
+    }
+
+    .orders-subhead {
+        font-size: 0.98rem;
+        color: #b2b2b2;
+        margin-bottom: 19px;
+    }
+
+    .orders-tabs {
+        display: flex;
+        gap: 11px;
+        margin: 7px 0 24px 0;
+    }
+
+    .orders-tab {
+        background: #f4f3f2;
+        color: #b89b71;
+        border: none;
+        border-radius: 7px;
+        font-size: 1.01rem;
+        font-weight: 600;
+        padding: 8px 15px;
+        cursor: pointer;
+        transition: background 0.17s;
+    }
+
+        .orders-tab.active {
+            background: #fb6608;
+            color: #fff;
+        }
+
+    .orders-list {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 22px;
+    }
+
+    .orders-card {
+        background: #fff8ef;
+        border-radius: 14px;
+        border: 1.5px solid #ffd8c2;
+        margin-bottom: 0;
+        padding: 22px 18px 21px 18px;
+        box-shadow: none;
+        margin-right: 30px;
+    }
+
+    .orders-card-headerrow {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 3px;
+        margin-bottom: 6px;
+        flex-wrap: wrap;
+    }
+
+    .orders-card-id-status {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .orders-card-id {
+        color: #232323;
+        font-weight: 600;
+        font-size: 1.15rem;
+    }
+
+    .orders-card-status {
+        padding: 2px 13px 1px 13px;
+        border-radius: 9px;
+        font-size: 0.89rem;
+        font-weight: 580;
+    }
+
+        .orders-card-status.delivered {
+            background: #e8f7ea;
+            color: #38a15b;
+            border: 1px solid #bde7c9;
+        }
+
+        .orders-card-status.in-progress {
+            background: #e8effd;
+            color: #1773dd;
+            border: 1px solid #b4d1f9;
+        }
+
+        .orders-card-status.cancelled {
+            background: #fdeded;
+            color: #e76152;
+            border: 1px solid #ffc3be;
+        }
+
+    .orders-card-date {
+        color: #aca8a4;
+        font-size: 1.04rem;
+        margin-left: 0;
+        margin-top: 5px;
+        font-weight: 500;
+    }
+
+    .orders-totalbar {
+        display: flex;
+        flex-direction: column; /* stack label above amount */
+        align-items: flex-end; /* right align contents */
+        font-size: 1.08rem;
+        min-width: 120px; /* optional, to keep consistent width */
+    }
+
+    .orders-card-label {
+        color: #be9874;
+        font-size: 1.06rem;
+        font-weight: 600;
+        margin-bottom: 4px; /* spacing below label */
+    }
+
+    .orders-card-amount {
+        color: #232323;
+        font-size: 1.24rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+    }
+
+    .orders-card-bodyrow {
+        display: flex;
+        align-items: center;
+        background: #fff;
+        border-radius: 13px;
+        padding: 15px 15px 13px 15px;
+        gap: 17px;
+        margin-bottom: 15px;
+        border: 1px solid #fff2e1;
+    }
+
+    .orders-card-img {
+        width: 56px;
+        height: 56px;
+        border-radius: 7px;
+        object-fit: cover;
+        border: 1px solid #e3dbcb;
+    }
+
+    .orders-card-desc {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .orders-card-title {
+        font-size: 1.07rem;
+        font-weight: 600;
+        color: #232323;
+        margin-bottom: 4px;
+    }
+
+    .orders-card-qty {
+        font-size: 0.98rem;
+        color: #bbb;
+    }
+
+    .orders-card-single {
+        color: #232323;
+        font-weight: 600;
+        font-size: 1.14rem;
+        margin-left: 11px;
+        white-space: nowrap;
+    }
+
+    .orders-card-actions {
+        display: flex;
+        gap: 11px;
+        margin-top: 1px;
+        flex-wrap: wrap;
+    }
+
+    .orders-ghost-btn {
+        border: 1.3px solid #fb6608;
+        background: #fff;
+        color: #fb6608;
+        border-radius: 7px;
+        padding: 10px 17px 10px 12px;
+        font-size: 1.03rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.16s, color 0.16s;
+        display: flex;
+        align-items: center;
+        gap: 7px;
+    }
+
+    .orders-btn-icon {
+        width: 19px;
+        height: 19px;
+        margin-right: 8px;
+        display: inline-block;
+        vertical-align: middle;
+    }
+
+    .orders-buyagain {
+        background: #fb6608;
+        color: #fff;
+        border-radius: 7px;
+        border: none;
+        padding: 10px 17px;
+        font-size: 1.03rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.15s;
+    }
+
+        .orders-buyagain:hover {
+            background: #e25400;
+        }
+
+    .orders-ghost-btn:hover {
+        background: #fff3e9;
+    }
+
+    .orders-buyagain.single-action {
+        width: 100% !important;
+    }
+
+    @@media (max-width: 700px) {
+        .orders-layout {
+            gap: 0;
+        }
+
+        .orders-main {
+            padding: 0 0 24px 0;
+        }
+
+        .orders-card {
+            padding: 14px 7px 16px 7px;
+            margin: 0 0 17px 0;
+            border-radius: 16px;
+        }
+
+        .orders-list {
+            gap: 12px;
+        }
+
+        .orders-headline, .orders-subhead {
+            padding-left: 1px;
+        }
+
+        .orders-headline {
+            padding-top: 20px;
+            font-size: 1.18rem;
+        }
+
+        .orders-subhead {
+            font-size: 0.96rem;
+        }
+    }
+
+    @@media (max-width: 540px) {
+        .orders-main {
+            padding: 0;
+            width: 100vw;
+            min-width: 0;
+            margin-right: 10px;
+            margin-left: 10px;
+        }
+
+        .orders-tabs {
+            overflow-x: auto;
+            flex-wrap: nowrap;
+            gap: 11px;
+            margin: 13px 0 21px 0;
+            padding-left: 8px;
+            padding-right: 6px;
+            scrollbar-width: thin;
+            scrollbar-color: #faf2ed #fff;
+        }
+
+            .orders-tabs::-webkit-scrollbar {
+                height: 5px;
+                background: #fff;
+            }
+
+            .orders-tabs::-webkit-scrollbar-thumb {
+                background: #faf2ed;
+                border-radius: 7px;
+            }
+
+        .orders-tab {
+            min-width: 108px;
+            padding: 9px 7px;
+            font-size: 1.07rem;
+        }
+
+        .orders-list {
+            gap: 10px;
+        }
+
+        .orders-card {
+            padding: 13px 3px 13px 3px;
+            border-radius: 14px;
+            margin: 0 0 12px 0;
+        }
+
+        .orders-card-headerrow {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 5px;
+            margin-bottom: 0;
+        }
+
+        .orders-card-id-status {
+            gap: 10px;
+        }
+
+        .orders-card-id {
+            font-size: 1.01rem;
+        }
+
+        .orders-card-status {
+            font-size: 0.86rem;
+            padding: 2px 13px;
+        }
+
+        .orders-card-date {
+            margin: 0 0 0 0;
+            color: #b2b2b2;
+            font-size: 0.94rem;
+        }
+
+        .orders-totalbar {
+            width: 100%;
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            font-size: 1.03rem;
+            margin-bottom: 9px;
+            padding: 0 2px 0 1px;
+            gap: 0;
+        }
+
+        .orders-card-label {
+            color: #be9874;
+            font-size: 1.01rem;
+        }
+
+        .orders-card-amount {
+            font-size: 1.1rem;
+        }
+
+        .orders-card-bodyrow {
+            flex-direction: row;
+            align-items: center;
+            background: #fff;
+            border-radius: 11px;
+            padding: 9px 7px 9px 7px;
+            min-height: 64px;
+            margin-bottom: 9px;
+            gap: 8px;
+        }
+
+        .orders-card-img {
+            width: 38px;
+            height: 38px;
+            border-radius: 8px;
+            object-fit: cover;
+        }
+
+        .orders-card-title {
+            font-size: 0.97rem;
+            font-weight: 700;
+        }
+
+        .orders-card-qty {
+            font-size: 0.91rem;
+            color: #b7b7b7;
+        }
+
+        .orders-card-single {
+            font-size: 0.97rem;
+            margin-left: 2px;
+        }
+
+        .orders-card-actions {
+            width: 100%;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 7px;
+            margin-top: 5px;
+        }
+
+        .orders-ghost-btn, .orders-buyagain {
+            border-radius: 9px;
+            font-size: 0.925rem;
+            font-weight: 600;
+            width: 100%;
+            padding: 10px 0;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+        }
+
+        .orders-btn-icon {
+            width: 18px;
+            height: 18px;
+            margin-right: 7px;
+        }
+
+        .orders-buyagain {
+            background: #fb6608;
+            color: #fff;
+            border: none;
+        }
+
+        .orders-ghost-btn {
+            border: 1.2px solid #fb6608;
+            background: #fff;
+            color: #fb6608;
+        }
+
+        .orders-buyagain.single-action {
+            grid-column: 1 / -1;
+        }
+
+        .user-sidebar {
+            display: none !important;
+        }
+    }
+</style>
 
 <style>
     .rating-stars {
@@ -222,32 +927,32 @@
     }
 
     /* .qty-controls {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            margin: 6px 0 10px;
-        }
-
-        .qty-btn {
-            width: 28px;
-            height: 28px;
-            border-radius: 6px;
-            border: 1px solid #ddd;
-            background: #fafafa;
-            cursor: pointer;
-            font-size: 18px;
-            line-height: 26px;
-        }
-
-            .qty-btn:active {
-                transform: scale(0.98);
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+                margin: 6px 0 10px;
             }
 
-        .qty-val {
-            min-width: 24px;
-            text-align: center;
-            font-weight: 600;
-        } */
+            .qty-btn {
+                width: 28px;
+                height: 28px;
+                border-radius: 6px;
+                border: 1px solid #ddd;
+                background: #fafafa;
+                cursor: pointer;
+                font-size: 18px;
+                line-height: 26px;
+            }
+
+                .qty-btn:active {
+                    transform: scale(0.98);
+                }
+
+            .qty-val {
+                min-width: 24px;
+                text-align: center;
+                font-weight: 600;
+            } */
 
     .qty-controls {
         display: inline-flex;
@@ -292,620 +997,3 @@
         z-index: 999; /* just under the popup */
     }
 </style>
-<div class="orders-layout">
-    @Html.Partial("_UserSidebar")
-    <div class="orders-main">
-        <h2 class="orders-headline">My Orders</h2>
-        <p class="orders-subhead">Track and Manage your orders</p>
-        <div class="orders-tabs">
-            <button class="orders-tab active">All</button>
-            <button class="orders-tab">In Progress</button>
-            <button class="orders-tab">Delivered</button>
-            <button class="orders-tab">Cancelled</button>
-        </div>
-        <div class="orders-list">
-            <!-- Each Order Card -->
-            <div class="orders-card">
-                <div class="orders-card-headerrow">
-                    <div class="orders-card-id-status">
-                        <span class="orders-card-id">Order ORD-2025-001</span>
-                        <span class="orders-card-status delivered">Delivered</span>
-                    </div>
-                    <div class="orders-card-date">Placed on March 15, 2025</div>
-                </div>
-                <div class="orders-totalbar">
-                    <span class="orders-card-label">Total Amount</span>
-                    <span class="orders-card-amount">$149.99</span>
-                </div>
-                <div class="orders-card-bodyrow">
-                    <img class="orders-card-img" src="~/image/userSidebar/Stamixproduct.png" alt="Product" />
-                    <div class="orders-card-desc">
-                        <div class="orders-card-title">STAMIX Performance Plus</div>
-                        <div class="orders-card-qty">Quantity: 2</div>
-                    </div>
-                    <div class="orders-card-single">$74.99</div>
-                </div>
-                <div class="orders-card-actions">
-                    <button class="orders-ghost-btn"><img class="orders-btn-icon" src="~/image/userSidebar/receipt.png" alt="Invoice" />View Invoice</button>
-                    <button class="orders-ghost-btn"><img class="orders-btn-icon" src="~/image/userSidebar/Group.png" alt="Track" />Track Order</button>
-                    <button class="orders-ghost-btn"><img class="orders-btn-icon" src="~/image/userSidebar/Vector.png" alt="Return" />Return Item</button>
-                    <button class="orders-buyagain">Buy Again</button>
-                    <button class="orders-ghost-btn open-feedback" data-order-id="@Model.OrderId" data-customer-id="@Model.CustomerId"><img class="orders-btn-icon" src="~/image/homepage/feedback1.svg" alt="Invoice" />Feedback </button>
-                </div>
-            </div>
-            <!-- In Progress -->
-            <div class="orders-card">
-                <div class="orders-card-headerrow">
-                    <div class="orders-card-id-status">
-                        <span class="orders-card-id">Order ORD-2025-002</span>
-                        <span class="orders-card-status in-progress">In Progress</span>
-                    </div>
-                    <div class="orders-card-date">Placed on March 20, 2025</div>
-                </div>
-                <div class="orders-totalbar">
-                    <span class="orders-card-label">Total Amount</span>
-                    <span class="orders-card-amount">$149.99</span>
-                </div>
-                <div class="orders-card-bodyrow">
-                    <img class="orders-card-img" src="~/image/userSidebar/Stamixproduct.png" alt="Product" />
-                    <div class="orders-card-desc">
-                        <div class="orders-card-title">STAMIX Performance Plus</div>
-                        <div class="orders-card-qty">Quantity: 2</div>
-                    </div>
-                    <div class="orders-card-single">$74.99</div>
-                </div>
-                <div class="orders-card-actions">
-                    <button class="orders-ghost-btn"><img class="orders-btn-icon" src="~/image/userSidebar/receipt.png" alt="Invoice" />View Invoice</button>
-                    <button class="orders-ghost-btn"><img class="orders-btn-icon" src="~/image/userSidebar/Group.png" alt="Track" />Track Order</button>
-                    <button class="orders-buyagain">Buy Again</button>
-                </div>
-            </div>
-            <!-- Cancelled -->
-            <div class="orders-card">
-                <div class="orders-card-headerrow">
-                    <div class="orders-card-id-status">
-                        <span class="orders-card-id">Order ORD-2025-001</span>
-                        <span class="orders-card-status cancelled">Cancelled</span>
-                    </div>
-                    <div class="orders-card-date">Placed on March 15, 2025</div>
-                </div>
-                <div class="orders-totalbar">
-                    <span class="orders-card-label">Total Amount</span>
-                    <span class="orders-card-amount">$149.99</span>
-                </div>
-                <div class="orders-card-bodyrow">
-                    <img class="orders-card-img" src="~/image/userSidebar/Stamixproduct.png" alt="Product" />
-                    <div class="orders-card-desc">
-                        <div class="orders-card-title">STAMIX Performance Plus</div>
-                        <div class="orders-card-qty">Quantity: 2</div>
-                    </div>
-                    <div class="orders-card-single">$74.99</div>
-                </div>
-                <div class="orders-card-actions">
-                    <button class="orders-ghost-btn"><img class="orders-btn-icon" src="~/image/userSidebar/receipt.png" alt="Invoice" />View Invoice</button>
-                    <button class="orders-ghost-btn"><img class="orders-btn-icon" src="~/image/userSidebar/Group.png" alt="Track" />Track Order</button>
-                    <button class="orders-buyagain">Buy Again</button>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-<!-- FEEDBACK POPUP (reuses cart modal styles) -->
-<div class="cart-popup" id="feedbackPopup" style="display:none">
-    @Html.AntiForgeryToken()
-    <!-- ONE set of hidden defaults -->
-    <input type="hidden" id="fbOrderId" value="@defaultOrderId" />
-    <input type="hidden" id="fbCustomerId" value="@defaultCustomerId" />
-    <div class="cart-header">
-        <span>Rate Your Experience</span>
-        <span class="close-btn" data-close="#feedbackPopup">&times;</span>
-    </div>
-
-    <div class="cart-content" style="display:block; gap:16px">
-        <!-- Stars -->
-        <div class="rating-stars" role="radiogroup" aria-label="Rate from 1 to 5">
-            <button type="button" class="star" data-val="1" aria-label="1 star">★</button>
-            <button type="button" class="star" data-val="2" aria-label="2 stars">★</button>
-            <button type="button" class="star" data-val="3" aria-label="3 stars">★</button>
-            <button type="button" class="star" data-val="4" aria-label="4 stars">★</button>
-            <button type="button" class="star" data-val="5" aria-label="5 stars">★</button>
-            <span class="rating-hint" style="margin-left:8px;color:#888"></span>
-        </div>
-
-        <!-- Optional message -->
-        <label for="fbMessage" class="sr-only">Feedback</label>
-        <textarea id="fbMessage" class="cart-textarea" rows="4" placeholder="Tell us more (optional)"></textarea>
-    </div>
-
-    <div class="cart-footer">
-        <button type="button" class="checkout-btn" id="btnSubmitFeedback">Submit</button>
-    </div>
-</div>
-
-<style>
-    .orders-layout {
-        display: flex;
-        gap: 2.5rem;
-        align-items: flex-start;
-        background: #fff;
-        min-height: 100vh;
-    }
-
-    .orders-main {
-        flex: 1;
-        padding: 32px 0 24px 0;
-    }
-
-    .orders-headline {
-        font-size: 1.17rem;
-        font-weight: 600;
-        margin-bottom: 2px;
-        color: #222;
-    }
-
-    .orders-subhead {
-        font-size: 0.98rem;
-        color: #b2b2b2;
-        margin-bottom: 19px;
-    }
-
-    .orders-tabs {
-        display: flex;
-        gap: 11px;
-        margin: 7px 0 24px 0;
-    }
-
-    .orders-tab {
-        background: #f4f3f2;
-        color: #b89b71;
-        border: none;
-        border-radius: 7px;
-        font-size: 1.01rem;
-        font-weight: 600;
-        padding: 8px 15px;
-        cursor: pointer;
-        transition: background 0.17s;
-    }
-
-        .orders-tab.active {
-            background: #fb6608;
-            color: #fff;
-        }
-
-    .orders-list {
-        width: 100%;
-        display: flex;
-        flex-direction: column;
-        gap: 22px;
-    }
-
-    .orders-card {
-        background: #fff8ef;
-        border-radius: 14px;
-        border: 1.5px solid #ffd8c2;
-        margin-bottom: 0;
-        padding: 22px 18px 21px 18px;
-        box-shadow: none;
-        margin-right:30px;
-    }
-
-    .orders-card-headerrow {
-        display: flex;
-        align-items: flex-start;
-        gap: 28px;
-        margin-bottom: 6px;
-        flex-wrap: wrap;
-    }
-
-    .orders-card-id-status {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-    }
-
-    .orders-card-id {
-        color: #232323;
-        font-weight: 600;
-        font-size: 1.15rem;
-    }
-
-    .orders-card-status {
-        padding: 2px 13px 1px 13px;
-        border-radius: 9px;
-        font-size: 0.89rem;
-        font-weight: 580;
-    }
-
-        .orders-card-status.delivered {
-            background: #e8f7ea;
-            color: #38a15b;
-            border: 1px solid #bde7c9;
-        }
-
-        .orders-card-status.in-progress {
-            background: #e8effd;
-            color: #1773dd;
-            border: 1px solid #b4d1f9;
-        }
-
-        .orders-card-status.cancelled {
-            background: #fdeded;
-            color: #e76152;
-            border: 1px solid #ffc3be;
-        }
-
-    .orders-card-date {
-        color: #aca8a4;
-        font-size: 1.04rem;
-        margin-left: auto;
-        margin-top: 3px;
-        font-weight: 500;
-    }
-
-    .orders-totalbar {
-        display: flex;
-        align-items: flex-end;
-        justify-content: flex-end;
-        gap: 16px;
-        margin-bottom: 12px;
-        font-size: 1.08rem;
-    }
-
-    .orders-card-label {
-        color: #be9874;
-        font-size: 1.06rem;
-        font-weight: 600;
-        margin-right: 2px;
-    }
-
-    .orders-card-amount {
-        color: #232323;
-        font-size: 1.24rem;
-        font-weight: 700;
-        letter-spacing: 0.08em;
-    }
-
-    .orders-card-bodyrow {
-        display: flex;
-        align-items: center;
-        background: #fff;
-        border-radius: 13px;
-        padding: 15px 15px 13px 15px;
-        gap: 17px;
-        margin-bottom: 15px;
-        border: 1px solid #fff2e1;
-    }
-
-    .orders-card-img {
-        width: 56px;
-        height: 56px;
-        border-radius: 7px;
-        object-fit: cover;
-        border: 1px solid #e3dbcb;
-    }
-
-    .orders-card-desc {
-        flex: 1;
-        min-width: 0;
-    }
-
-    .orders-card-title {
-        font-size: 1.07rem;
-        font-weight: 600;
-        color: #232323;
-        margin-bottom: 4px;
-    }
-
-    .orders-card-qty {
-        font-size: 0.98rem;
-        color: #bbb;
-    }
-
-    .orders-card-single {
-        color: #232323;
-        font-weight: 600;
-        font-size: 1.14rem;
-        margin-left: 11px;
-        white-space: nowrap;
-    }
-
-    .orders-card-actions {
-        display: flex;
-        gap: 11px;
-        margin-top: 1px;
-        flex-wrap: wrap;
-    }
-
-    .orders-ghost-btn {
-        border: 1.3px solid #fb6608;
-        background: #fff;
-        color: #fb6608;
-        border-radius: 7px;
-        padding: 10px 17px 10px 12px;
-        font-size: 1.03rem;
-        font-weight: 600;
-        cursor: pointer;
-        transition: background 0.16s, color 0.16s;
-        display: flex;
-        align-items: center;
-        gap: 7px;
-    }
-
-    .orders-btn-icon {
-        width: 19px;
-        height: 19px;
-        margin-right: 8px;
-        display: inline-block;
-        vertical-align: middle;
-    }
-
-    .orders-buyagain {
-        background: #fb6608;
-        color: #fff;
-        border-radius: 7px;
-        border: none;
-        padding: 10px 17px;
-        font-size: 1.03rem;
-        font-weight: 600;
-        cursor: pointer;
-        transition: background 0.15s;
-    }
-
-        .orders-buyagain:hover {
-            background: #e25400;
-        }
-
-    .orders-ghost-btn:hover {
-        background: #fff3e9;
-    }
-
-    .orders-buyagain.single-action {
-        width: 100% !important;
-    }
-
-    @@media (max-width: 700px) {
-        .orders-layout
-
-    {
-        gap: 0;
-    }
-
-    .orders-main {
-        padding: 0 0 24px 0;
-    }
-
-    .orders-card {
-        padding: 14px 7px 16px 7px;
-        margin: 0 0 17px 0;
-        border-radius: 16px;
-    }
-
-    .orders-list {
-        gap: 12px;
-    }
-
-    .orders-headline, .orders-subhead {
-        padding-left: 1px;
-    }
-
-    .orders-headline {
-        padding-top: 20px;
-        font-size: 1.18rem;
-    }
-
-    .orders-subhead {
-        font-size: 0.96rem;
-    }
-
-    }
-    @@media (max-width: 540px) {
-        .orders-main
-
-    {
-        padding: 0;
-        width: 100vw;
-        min-width: 0;
-        margin-right:10px;
-        margin-left: 10px;
-        }
-
-    .orders-tabs {
-        overflow-x: auto;
-        flex-wrap: nowrap;
-        gap: 11px;
-        margin: 13px 0 21px 0;
-        padding-left: 8px;
-        padding-right: 6px;
-        scrollbar-width: thin;
-        scrollbar-color: #faf2ed #fff;
-    }
-
-        .orders-tabs::-webkit-scrollbar {
-            height: 5px;
-            background: #fff;
-        }
-
-        .orders-tabs::-webkit-scrollbar-thumb {
-            background: #faf2ed;
-            border-radius: 7px;
-        }
-
-    .orders-tab {
-        min-width: 108px;
-        padding: 9px 7px;
-        font-size: 1.07rem;
-    }
-
-    .orders-list {
-        gap: 10px;
-    }
-
-    .orders-card {
-        padding: 13px 3px 13px 3px;
-        border-radius: 14px;
-        margin: 0 0 12px 0;
-    }
-
-    .orders-card-headerrow {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 5px;
-        margin-bottom: 0;
-    }
-
-    .orders-card-id-status {
-        gap: 10px;
-    }
-
-    .orders-card-id {
-        font-size: 1.01rem;
-    }
-
-    .orders-card-status {
-        font-size: 0.86rem;
-        padding: 2px 13px;
-    }
-
-    .orders-card-date {
-        margin: 0 0 0 0;
-        color: #b2b2b2;
-        font-size: 0.94rem;
-    }
-
-    .orders-totalbar {
-        width: 100%;
-        display: flex;
-        align-items: flex-end;
-        justify-content: space-between;
-        font-size: 1.03rem;
-        margin-bottom: 9px;
-        padding: 0 2px 0 1px;
-        gap: 0;
-    }
-
-    .orders-card-label {
-        color: #be9874;
-        font-size: 1.01rem;
-    }
-
-    .orders-card-amount {
-        font-size: 1.1rem;
-    }
-
-    .orders-card-bodyrow {
-        flex-direction: row;
-        align-items: center;
-        background: #fff;
-        border-radius: 11px;
-        padding: 9px 7px 9px 7px;
-        min-height: 64px;
-        margin-bottom: 9px;
-        gap: 8px;
-    }
-
-    .orders-card-img {
-        width: 38px;
-        height: 38px;
-        border-radius: 8px;
-        object-fit: cover;
-    }
-
-    .orders-card-title {
-        font-size: 0.97rem;
-        font-weight: 700;
-    }
-
-    .orders-card-qty {
-        font-size: 0.91rem;
-        color: #b7b7b7;
-    }
-
-    .orders-card-single {
-        font-size: 0.97rem;
-        margin-left: 2px;
-    }
-
-    .orders-card-actions {
-        width: 100%;
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 7px;
-        margin-top: 5px;
-    }
-
-    .orders-ghost-btn, .orders-buyagain {
-        border-radius: 9px;
-        font-size: 0.925rem;
-        font-weight: 600;
-        width: 100%;
-        padding: 10px 0;
-        margin: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 7px;
-    }
-
-    .orders-btn-icon {
-        width: 18px;
-        height: 18px;
-        margin-right: 7px;
-    }
-
-    .orders-buyagain {
-        background: #fb6608;
-        color: #fff;
-        border: none;
-    }
-
-    .orders-ghost-btn {
-        border: 1.2px solid #fb6608;
-        background: #fff;
-        color: #fb6608;
-    }
-
-    .orders-buyagain.single-action {
-        grid-column: 1 / -1;
-    }
-
-    .user-sidebar {
-        display: none !important;
-    }
-
-    }
-</style>
-
-<script>
-    // make token available to your JS
-    window.AF_TOKEN = document.querySelector('input[name="__RequestVerificationToken"]')?.value || '';
-</script>
-<script src="~/js/feedback.js"></script>
-<script>
-    // Show/hide using the existing #feedbackPopup
-    function showFeedbackPopup() {
-      const popup = document.getElementById('feedbackPopup');
-      if (!popup) return;
-      popup.style.display = 'block';
-      document.body.classList.add('showing-feedback');  // adds backdrop
-      // focus first interactive element for a11y (first star/button)
-      popup.querySelector('.star, .checkout-btn, .close-btn')?.focus();
-    }
-
-    function hideFeedbackPopup() {
-      const popup = document.getElementById('feedbackPopup');
-      if (!popup) return;
-      popup.style.display = 'none';
-      document.body.classList.remove('showing-feedback'); // remove backdrop
-    }
-
-    // Close button (your existing data-close="#feedbackPopup")
-    document.addEventListener('click', (e) => {
-      const closer = e.target.closest('[data-close="#feedbackPopup"]');
-      if (closer) hideFeedbackPopup();
-    });
-
-    // ESC to close
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') hideFeedbackPopup();
-    });
-</script>

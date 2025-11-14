@@ -42,6 +42,7 @@ namespace Domain.Models
         Packed,
         Shipped,
         OutForDelivery,
-        Delivered
+        Delivered,
+        Cancelled
     }
 }

@@ -1275,6 +1275,7 @@ namespace Domain.Implementation
             return IdentityResult.Success;
         }
 
+		//Orders
 		public async Task<int> CreateAsync(Order order, List<OrderDetail> details)
 		{
 			_db.Orders.Add(order);
@@ -1303,8 +1304,19 @@ namespace Domain.Implementation
             await _db.SaveChangesAsync();
             return true;
         }
+        public async Task<List<OrderDetail>> GetOrderDetailsAsync(int orderId)
+        {
+            return await _db.orderDetails
+                            .Where(d => d.OrderId == orderId)
+                            .ToListAsync();
+        }
+        public async Task<Order?> GetOrderByIdAsync(int orderId)
+        {
+            return await _db.Orders
+                            .FirstOrDefaultAsync(o => o.Id == orderId);
+        }
 
-
+        //Payment
         public async Task<List<PaymentGatewayDetails>> GetPaymentGatewayDetailsAsync()
         {
             return await _db.PaymentGatewayDetails.OrderByDescending(p => p.Id).ToListAsync();

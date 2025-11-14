@@ -128,6 +128,8 @@ namespace Domain.Interface
         Task <OrderSummaryViewModel> GetOrderAsync(int orderId);
         Task<List<Order>> GetAllOrdersAsync();
         Task<bool> UpdateOrderStatusAsync(int orderId, OrderStatus newStatus);
+        Task<List<OrderDetail>> GetOrderDetailsAsync(int orderId);
+        Task<Order?> GetOrderByIdAsync(int orderId);
 
     }
 }
