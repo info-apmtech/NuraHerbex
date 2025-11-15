@@ -834,18 +834,54 @@ namespace APIs.Controllers
             return BadRequest(result.Errors);
         }
 
-        //Orders
-        [AllowAnonymous]
-        [HttpPost("orders")]
-        public async Task<IActionResult> Create([FromBody] OrderSummaryViewModel vm)
-        {
-            if (vm == null || vm.Order == null || vm.Details == null || vm.Details.Count == 0)
-                return BadRequest("Invalid data.");
-            var orderId = await _adminservice.CreateAsync(vm.Order, vm.Details);
-            return Ok(new { id = orderId });
-        }
+		//Orders
+		[AllowAnonymous]
+		[HttpPost("orders")]
+		public async Task<IActionResult> Create([FromBody] CreateOrderDto dto)
+		{
+			if (!ModelState.IsValid)
+				return ValidationProblem(ModelState);
 
-        [AllowAnonymous]
+			if (dto == null || dto.Details == null || dto.Details.Count == 0)
+				return BadRequest("Invalid data.");
+
+			// Map DTO -> EF Order entity
+			var order = new Order
+			{
+				UserId        = dto.UserId,
+				AddressId     = dto.AddressId,
+				DoorNo        = dto.DoorNo,
+				PhoneNo       = dto.PhoneNo,
+				Address       = dto.Address,
+				State         = dto.State,
+				PinCode       = dto.PinCode,
+				Country       = dto.Country,
+				OrderDate     = dto.OrderDate,
+				Status        = dto.Status,
+				Subtotal      = dto.Subtotal,
+				Tax           = dto.Tax,
+				Shipping      = dto.Shipping,
+				TotalDiscount = dto.TotalDiscount,
+				Total         = dto.Total
+			};
+
+			// Map DTO details -> EF OrderDetail entities
+			var details = dto.Details.Select(d => new OrderDetail
+			{
+				ProductId       = d.ProductId,
+				Quantity        = d.Quantity,
+				UnitPrice       = d.UnitPrice,
+				ProductDiscount = 0m // or compute if needed
+									 // OrderId will be set inside CreateAsync when order is saved
+			}).ToList();
+
+			var orderId = await _adminservice.CreateAsync(order, details);
+
+			return Ok(new { id = orderId });
+		}
+
+
+		[AllowAnonymous]
         [HttpPost("updateStatus")]
         public async Task<IActionResult> UpdateStatus([FromBody] UpdateOrderStatusRequest request)
         {
