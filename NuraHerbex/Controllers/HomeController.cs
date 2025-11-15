@@ -934,6 +934,7 @@ namespace NuraHerbex.Controllers
             if (dto == null || dto.Order == null)
                 return NotFound();
 
+            // Map order
             var order = new Order
             {
                 Id = dto.Order.Id,
@@ -954,6 +955,7 @@ namespace NuraHerbex.Controllers
                 Total = dto.Order.Total
             };
 
+            // Map details (base fields)
             var details = dto.Details?.Select(d => new OrderDetail
             {
                 Id = d.Id,
@@ -964,34 +966,62 @@ namespace NuraHerbex.Controllers
                 productName = d.productName
             }).ToList() ?? new List<OrderDetail>();
 
-            var vm = new OrderSummaryViewModel
+            // Fetch list of countries
+            var countriesResponse = await _httpClient.GetAsync("AdminAPI/countries");
+            List<Country> countries = new();
+            if (countriesResponse.IsSuccessStatusCode)
             {
-                Order = order,
-                Details = details
-            };
+                countries = await countriesResponse.Content.ReadFromJsonAsync<List<Country>>()
+                            ?? new List<Country>();
+            }
 
-            // Fetch user details for fullname
+            // Fetch list of states
+            var statesResponse = await _httpClient.GetAsync("AdminAPI/states");
+            List<State> states = new();
+            if (statesResponse.IsSuccessStatusCode)
+            {
+                states = await statesResponse.Content.ReadFromJsonAsync<List<State>>()
+                         ?? new List<State>();
+            }
+
+            // Fetch user (for FullName)
+            string fullName;
             var userResponse = await _httpClient.GetAsync($"AdminAPI/user/{order.UserId}");
             if (userResponse.IsSuccessStatusCode)
             {
                 var user = await userResponse.Content.ReadFromJsonAsync<RegisterUser>();
                 if (user != null)
                 {
-                    vm.FullName = $"{user.FirstName} {user.LastName}".Trim();
+                    fullName = $"{user.FirstName} {user.LastName}".Trim();
                 }
                 else
                 {
-                    vm.FullName = "Unknown User";
+                    fullName = "Unknown User";
                 }
             }
             else
             {
-                vm.FullName = "Unknown User";
+                fullName = "Unknown User";
             }
 
-            // Fetch product names for order details
-            foreach (var item in vm.Details)
+            // Resolve country/state names from order.Country & order.State
+            string countryName = countries
+                .FirstOrDefault(c => c.Id == order.Country)?.CountryName
+                ?? "Unknown Country";
+
+            string stateName = states
+                .FirstOrDefault(s => s.Id == order.State)?.StateName
+                ?? "Unknown State";
+
+            // For each detail: set FullName / CountryName / StateName and productName
+            foreach (var item in details)
             {
+                // Set the three NotMapped fields
+                item.FullName = fullName;
+                item.CountryName = countryName;
+                item.StateName = stateName;
+
+                // Fetch product name
                 var productResponse = await _httpClient.GetAsync($"AdminAPI/product/{item.ProductId}");
                 if (productResponse.IsSuccessStatusCode)
                 {
@@ -1003,24 +1033,11 @@ namespace NuraHerbex.Controllers
                 }
             }
 
-            // Fetch list of countries
-            var countriesResponse = await _httpClient.GetAsync("AdminAPI/countries");
-            List<Country> countries = new();
-            if (countriesResponse.IsSuccessStatusCode)
+            var vm = new OrderSummaryViewModel
             {
-                countries = await countriesResponse.Content.ReadFromJsonAsync<List<Country>>() ?? new List<Country>();
-            }
-
-            // Fetch list of all states
-            var statesResponse = await _httpClient.GetAsync("AdminAPI/states");
-            List<State> states = new();
-            if (statesResponse.IsSuccessStatusCode)
-            {
-                states = await statesResponse.Content.ReadFromJsonAsync<List<State>>() ?? new List<State>();
-            }
-
-            vm.CountryName = countries.FirstOrDefault(c => c.Id == order.Country)?.CountryName ?? "Unknown Country";
-            vm.StateName = states.FirstOrDefault(s => s.Id == order.State)?.StateName ?? "Unknown State";
+                Order = order,
+                Details = details
+            };
 
             return View(vm);
         }

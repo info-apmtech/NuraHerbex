@@ -17,14 +17,14 @@
 
     var poNumber = $"PO/{order.Id:0000}";
     var poDate = order.OrderDate.ToString("dd-MMM-yyyy");
-
+    var detail = Model.Details?.FirstOrDefault();
     // Customer-related props
-    var customerName = Model.FullName ?? "";
+    var customerName = detail.FullName ?? "";
     var customerDoorNo = order.DoorNo;
     var customerBaseAddress = order.Address;
-    var customerStateText = Model.StateName  ?? "";
+    var customerStateText = detail.StateName  ?? "";
     var customerPinCode = order.PinCode;
-    var customerCountryText = Model.CountryName ?? "";
+    var customerCountryText = detail.CountryName ?? "";
     var customerPhone = order.PhoneNo;
 
     var customerAddressLine1 = string.Join(", ",
