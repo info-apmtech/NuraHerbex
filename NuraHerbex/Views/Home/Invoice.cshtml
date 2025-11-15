@@ -39,9 +39,11 @@
     var items = Model.Details ?? new List<OrderDetail>();
 
     // we'll recompute totals here using GST-inclusive logic
+    var shippingAmount = order.Shipping;
     decimal subtotalNet = 0m;
     decimal totalGST = 0m;
     decimal grandTotal = 0m;
+    grandTotal += shippingAmount;
 }
 
 <!DOCTYPE html>
@@ -313,10 +315,15 @@ table th, table td {
                         <td class="text-end fw-bold">Total GST:</td>
                         <td class="text-end">₹@totalGST.ToString("N2")</td>
                     </tr>
+                    <tr class="totals">
+                        <td class="text-end fw-bold">Shipping:</td>
+                        <td class="text-end">₹@shippingAmount.ToString("N2")</td>
+                    </tr>
                     <tr class="totals border-top">
                         <td class="text-end fw-bold">Grand Total:</td>
                         <td class="text-end fw-bold">₹@grandTotal.ToString("N2")</td>
                     </tr>
+
                 </table>
             </div>
         </div>

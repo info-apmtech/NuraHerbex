@@ -4,9 +4,12 @@
 @{
     Layout = "~/Views/Shared/_Layout.cshtml";
     ViewData["Title"] = "My Orders";
+
     var orderDetails = ViewBag.OrderDetails as List<Domain.Models.OrderDetail>;
     var products = ViewBag.Products as List<Domain.Models.Product>;
     var userId = ViewBag.UserId as string ?? "00000000-0000-0000-0000-000000000000";
+
+    var feedbackByOrder = ViewBag.FeedbackByOrder as Dictionary<int, Domain.ViewModel.FeedbackViewModel> ?? new Dictionary<int, Domain.ViewModel.FeedbackViewModel>();
 
     string GetStatusClass(OrderStatus status)
     {
@@ -59,6 +62,9 @@
                     var statusClass = GetStatusClass(order.Status);
                     var statusText = GetStatusText(order.Status);
 
+                    var hasFeedback = feedbackByOrder.ContainsKey(order.Id) ;
+                    var feedback = hasFeedback ? feedbackByOrder[order.Id] : null;
+
                     <div class="orders-card" data-status="@statusClass">
                         <div class="orders-card-header-container">
                             <div class="orders-card-headerrow">
@@ -105,8 +111,11 @@
                                     <button class="orders-buyagain">Buy Again</button>
                                     <button class="orders-ghost-btn open-feedback"
                                             data-order-id="@order.Id"
-                                            data-customer-id="@userId">
-                                        <img class="orders-btn-icon" src="~/image/homepage/feedback1.svg" alt="Feedback" />Feedback
+                                            data-customer-id="@userId"
+                                            data-rating="@(hasFeedback ? feedback.RatingCount.ToString() : "0")"
+                                            data-message="@(hasFeedback ? feedback.Message : "")">
+                                        <img class="orders-btn-icon" src="~/image/homepage/feedback1.svg" alt="Feedback" />
+                                        @(hasFeedback ? "Edit Feedback" : "Feedback")
                                     </button>
                                     break;
 
@@ -172,6 +181,7 @@
 <script>
     window.AF_TOKEN = document.querySelector('input[name="__RequestVerificationToken"]')?.value || '';
 
+    // Tabs filtering (unchanged)
     document.querySelectorAll('.orders-tab').forEach(btn => {
         btn.addEventListener('click', () => {
             document.querySelectorAll('.orders-tab').forEach(b => b.classList.remove('active'));
@@ -183,13 +193,31 @@
         });
     });
 
+    let selectedRating = 0;
+
+    // Utility to update stars colors based on selectedRating
+    function updateStarColors() {
+        document.querySelectorAll('.rating-stars .star').forEach(s => {
+            s.style.color = s.dataset.val <= selectedRating ? 'gold' : '#ccc';
+        });
+    }
+
+    // Feedback popup open/close and prefill
     document.addEventListener('click', e => {
         const fbBtn = e.target.closest('.open-feedback');
         if (fbBtn) {
             document.getElementById('fbOrderId').value = fbBtn.dataset.orderId;
             document.getElementById('fbCustomerId').value = fbBtn.dataset.customerId;
+
+            // Prefill rating and message if any
+            selectedRating = parseInt(fbBtn.dataset.rating || "0");
+            document.getElementById('fbMessage').value = fbBtn.dataset.message || "";
+
+            updateStarColors();
+
             showFeedbackPopup();
         }
+
         const closeBtn = e.target.closest('[data-close="#feedbackPopup"]');
         if (closeBtn) hideFeedbackPopup();
     });
@@ -205,20 +233,23 @@
         const popup = document.getElementById('feedbackPopup');
         popup.style.display = 'none';
         document.body.classList.remove('showing-feedback');
+        // Do not reset selectedRating or message here to allow edit continuity
     }
 
-    document.addEventListener('keydown', e => { if (e.key === 'Escape') hideFeedbackPopup(); });
+    // Keyboard escape to close popup
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape') hideFeedbackPopup();
+    });
 
-    let selectedRating = 0;
+    // Star rating click event
     document.querySelectorAll('.rating-stars .star').forEach(star => {
         star.addEventListener('click', () => {
             selectedRating = parseInt(star.dataset.val);
-            document.querySelectorAll('.rating-stars .star').forEach(s => {
-                s.style.color = s.dataset.val <= selectedRating ? 'gold' : '#ccc';
-            });
+            updateStarColors();
         });
     });
 
+    // Submit feedback
     document.getElementById('btnSubmitFeedback').addEventListener('click', async () => {
         const orderId = parseInt(document.getElementById('fbOrderId').value);
         const customerId = document.getElementById('fbCustomerId').value;
@@ -234,7 +265,10 @@
         try {
             const res = await fetch('/Home/SubmitFeedback', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': window.AF_TOKEN },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': window.AF_TOKEN
+                },
                 body: JSON.stringify(payload)
             });
 
@@ -245,12 +279,22 @@
 
             alert('Feedback submitted successfully!');
             hideFeedbackPopup();
+
+            // Update button to "Edit Feedback" and store rating/message data attributes
+            let btn = document.querySelector('.open-feedback[data-order-id="' + orderId + '"]');
+            if (btn) {
+                btn.innerHTML = '<img class="orders-btn-icon" src="/image/homepage/feedback1.svg" alt="Feedback" /> Edit Feedback';
+                btn.dataset.rating = selectedRating;
+                btn.dataset.message = message;
+            }
         } catch (err) {
             console.error(err);
             alert('Error submitting feedback: ' + err.message);
         }
     });
 </script>
+
+
 
 
 
