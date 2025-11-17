@@ -493,6 +493,11 @@ namespace Domain.ViewModel
 
 
     }
+    public class QuizCategoryViewModel
+    {
+        public List<QuizCategory> CategoryList { get; set; } = new();
+        public QuizCategory NewCategory { get; set; } = new();
+    }
 
 
 }

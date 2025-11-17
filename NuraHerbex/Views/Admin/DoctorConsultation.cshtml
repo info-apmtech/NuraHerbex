@@ -31,15 +31,14 @@
                                 <th>Patient Name</th>
                                 <th>Email</th>
                                 <th>Phone</th>
-                                <th>Consultation Type</th>
+                                <th>Type</th>
                                 <th>Preferred Doctor</th>
                                 <th>Preferred Time</th>
                                 <th>Submitted At</th>
                                 <th>Preferred Date</th>
-
-                                @if (Model.UserRole == "Doctor")
+                                @if (Model.UserRole == "Doctor" || Model.UserRole == "Admin")
                                 {
-                                    <th style="min-width:180px;">Actions</th>
+                                    <th>Actions</th>
                                 }
                             </tr>
                         </thead>
@@ -47,7 +46,7 @@
                         <tbody>
                             @if (Model.Consultations.Any())
                             {
-                                var count = 1;
+                                int count = 1;
                                 foreach (var c in Model.Consultations)
                                 {
                                     <tr>
@@ -55,49 +54,33 @@
                                         <td>@c.Consultation.FirstName</td>
                                         <td>@c.Consultation.Email</td>
                                         <td>@c.Consultation.Phone</td>
-                                        <td>@c.Consultation.ConsultationType.ToString()</td>
+                                        <td>@c.Consultation.ConsultationType</td>
                                         <td>@(c.Doctor?.FullName ?? "Unknown")</td>
                                         <td>@c.Consultation.PreferredTimeSlot</td>
                                         <td>@c.Consultation.SubmittedAt.ToString("dd MMM yyyy HH:mm")</td>
                                         <td>@c.Consultation.PreferredDate.ToString("dd MMM yyyy")</td>
 
-                                        @if (Model.UserRole == "Doctor")
+                                        @if (Model.UserRole == "Doctor" || Model.UserRole == "Admin")
                                         {
                                             <td>
                                                 @if (c.Consultation.Status == ConsultationStatus.Pending)
                                                 {
-                                                    <!-- Accept -->
-                                                    <form asp-action="AcceptConsultation" method="post" class="d-flex align-items-center mb-1">
+                                                    <form asp-action="AcceptConsultation" method="post" class="d-flex mb-1">
                                                         @Html.AntiForgeryToken()
                                                         <input type="hidden" name="consultationId" value="@c.Consultation.Id" />
-
-                                                        <input type="url"
-                                                               name="meetingLink"
-                                                               placeholder="Meeting link"
-                                                               required
-                                                               class="form-control form-control-sm me-2"
-                                                               style="max-width: 220px;" />
-
-                                                        <button type="submit" class="btn btn-success btn-sm">
-                                                            Accept
-                                                        </button>
+                                                        <input type="url" name="meetingLink" class="form-control form-control-sm me-2" required placeholder="Meeting link" />
+                                                        <button type="submit" class="btn btn-success btn-sm">Accept</button>
                                                     </form>
 
-                                                    <!-- Reject -->
-                                                    <form asp-action="RejectConsultation"
-                                                          method="post">
+                                                    <form asp-action="RejectConsultation" method="post">
                                                         @Html.AntiForgeryToken()
                                                         <input type="hidden" name="consultationId" value="@c.Consultation.Id" />
-                                                        <button type="submit" class="btn btn-danger btn-sm w-100">
-                                                            Reject
-                                                        </button>
+                                                        <button type="submit" class="btn btn-danger btn-sm w-100">Reject</button>
                                                     </form>
                                                 }
                                                 else
                                                 {
-                                                    <span class="badge bg-info text-dark">
-                                                        @c.Consultation.Status.ToString()
-                                                    </span>
+                                                    <span class="badge bg-info text-dark">@c.Consultation.Status</span>
                                                 }
                                             </td>
                                         }
@@ -109,7 +92,8 @@
                             else
                             {
                                 <tr>
-                                    <td colspan="@(Model.UserRole == "Doctor" ? 10 : 9)" class="text-center">
+                                    <td colspan="@(Model.UserRole == "Doctor" || Model.UserRole == "Admin" ? 10 : 9)"
+                                        class="text-center">
                                         No consultations found.
                                     </td>
                                 </tr>
@@ -124,28 +108,3 @@
     </div>
 </div>
 
-<!-- ======================================
-      ACCEPT CONSULTATION MODAL 
-======================================= -->
-<div class="modal fade" id="acceptModal" tabindex="-1" aria-labelledby="acceptModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-
-            <div class="modal-header">
-                <h5 class="modal-title" id="acceptModalLabel">Accept Consultation</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-
-            <div class="modal-body">
-                <label class="form-label">Meeting Link</label>
-                <input type="url" id="meetingLinkInput" class="form-control" placeholder="Enter the meeting link" />
-            </div>
-
-            <div class="modal-footer">
-                <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button class="btn btn-primary" id="confirmAcceptBtn">Accept</button>
-            </div>
-
-        </div>
-    </div>
-</div>

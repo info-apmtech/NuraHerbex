@@ -961,6 +961,52 @@ namespace APIs.Controllers
 			var pin = await _adminservice.GetPincodeByCodeAsync(code);
 			return pin is null ? NotFound() : Ok(pin);
 		}
+        // ====================== QUIZ CATEGORY API ========================= //
 
-	}
+        [AllowAnonymous]
+        [HttpGet("quizcategory/{id}")]
+        public async Task<IActionResult> GetQuizCategory(int id)
+        {
+            var category = await _adminservice.GetQuizCategoryByIdAsync(id);
+            if (category == null)
+                return NotFound();
+
+            return Ok(category);
+        }
+
+        [AllowAnonymous]
+        [HttpGet("quizcategories")]
+        public async Task<IActionResult> GetQuizCategories()
+        {
+            var categories = await _adminservice.GetQuizCategoriesAsync();
+            return Ok(categories);
+        }
+
+        [AllowAnonymous]
+        [HttpPost("quizcategory")]
+        public async Task<IActionResult> AddOrUpdateQuizCategory([FromBody] QuizCategory category)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var result = await _adminservice.AddOrUpdateQuizCategoryAsync(category);
+
+            if (result.Succeeded)
+                return Ok(new { success = true, message = "Quiz category saved successfully" });
+
+            return BadRequest(result.Errors);
+        }
+
+        [AllowAnonymous]
+        [HttpDelete("quizcategory/{id}")]
+        public async Task<IActionResult> DeleteQuizCategory(int id)
+        {
+            var result = await _adminservice.DeleteQuizCategoryAsync(id);
+            if (result.Succeeded)
+                return Ok(new { success = true, message = "Quiz category deleted successfully" });
+
+            return BadRequest(result.Errors);
+        }
+
+    }
 }

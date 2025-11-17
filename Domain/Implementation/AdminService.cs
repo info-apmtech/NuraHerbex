@@ -1384,6 +1384,57 @@ namespace Domain.Implementation
 	   => await _db.Pincodes.AsNoTracking()
 			 .FirstOrDefaultAsync(p => p.Code == code);
 
+        // ====================== QUIZ CATEGORY ========================= //
+
+        public async Task<QuizCategory> GetQuizCategoryByIdAsync(int id)
+        {
+            return await _db.QuizCategories.FindAsync(id);
+        }
+
+        public async Task<List<QuizCategory>> GetQuizCategoriesAsync()
+        {
+            return await _db.QuizCategories
+                            .OrderByDescending(c => c.CreatedAt)
+                            .ToListAsync();
+        }
+
+        public async Task<IdentityResult> AddOrUpdateQuizCategoryAsync(QuizCategory category)
+        {
+            if (category == null)
+                return IdentityResult.Failed(new IdentityError { Description = "Category cannot be null" });
+
+            if (category.Id > 0)
+            {
+                var existing = await _db.QuizCategories.FindAsync(category.Id);
+                if (existing == null)
+                    return IdentityResult.Failed(new IdentityError { Description = "Category not found" });
+
+                existing.Name = category.Name;
+                existing.IsActive = category.IsActive;
+
+                _db.QuizCategories.Update(existing);
+            }
+            else
+            {
+                category.CreatedAt = DateTime.UtcNow;
+                await _db.QuizCategories.AddAsync(category);
+            }
+
+            await _db.SaveChangesAsync();
+            return IdentityResult.Success;
+        }
+
+        public async Task<IdentityResult> DeleteQuizCategoryAsync(int id)
+        {
+            var existing = await _db.QuizCategories.FindAsync(id);
+            if (existing == null)
+                return IdentityResult.Failed(new IdentityError { Description = "Category not found" });
+
+            _db.QuizCategories.Remove(existing);
+            await _db.SaveChangesAsync();
+
+            return IdentityResult.Success;
+        }
 
     }
 }

@@ -123,6 +123,7 @@ namespace Domain.Interface
         Task<IdentityResult> AddPaymentGatewayDetails(PaymentGatewayDetails payment);
         Task<List<PaymentGatewayDetails>> GetPaymentGatewayDetailsAsync();
 		Task<Pincode?> GetPincodeByCodeAsync(string code);
+
 		//order
 		Task<int> CreateAsync(Order order, List<OrderDetail> details);
         Task <OrderSummaryViewModel> GetOrderAsync(int orderId);
@@ -130,6 +131,13 @@ namespace Domain.Interface
         Task<bool> UpdateOrderStatusAsync(int orderId, OrderStatus newStatus);
         Task<List<OrderDetail>> GetOrderDetailsAsync(int orderId);
         Task<Order?> GetOrderByIdAsync(int orderId);
+
+        //QUIZ CATEGORY
+        Task<QuizCategory> GetQuizCategoryByIdAsync(int id);
+        Task<List<QuizCategory>> GetQuizCategoriesAsync();
+        Task<IdentityResult> AddOrUpdateQuizCategoryAsync(QuizCategory category);
+        Task<IdentityResult> DeleteQuizCategoryAsync(int id);
+
 
     }
 }
