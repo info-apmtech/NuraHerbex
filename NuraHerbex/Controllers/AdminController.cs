@@ -1190,7 +1190,12 @@ namespace NuraHerbex.Controllers
         }
 
         // Filtered Report
-        public async Task<IActionResult> AdminOrderReport(string? orderIdFilter, DateTime? startDate, DateTime? endDate, string? statusFilter)
+        public async Task<IActionResult> AdminOrderReport(
+            string? orderIdFilter,
+            DateTime? startDate,
+            DateTime? endDate,
+            string? statusFilter,
+            string? userNameFilter)
         {
             var jsonOptions = new JsonSerializerOptions
             {
@@ -1199,60 +1204,102 @@ namespace NuraHerbex.Controllers
             };
 
             var client = AuthorizedClient;
+
+            // Fetch orders
             var response = await client.GetAsync("AdminAPI/orders");
             if (!response.IsSuccessStatusCode)
                 return View(new OrderListViewModel());
 
             var orders = await response.Content.ReadFromJsonAsync<List<Order>>(jsonOptions) ?? new List<Order>();
 
+            // Fetch users
             var userResponse = await client.GetAsync("AdminAPI/users");
             var users = userResponse.IsSuccessStatusCode
                 ? await userResponse.Content.ReadFromJsonAsync<List<RegisterUser>>(jsonOptions)
                 : new List<RegisterUser>();
 
-            foreach (var order in orders)
-            {
-                if (!string.IsNullOrEmpty(order.UserId))
-                {
-                    var user = users.FirstOrDefault(u => string.Equals(u.Id?.Trim(), order.UserId.Trim(), StringComparison.OrdinalIgnoreCase));
-                    order.UserId = user?.FullName ?? "Unknown User";
-                }
-                else
-                {
-                    order.UserId = "Unknown User";
-                }
-            }
+            // Build UserId -> FullName map
+            var userMap = users
+                .Where(u => !string.IsNullOrEmpty(u.Id))
+                .ToDictionary(u => u.Id.Trim(), u => u.FullName ?? "Unknown User", StringComparer.OrdinalIgnoreCase);
 
-            // Filtering logic is as before
-            if (!string.IsNullOrEmpty(orderIdFilter) && int.TryParse(orderIdFilter, out int orderIdVal))
+            // Map orders to include UserName for filtering
+            var ordersWithUserName = orders.Select(o =>
             {
-                orders = orders.Where(o => o.Id == orderIdVal).ToList();
+                var userName = !string.IsNullOrEmpty(o.UserId) && userMap.ContainsKey(o.UserId.Trim())
+                    ? userMap[o.UserId.Trim()]
+                    : "Unknown User";
+
+                return new
+                {
+                    Order = o,
+                    UserName = userName
+                };
+            }).ToList();
+
+            bool filtersApplied =
+                !string.IsNullOrEmpty(orderIdFilter) ||
+                startDate.HasValue ||
+                endDate.HasValue ||
+                !string.IsNullOrEmpty(statusFilter) ||
+                !string.IsNullOrEmpty(userNameFilter);
+
+            // DEFAULT: last 7 days excluding Delivered and Cancelled
+            if (!filtersApplied)
+            {
+                DateTime lastWeek = DateTime.UtcNow.AddDays(-7);
+
+                ordersWithUserName = ordersWithUserName
+                    .Where(x => x.Order.OrderDate >= lastWeek &&
+                                x.Order.Status != OrderStatus.Delivered &&
+                                x.Order.Status != OrderStatus.Cancelled)
+                    .OrderByDescending(x => x.Order.OrderDate)
+                    .ToList();
             }
             else
             {
+                // Order ID filter
+                if (!string.IsNullOrEmpty(orderIdFilter) && int.TryParse(orderIdFilter, out int orderIdVal))
+                    ordersWithUserName = ordersWithUserName.Where(x => x.Order.Id == orderIdVal).ToList();
+
+                // Username filter
+                if (!string.IsNullOrEmpty(userNameFilter))
+                    ordersWithUserName = ordersWithUserName
+                        .Where(x => x.UserName.Contains(userNameFilter.Trim(), StringComparison.OrdinalIgnoreCase))
+                        .ToList();
+
+                // Date filters
                 if (startDate.HasValue)
-                    orders = orders.Where(o => o.OrderDate.Date >= startDate.Value.Date).ToList();
+                    ordersWithUserName = ordersWithUserName.Where(x => x.Order.OrderDate.Date >= startDate.Value.Date).ToList();
 
                 if (endDate.HasValue)
-                    orders = orders.Where(o => o.OrderDate.Date <= endDate.Value.Date).ToList();
+                    ordersWithUserName = ordersWithUserName.Where(x => x.Order.OrderDate.Date <= endDate.Value.Date).ToList();
 
-                if (!string.IsNullOrEmpty(statusFilter) && Enum.TryParse<OrderStatus>(statusFilter, out var statusEnum))
-                    orders = orders.Where(o => o.Status == statusEnum).ToList();
+                // Status filter
+                if (!string.IsNullOrEmpty(statusFilter) &&
+                    Enum.TryParse<OrderStatus>(statusFilter, out var statusEnum))
+                    ordersWithUserName = ordersWithUserName.Where(x => x.Order.Status == statusEnum).ToList();
             }
 
+            // Persist filter values
             ViewBag.OrderIdFilter = orderIdFilter;
             ViewBag.StartDate = startDate?.ToString("yyyy-MM-dd");
             ViewBag.EndDate = endDate?.ToString("yyyy-MM-dd");
             ViewBag.StatusFilter = statusFilter;
+            ViewBag.UserNameFilter = userNameFilter;
+            ViewBag.UserMap = userMap; // For display in table
 
             var vm = new OrderListViewModel
             {
-                Orders = orders,
+                Orders = ordersWithUserName.Select(x => x.Order).ToList(),
                 UserRole = "Admin"
             };
 
             return View(vm);
         }
+
+
+
 
 
         public async Task<IActionResult> AdminOrderDetails(int orderId)

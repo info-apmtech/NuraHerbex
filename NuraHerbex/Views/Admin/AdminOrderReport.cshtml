@@ -23,6 +23,12 @@
                 <input type="text" id="orderIdFilter" name="orderIdFilter" value="@ViewBag.OrderIdFilter" class="form-control" placeholder="Order ID" />
             </div>
 
+            <!-- USERNAME FILTER -->
+            <div class="col-md-3">
+                <label for="userNameFilter" class="form-label">User Name</label>
+                <input type="text" id="userNameFilter" name="userNameFilter" value="@ViewBag.UserNameFilter" class="form-control" placeholder="User Name" />
+            </div>
+
             <div class="col-md-3">
                 <label for="startDate" class="form-label">Start Date</label>
                 <input type="date" id="startDate" name="startDate" value="@ViewBag.StartDate" class="form-control" />
@@ -93,7 +99,13 @@
                                                 @order.Id
                                             </a>
                                         </td>
-                                        <td>@order.UserId</td>
+                                        <td>
+                                            @(ViewBag.UserMap != null &&
+                                                !string.IsNullOrEmpty(order.UserId) &&
+                                                ((Dictionary<string, string>)ViewBag.UserMap).ContainsKey(order.UserId)
+                                                ? ((Dictionary<string, string>)ViewBag.UserMap)[order.UserId]
+                                                : "Unknown User")
+                                        </td>
                                         <td>@order.OrderDate.ToLocalTime().ToString("dd MMM yyyy hh:mm tt")</td>
                                         <td>@order.Status</td>
                                         <td>@(order.Total.ToString("C", new System.Globalization.CultureInfo("hi-IN")))</td>
