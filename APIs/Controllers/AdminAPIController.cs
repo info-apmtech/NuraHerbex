@@ -951,6 +951,15 @@ namespace APIs.Controllers
             if (order == null) return NotFound();
             return Ok(order);
         }
+        [AllowAnonymous]
+        //[HttpGet("{orderId:int}")]
+        [HttpGet("orders/{orderId:int}")]
+        public async Task<IActionResult> GetOrder(int orderId)
+        {
+            var order = await _adminservice.GetOrderAsync(orderId);
+            if (order == null) return NotFound();
+            return Ok(order);
+        }
 
         [AllowAnonymous]
         //[HttpGet("{orderId:int}")]

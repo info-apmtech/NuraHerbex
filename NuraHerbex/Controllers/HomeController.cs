@@ -494,19 +494,27 @@ namespace NuraHerbex.Controllers
 
 				return new CartViewModel
 				{
-					Items = (from c in cartItems
-							 join p in products on c.ProductId equals p.Id into prodJoin
-							 from p in prodJoin.DefaultIfEmpty()
-							 select new CartItemViewModel
-							 {
-								 CartItemId = c.Id,
-								 ProductId = c.ProductId,
-								 ProductName = p?.ProductName ?? $"Product #{c.ProductId}",
-								 ProductImages = p?.ProductImages,
-								 Quantity = c.Quantity,
-								 UnitPrice = c.Price
-							 }).ToList()
-				};
+                    Items = cartItems
+        .GroupJoin(
+            products,
+            c => c.ProductId,
+            p => p.Id,
+            (c, prodJoin) => new { c, prodJoin }
+        )
+        .SelectMany(
+            x => x.prodJoin.DefaultIfEmpty(),
+            (x, p) => new CartItemViewModel
+            {
+                CartItemId = x.c.Id,
+                ProductId = x.c.ProductId,
+                ProductName = p?.ProductName ?? $"Product #{x.c.ProductId}",
+                ProductImages = p?.ProductImages,
+                Quantity = x.c.Quantity,
+                UnitPrice = x.c.Price
+            }
+        )
+        .ToList()
+                };
 			}
 			catch
 			{
@@ -1002,71 +1010,7 @@ namespace NuraHerbex.Controllers
         }
 
 
-        //[HttpGet("Home/Invoice/{orderId:int}")]
-        //public async Task<IActionResult> Invoice(int orderId)
-        //{
-        //    var response = await _httpClient.GetAsync($"AdminAPI/orders/{orderId}");
-        //    if (!response.IsSuccessStatusCode) return NotFound();
-
-        //    // 1) Read raw JSON (helps if you want to inspect it in logs)
-        //    var json = await response.Content.ReadAsStringAsync();
-        //    // Console.WriteLine(json); // optional for debugging
-
-        //    // 2) Deserialize into DTO where Status is string (no enum issues)
-        //    var dto = JsonSerializer.Deserialize<InvoiceOrderSummaryDto>(
-        //        json,
-        //        new JsonSerializerOptions
-        //        {
-        //            PropertyNameCaseInsensitive = true
-        //        });
-
-        //    if (dto == null || dto.Order == null)
-        //        return NotFound();
-
-        //    // 3) Map DTO -> your Domain.ViewModel.OrderSummaryViewModel
-        //    var order = new Order
-        //    {
-        //        Id = dto.Order.Id,
-        //        UserId = dto.Order.UserId,
-        //        AddressId = dto.Order.AddressId,
-        //        DoorNo = dto.Order.DoorNo,
-        //        PhoneNo = dto.Order.PhoneNo,
-        //        Address = dto.Order.Address,
-        //        State = dto.Order.State,
-        //        PinCode = dto.Order.PinCode,
-        //        Country = dto.Order.Country,
-        //        OrderDate = dto.Order.OrderDate,
-
-        //        // SAFE enum mapping: if parse fails, fall back to a default
-        //        Status = ParseOrderStatus(dto.Order.Status),
-
-        //        Subtotal = dto.Order.Subtotal,
-        //        Tax = dto.Order.Tax,
-        //        Shipping = dto.Order.Shipping,
-        //        TotalDiscount = dto.Order.TotalDiscount,
-        //        Total = dto.Order.Total
-        //    };
-
-        //    var details = dto.Details?.Select(d => new OrderDetail
-        //    {
-        //        Id = d.Id,
-        //        OrderId = d.OrderId,
-        //        ProductId = d.ProductId,
-        //        Quantity = d.Quantity,
-        //        UnitPrice = d.UnitPrice,
-        //        productName = d.productName
-        //    }).ToList() ?? new List<OrderDetail>();
-
-        //    var vm = new OrderSummaryViewModel
-        //    {
-        //        Order = order,
-        //        Details = details
-        //    };
-
-        //    return View(vm);
-        //}
-
-        // helper method in HomeController
+      
         private OrderStatus ParseOrderStatus(string status)
         {
             if (string.IsNullOrWhiteSpace(status))
@@ -1085,27 +1029,27 @@ namespace NuraHerbex.Controllers
         }
 
 
-        public async Task<IActionResult> Payment(int orderId)
-        {
-            var resp = await _httpClient.GetAsync($"AdminAPI/orders/{orderId}");
-            if (!resp.IsSuccessStatusCode) return NotFound();
+        //public async Task<IActionResult> Payment(int orderId)
+        //{
+        //    var resp = await _httpClient.GetAsync($"AdminAPI/orders/{orderId}");
+        //    if (!resp.IsSuccessStatusCode) return NotFound();
 
-            var order = await resp.Content.ReadFromJsonAsync<Order>();
-            if (order == null) return NotFound();
+        //    var order = await resp.Content.ReadFromJsonAsync<Order>();
+        //    if (order == null) return NotFound();
 
-            var amountRupees = order.Total;
-            var amountPaise = (int)Math.Round(amountRupees * 100, MidpointRounding.AwayFromZero);
+        //    var amountRupees = order.Total;
+        //    var amountPaise = (int)Math.Round(amountRupees * 100, MidpointRounding.AwayFromZero);
 
-            var vm = new PaymentViewModel
-            {
-                OrderId = order.Id,
-                CustomerId = order.UserId,   // ← your customerId
-                AmountRupees = amountRupees,
-                AmountPaise = amountPaise
-            };
+        //    var vm = new PaymentViewModel
+        //    {
+        //        OrderId = order.Id,
+        //        CustomerId = order.UserId,   // ← your customerId
+        //        AmountRupees = amountRupees,
+        //        AmountPaise = amountPaise
+        //    };
 
-            return View(vm);
-        }
+        //    return View(vm);
+        //}
         public async Task<IActionResult> MyConsultation()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -1783,9 +1727,6 @@ namespace NuraHerbex.Controllers
 			// -------------------------------------------------------
 			// BUILD ORDER PAYLOAD
 			// -------------------------------------------------------
-			// -------------------------------------------------------
-			// BUILD ORDER PAYLOAD (DTO FOR API)
-			// -------------------------------------------------------
 			var dto = new CreateOrderDto
 			{
 				UserId        = userId,
@@ -1832,7 +1773,7 @@ namespace NuraHerbex.Controllers
 			var result = await response.Content.ReadFromJsonAsync<Dictionary<string, int>>();
 			var orderId = result?["id"] ?? 0;
 
-			return RedirectToAction("Payment", "Home", new { orderId });
+			return RedirectToAction("invoice", "Home", new { orderId });
 		}
 
 
@@ -1882,5 +1823,26 @@ namespace NuraHerbex.Controllers
 			}
 		}
 
-	}
+        
+        // helper method in HomeController
+        private OrderStatus ParseOrderStatuss(string status)
+        {
+            if (string.IsNullOrWhiteSpace(status))
+                return OrderStatus.OrderPlaced; // or whatever default you want
+
+            // try enum name first (case-insensitive)
+            if (Enum.TryParse<OrderStatus>(status, ignoreCase: true, out var parsed))
+                return parsed;
+
+            // try if API sent number as string, like "1"
+            if (int.TryParse(status, out var number) && Enum.IsDefined(typeof(OrderStatus), number))
+                return (OrderStatus)number;
+
+            // final fallback
+            return OrderStatus.OrderPlaced;
+        }
+
+
+
+    }
 }
