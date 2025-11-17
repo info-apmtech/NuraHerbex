@@ -1824,55 +1824,56 @@ namespace NuraHerbex.Controllers
 			// -------------------------------------------------------
 			// BUILD ORDER PAYLOAD
 			// -------------------------------------------------------
-			var vm = new OrderSummaryViewModel
+			// -------------------------------------------------------
+			// BUILD ORDER PAYLOAD (DTO FOR API)
+			// -------------------------------------------------------
+			var dto = new CreateOrderDto
 			{
-				Order = new Order
+				UserId        = userId,
+				AddressId     = address.Id,
+				DoorNo        = address.DoorNo,
+				PhoneNo       = address.PhoneNumber,
+				Address       = string.Join(", ", new[]
 				{
-					UserId = userId,
-					AddressId = address.Id,
-					DoorNo = address.DoorNo,
-					PhoneNo = address.PhoneNumber,
-					Address = string.Join(", ", new[]
-					{
-				address.DoorNo,
-				address.Address,
-				address.Location
-			}.Where(x => !string.IsNullOrWhiteSpace(x))),
-					State = address.State,
-					PinCode = address.Pincode,
-					Country = address.Country,
-					OrderDate = DateTime.Now,
-					Status = OrderStatus.OrderPlaced,
-					Subtotal = subtotal,
-					Tax = tax,
-					Shipping = shipping,
-					TotalDiscount = discount,
-					Total = total
-				},
-				Details = items.Select(i => new OrderDetail
+		address.DoorNo,
+		address.Address,
+		address.Location
+	}.Where(x => !string.IsNullOrWhiteSpace(x))),
+				State         = address.State,
+				PinCode       = address.Pincode,
+				Country       = address.Country,
+				OrderDate     = DateTime.Now,
+				Status        = OrderStatus.OrderPlaced,
+				Subtotal      = subtotal,
+				Tax           = tax,
+				Shipping      = shipping,
+				TotalDiscount = discount,
+				Total         = total,
+				Details = items.Select(i => new CreateOrderDetailDto
 				{
 					ProductId = i.ProductId,
-					Quantity = i.Quantity,
+					Quantity  = i.Quantity,
 					UnitPrice = i.UnitPrice
 				}).ToList()
 			};
 
 			// -------------------------------------------------------
-			// SAVE ORDER (Order + OrderDetails)
+			// SAVE ORDER (Order + OrderDetails) via AdminAPI
 			// -------------------------------------------------------
-			var response = await _httpClient.PostAsJsonAsync("AdminAPI/orders", vm);
+			var response = await _httpClient.PostAsJsonAsync("AdminAPI/orders", dto);
 
 			if (!response.IsSuccessStatusCode)
 			{
 				var body = await response.Content.ReadAsStringAsync();
 				ModelState.AddModelError("", $"Order creation failed: {body}");
+				// Better to re-show summary instead of redirect blindly:
 				return await OrderSummary(input.SelectedAddressId);
 			}
 
 			var result = await response.Content.ReadFromJsonAsync<Dictionary<string, int>>();
 			var orderId = result?["id"] ?? 0;
 
-			return RedirectToAction("Home", "Payment", new { orderId });
+			return RedirectToAction("Payment", "Home", new { orderId });
 		}
 
 
