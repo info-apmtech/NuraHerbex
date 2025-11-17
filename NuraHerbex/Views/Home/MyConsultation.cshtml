@@ -46,9 +46,9 @@
                         <div class="buttons">
                             @if (status == "upcoming" && item.Consultation.Status == ConsultationStatus.Accepted && !string.IsNullOrEmpty(item.Consultation.MeetingLink))
                             {
-                                <button class="join-btn" onclick="window.open('@item.Consultation.MeetingLink', '_blank')">
+                                <a class="join-btn" href="@item.Consultation.MeetingLink" target="_blank">
                                     <img src="~/image/consultation/videocam.png" /> Join Session
-                                </button>
+                                </a>
                             }
                             else if (status == "upcoming")
                             {
