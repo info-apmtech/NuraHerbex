@@ -612,59 +612,7 @@ namespace NuraHerbex.Controllers
 		{
 			return View();
 		}
-        //public async Task<IActionResult> TrackOrder()
-        //{
-        //    var client = _httpClient;
-
-        //    var response = await client.GetAsync("AdminAPI/orders");
-        //    if (!response.IsSuccessStatusCode)
-        //        return View(new TrackOrderViewModel());
-
-        //    var jsonOptions = new JsonSerializerOptions
-        //    {
-        //        PropertyNameCaseInsensitive = true,
-        //        Converters = { new JsonStringEnumConverter() }
-        //    };
-
-        //    var orders = await response.Content.ReadFromJsonAsync<List<Order>>(jsonOptions);
-        //    var order = orders?.OrderByDescending(o => o.OrderDate).FirstOrDefault();
-        //    var orderDetails = new List<OrderDetail>();
-        //    var products = new List<Product>();
-
-        //    if (order != null)
-        //    {
-        //        var detailsResponse = await client.GetAsync($"AdminAPI/orderdetails?orderId={order.Id}");
-        //        if (detailsResponse.IsSuccessStatusCode)
-        //        {
-        //            orderDetails = await detailsResponse.Content.ReadFromJsonAsync<List<OrderDetail>>(jsonOptions) ?? new List<OrderDetail>();
-
-        //            // Fetch product info for each order detail
-        //            foreach (var detail in orderDetails)
-        //            {
-        //                if (detail.ProductId.HasValue)
-        //                {
-        //                    var prodResponse = await client.GetAsync($"AdminAPI/product/{detail.ProductId.Value}");
-        //                    if (prodResponse.IsSuccessStatusCode)
-        //                    {
-        //                        var product = await prodResponse.Content.ReadFromJsonAsync<Product>(jsonOptions);
-        //                        if (product != null)
-        //                            products.Add(product);
-        //                    }
-        //                }
-        //            }
-        //        }
-        //    }
-
-        //    var model = new TrackOrderViewModel
-        //    {
-        //        Order = order,
-        //        OrderDetails = orderDetails,
-        //        Products = products,
-        //        UserRole = User.FindFirstValue(ClaimTypes.Role) ?? "User"
-        //    };
-
-        //    return View(model);
-        //}
+        
         public async Task<IActionResult> TrackOrder(int? orderId)
         {
             if (!orderId.HasValue)
@@ -727,16 +675,6 @@ namespace NuraHerbex.Controllers
             return View(model);
         }
 
-        //public IActionResult MyOrders()
-        //{
-        //    var vm = new MyOrdersViewModel
-        //    {
-        //        OrderId = 1, // or latest order id
-        //        CustomerId = "304e12ef-050d-4bb2-8b3e-958a67a69850",
-        //        // ... other fields
-        //    };
-        //    return View(vm);
-        //}
         public async Task<IActionResult> MyOrders()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -757,7 +695,7 @@ namespace NuraHerbex.Controllers
             if (orderResponse.IsSuccessStatusCode)
                 orders = await orderResponse.Content.ReadFromJsonAsync<List<Order>>(jsonOptions);
 
-            // Fetch all order details for the user
+            // Fetch order details
             var orderDetailsResponse = await _httpClient.GetAsync($"AdminAPI/orderdetails/user/{userId}");
             var orderDetails = orderDetailsResponse.IsSuccessStatusCode
                 ? await orderDetailsResponse.Content.ReadFromJsonAsync<List<OrderDetail>>(jsonOptions)
@@ -769,6 +707,24 @@ namespace NuraHerbex.Controllers
                 ? await productResponse.Content.ReadFromJsonAsync<List<Product>>(jsonOptions)
                 : new List<Product>();
 
+            // Fetch all feedbacks 
+            var feedbackResponse = await _httpClient.GetAsync("AdminAPI/feedbacks");
+            List<FeedbackViewModel> feedbacks = new();
+            if (feedbackResponse.IsSuccessStatusCode)
+                feedbacks = await feedbackResponse.Content.ReadFromJsonAsync<List<FeedbackViewModel>>(jsonOptions);
+
+            // Normalize userId for comparison
+            var normalizedUserId = userId.Trim().ToLowerInvariant();
+
+            // Filter feedbacks by user (case-insensitive)
+            var userFeedbacks = feedbacks
+                .Where(f => !string.IsNullOrWhiteSpace(f.CustomerID)
+                            && f.CustomerID.Trim().ToLowerInvariant() == normalizedUserId)
+                .ToList();
+
+            // Build dictionary keyed by OrderID
+            var feedbackByOrder = userFeedbacks.ToDictionary(f => f.OrderID, f => f);
+
             var model = new OrderListViewModel
             {
                 UserRole = "User",
@@ -778,8 +734,29 @@ namespace NuraHerbex.Controllers
             ViewBag.OrderDetails = orderDetails;
             ViewBag.Products = products;
             ViewBag.UserId = userId;
+            ViewBag.FeedbackByOrder = feedbackByOrder;
 
             return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SubmitFeedback([FromBody] SubmitFeedbackRequest req, CancellationToken ct)
+        {
+            if (req is null) return BadRequest("Invalid payload.");
+            if (req.Rating < 1 || req.Rating > 5) return BadRequest("Rating must be 1..5.");
+
+            if (req.OrderId <= 0) req.OrderId = 1; // fallback so API doesn’t get 0
+
+            var apiRes = await _httpClient.PostAsJsonAsync("AdminAPI/submitfeedback", req, ct);
+            var payload = await apiRes.Content.ReadAsStringAsync(ct);
+
+            return new ContentResult
+            {
+                Content = payload,
+                ContentType = "application/json",
+                StatusCode = (int)apiRes.StatusCode
+            };
         }
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -818,26 +795,8 @@ namespace NuraHerbex.Controllers
             return RedirectToAction("MyOrders");
         }
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> SubmitFeedback([FromBody] SubmitFeedbackRequest req, CancellationToken ct)
-        {
-            if (req is null) return BadRequest("Invalid payload.");
-            if (req.Rating < 1 || req.Rating > 5) return BadRequest("Rating must be 1..5.");
-
-			if (req.OrderId <= 0) req.OrderId = 1; // fallback so API doesn’t get 0
-
-			var apiRes = await _httpClient.PostAsJsonAsync("AdminAPI/submitfeedback", req, ct);
-			var payload = await apiRes.Content.ReadAsStringAsync(ct);
-
-			return new ContentResult
-			{
-				Content = payload,
-				ContentType = "application/json",
-				StatusCode = (int)apiRes.StatusCode
-			};
-		}
-		public IActionResult MyReturns()
+   
+        public IActionResult MyReturns()
 		{
 			return View();
 		}

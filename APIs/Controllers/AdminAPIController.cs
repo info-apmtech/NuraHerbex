@@ -775,6 +775,18 @@ namespace APIs.Controllers
             var feedbacks = await _adminservice.GetAllFeedbacksAsync(ct);
             return Ok(feedbacks);
         }
+        [AllowAnonymous]
+        [HttpGet("feedbacks/user/{userId}")]
+        public async Task<IActionResult> GetFeedbacksByUser(string userId, CancellationToken ct)
+        {
+            var allFeedbacks = await _adminservice.GetAllFeedbacksAsync(ct);
+
+            var userFeedbacks = allFeedbacks
+                .Where(f => string.Equals(f.CustomerID, userId, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+
+            return Ok(userFeedbacks);
+        }
 
         [AllowAnonymous]
         [IgnoreAntiforgeryToken]
@@ -942,8 +954,8 @@ namespace APIs.Controllers
 
         [AllowAnonymous]
         //[HttpGet("{orderId:int}")]
-        [HttpGet("orders/{orderId:int}")]
-        public async Task<IActionResult> GetOrder(int orderId)
+        [HttpGet("orders/full/{orderId:int}")]
+        public async Task<IActionResult> GetOrderWithDetails(int orderId)
         {
             var order = await _adminservice.GetOrderAsync(orderId);
             if (order == null) return NotFound();

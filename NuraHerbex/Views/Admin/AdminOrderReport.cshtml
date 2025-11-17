@@ -2,17 +2,53 @@
 @using Domain.Models
 
 @{
-    ViewData["Title"] = "Order Status Management";
+    ViewData["Title"] = "Order Report";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
 }
 
 <div class="pcoded-main-container">
     <div class="pcoded-content">
+
         <div class="row heading-bg mb-3">
             <div class="col-12">
-                <h4>Update Order Status</h4>
+                <h4>Order Report</h4>
             </div>
         </div>
+
+        <!-- Filter Form -->
+        <form asp-action="AdminOrderReport" method="get" class="row g-3 mb-4">
+
+            <div class="col-md-2">
+                <label for="orderIdFilter" class="form-label">Order ID</label>
+                <input type="text" id="orderIdFilter" name="orderIdFilter" value="@ViewBag.OrderIdFilter" class="form-control" placeholder="Order ID" />
+            </div>
+
+            <div class="col-md-3">
+                <label for="startDate" class="form-label">Start Date</label>
+                <input type="date" id="startDate" name="startDate" value="@ViewBag.StartDate" class="form-control" />
+            </div>
+
+            <div class="col-md-3">
+                <label for="endDate" class="form-label">End Date</label>
+                <input type="date" id="endDate" name="endDate" value="@ViewBag.EndDate" class="form-control" />
+            </div>
+
+            <div class="col-md-2">
+                <label for="statusFilter" class="form-label">Order Status</label>
+                <select id="statusFilter" name="statusFilter" class="form-control">
+                    <option value="">All</option>
+                    @foreach (OrderStatus s in Enum.GetValues(typeof(OrderStatus)))
+                    {
+                        <option value="@s" selected="@(ViewBag.StatusFilter == s.ToString())">@s</option>
+                    }
+                </select>
+            </div>
+
+            <div class="col-md-2 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary me-2">Filter</button>
+                <a class="btn btn-secondary" href="@Url.Action("AdminOrderReport", "Admin")">Clear</a>
+            </div>
+        </form>
 
         @if (ViewBag.Error != null)
         {
@@ -29,7 +65,7 @@
 
         <div class="card shadow-sm">
             <div class="card-header bg-white border-bottom-0">
-                <h5 class="mb-0">Orders Status List</h5>
+                <h5 class="mb-0">Filtered Orders</h5>
             </div>
             <div class="card-body p-3">
                 <div class="table-responsive">
@@ -41,7 +77,7 @@
                                 <th>User Name</th>
                                 <th>Order Date</th>
                                 <th>Status</th>
-                                <th style="min-width: 220px;">Change Status</th>
+                                <th>Total</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -60,22 +96,7 @@
                                         <td>@order.UserId</td>
                                         <td>@order.OrderDate.ToLocalTime().ToString("dd MMM yyyy hh:mm tt")</td>
                                         <td>@order.Status</td>
-                                        <td>
-                                            <form asp-action="UpdateOrderStatus" method="post" class="d-flex align-items-center">
-                                                @Html.AntiForgeryToken()
-                                                <input type="hidden" name="orderId" value="@order.Id" />
-                                                <select name="status" class="form-control form-control-sm me-2">
-                                                    @foreach (OrderStatus s in Enum.GetValues(typeof(OrderStatus)))
-                                                    {
-                                                        if (s != OrderStatus.Cancelled)
-                                                        {
-                                                            <option value="@s" selected="@(order.Status == s ? "selected" : null)">@s</option>
-                                                        }
-                                                    }
-                                                </select>
-                                                <button type="submit" class="btn btn-primary btn-sm">Update</button>
-                                            </form>
-                                        </td>
+                                        <td>@(order.Total.ToString("C", new System.Globalization.CultureInfo("hi-IN")))</td>
                                     </tr>
                                     index++;
                                 }

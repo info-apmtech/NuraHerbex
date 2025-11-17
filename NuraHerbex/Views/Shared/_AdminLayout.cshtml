@@ -167,6 +167,12 @@
                                 <span class="pcoded-mtext">Order Status</span>
                             </a>
                         </li>
+                        <li class="nav-item">
+                            <a href="@Url.Action("AdminOrderReport", "Admin")" class="nav-link">
+                                <span class="pcoded-micon"><i class="feather icon-refresh-ccw"></i></span>
+                                <span class="pcoded-mtext">Order Report</span>
+                            </a>
+                        </li>
                     }
                     else if (User.IsInRole("Doctor"))
                     {

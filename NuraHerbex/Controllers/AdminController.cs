@@ -1171,6 +1171,7 @@ namespace NuraHerbex.Controllers
 
             return View(vm);
         }
+        // Order Status Update Only
         public async Task<IActionResult> AdminOrderStatus()
         {
             var jsonOptions = new JsonSerializerOptions
@@ -1180,33 +1181,30 @@ namespace NuraHerbex.Controllers
             };
 
             var client = AuthorizedClient;
-
-            // 1. Get all orders from your API
             var response = await client.GetAsync("AdminAPI/orders");
             if (!response.IsSuccessStatusCode)
-            {
-                ViewBag.Error = "Unable to load orders.";
                 return View(new OrderListViewModel());
-            }
 
             var orders = await response.Content.ReadFromJsonAsync<List<Order>>(jsonOptions) ?? new List<Order>();
 
-            // 2. Get all users from your API (so we can map UserId to FullName)
-            var userResponse = await client.GetAsync("AdminAPI/users"); 
-            var users = new List<RegisterUser>();
-            if (userResponse.IsSuccessStatusCode)
-            {
-                users = await userResponse.Content.ReadFromJsonAsync<List<RegisterUser>>(jsonOptions);
-            }
+            var userResponse = await client.GetAsync("AdminAPI/users");
+            var users = userResponse.IsSuccessStatusCode
+                ? await userResponse.Content.ReadFromJsonAsync<List<RegisterUser>>(jsonOptions)
+                : new List<RegisterUser>();
 
-            // 3. Map UserId to FullName
             foreach (var order in orders)
             {
-                var user = users.FirstOrDefault(u => u.Id.Trim() == order.UserId.Trim());
-                order.UserId = user?.FullName ?? "Unknown User"; 
+                if (!string.IsNullOrEmpty(order.UserId))
+                {
+                    var user = users.FirstOrDefault(u => string.Equals(u.Id?.Trim(), order.UserId.Trim(), StringComparison.OrdinalIgnoreCase));
+                    order.UserId = user?.FullName ?? "Unknown User";
+                }
+                else
+                {
+                    order.UserId = "Unknown User";
+                }
             }
 
-            // 4. Build ViewModel
             var vm = new OrderListViewModel
             {
                 Orders = orders,
@@ -1216,10 +1214,139 @@ namespace NuraHerbex.Controllers
             return View(vm);
         }
 
+        // Filtered Report
+        public async Task<IActionResult> AdminOrderReport(string? orderIdFilter, DateTime? startDate, DateTime? endDate, string? statusFilter)
+        {
+            var jsonOptions = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true,
+                Converters = { new JsonStringEnumConverter() }
+            };
+
+            var client = AuthorizedClient;
+            var response = await client.GetAsync("AdminAPI/orders");
+            if (!response.IsSuccessStatusCode)
+                return View(new OrderListViewModel());
+
+            var orders = await response.Content.ReadFromJsonAsync<List<Order>>(jsonOptions) ?? new List<Order>();
+
+            var userResponse = await client.GetAsync("AdminAPI/users");
+            var users = userResponse.IsSuccessStatusCode
+                ? await userResponse.Content.ReadFromJsonAsync<List<RegisterUser>>(jsonOptions)
+                : new List<RegisterUser>();
+
+            foreach (var order in orders)
+            {
+                if (!string.IsNullOrEmpty(order.UserId))
+                {
+                    var user = users.FirstOrDefault(u => string.Equals(u.Id?.Trim(), order.UserId.Trim(), StringComparison.OrdinalIgnoreCase));
+                    order.UserId = user?.FullName ?? "Unknown User";
+                }
+                else
+                {
+                    order.UserId = "Unknown User";
+                }
+            }
+
+            // Filtering logic is as before
+            if (!string.IsNullOrEmpty(orderIdFilter) && int.TryParse(orderIdFilter, out int orderIdVal))
+            {
+                orders = orders.Where(o => o.Id == orderIdVal).ToList();
+            }
+            else
+            {
+                if (startDate.HasValue)
+                    orders = orders.Where(o => o.OrderDate.Date >= startDate.Value.Date).ToList();
+
+                if (endDate.HasValue)
+                    orders = orders.Where(o => o.OrderDate.Date <= endDate.Value.Date).ToList();
+
+                if (!string.IsNullOrEmpty(statusFilter) && Enum.TryParse<OrderStatus>(statusFilter, out var statusEnum))
+                    orders = orders.Where(o => o.Status == statusEnum).ToList();
+            }
+
+            ViewBag.OrderIdFilter = orderIdFilter;
+            ViewBag.StartDate = startDate?.ToString("yyyy-MM-dd");
+            ViewBag.EndDate = endDate?.ToString("yyyy-MM-dd");
+            ViewBag.StatusFilter = statusFilter;
+
+            var vm = new OrderListViewModel
+            {
+                Orders = orders,
+                UserRole = "Admin"
+            };
+
+            return View(vm);
+        }
+
+
+        public async Task<IActionResult> AdminOrderDetails(int orderId)
+        {
+            var jsonOptions = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true,
+                Converters = { new JsonStringEnumConverter() }
+            };
+
+            var client = AuthorizedClient;
+
+            var orderResponse = await client.GetAsync($"AdminAPI/orders/full/{orderId}");
+            if (!orderResponse.IsSuccessStatusCode)
+            {
+                ViewBag.Error = "Unable to load order.";
+                return View(null);
+            }
+
+            var orderSummary = await orderResponse.Content.ReadFromJsonAsync<OrderSummaryViewModel>(jsonOptions);
+            if (orderSummary == null || orderSummary.Order == null)
+            {
+                ViewBag.Error = "Order not found.";
+                return View(null);
+            }
+
+            var order = orderSummary.Order;
+            var orderDetails = orderSummary.Details ?? new List<OrderDetail>();
+
+            var userResponse = await client.GetAsync("AdminAPI/users");
+            if (userResponse.IsSuccessStatusCode)
+            {
+                var users = await userResponse.Content.ReadFromJsonAsync<List<RegisterUser>>(jsonOptions);
+                if (!string.IsNullOrEmpty(order.UserId))
+                {
+                    var user = users.FirstOrDefault(u => string.Equals(u.Id?.Trim(), order.UserId.Trim(), StringComparison.OrdinalIgnoreCase));
+                    order.UserId = user?.FullName ?? "Unknown User";
+                }
+                else
+                {
+                    order.UserId = "Unknown User";
+                }
+            }
+
+            var productsResponse = await client.GetAsync("AdminAPI/products");
+            List<Product> products = new List<Product>();
+            if (productsResponse.IsSuccessStatusCode)
+            {
+                products = await productsResponse.Content.ReadFromJsonAsync<List<Product>>(jsonOptions);
+            }
+
+            foreach (var detail in orderDetails)
+            {
+                var product = products.FirstOrDefault(p => p.Id == detail.ProductId);
+                detail.productName = product?.ProductName ?? "Product not found";
+            }
+
+            var vm = new TrackOrderViewModel
+            {
+                Order = order,
+                OrderDetails = orderDetails
+            };
+
+            return View(vm);
+        }
+
         [HttpPost]
         public async Task<IActionResult> UpdateOrderStatus(int orderId, OrderStatus status)
         {
-
             var response = await AuthorizedClient.PostAsJsonAsync("AdminAPI/updateStatus", new
             {
                 OrderId = orderId,
@@ -1233,5 +1360,6 @@ namespace NuraHerbex.Controllers
 
             return RedirectToAction(nameof(AdminOrderStatus));
         }
+
     }
 }

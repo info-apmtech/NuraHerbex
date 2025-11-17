@@ -348,6 +348,7 @@ namespace Domain.ViewModel
     {
         public int Id { get; set; }
         public int OrderID { get; set; }
+        public string CustomerID { get; set; }
         public string CustomerName { get; set; } = "Anonymous"; 
         public int RatingCount { get; set; }
         public string Message { get; set; } = string.Empty;

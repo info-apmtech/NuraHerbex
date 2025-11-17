@@ -1291,7 +1291,9 @@ namespace Domain.Implementation
 		}
         public async Task<List<Order>> GetAllOrdersAsync()
         {
-            return await _db.Orders.ToListAsync();
+            return await _db.Orders
+                .Include(o => o.OrderDetails)
+                .ToListAsync();
         }
 
         public async Task<bool> UpdateOrderStatusAsync(int orderId, OrderStatus newStatus)
@@ -1315,21 +1317,11 @@ namespace Domain.Implementation
             return await _db.Orders
                             .FirstOrDefaultAsync(o => o.Id == orderId);
         }
-
-        //Payment
-        public async Task<List<PaymentGatewayDetails>> GetPaymentGatewayDetailsAsync()
-        {
-            return await _db.PaymentGatewayDetails.OrderByDescending(p => p.Id).ToListAsync();
-        }
-		public async Task<Pincode?> GetPincodeByCodeAsync(string code)
-	   => await _db.Pincodes.AsNoTracking()
-			 .FirstOrDefaultAsync(p => p.Code == code);
-
         public async Task<OrderSummaryViewModel?> GetOrderAsync(int orderId)
         {
-				var order = await _db.Orders
-                .Include(o => o.OrderDetails)
-                .FirstOrDefaultAsync(o => o.Id == orderId);
+            var order = await _db.Orders
+            .Include(o => o.OrderDetails)
+            .FirstOrDefaultAsync(o => o.Id == orderId);
 
             if (order == null)
                 return null;
@@ -1402,6 +1394,16 @@ namespace Domain.Implementation
                 TotalOrders = totalOrders
             };
         }
+
+        //Payment
+        public async Task<List<PaymentGatewayDetails>> GetPaymentGatewayDetailsAsync()
+        {
+            return await _db.PaymentGatewayDetails.OrderByDescending(p => p.Id).ToListAsync();
+        }
+		public async Task<Pincode?> GetPincodeByCodeAsync(string code)
+	   => await _db.Pincodes.AsNoTracking()
+			 .FirstOrDefaultAsync(p => p.Code == code);
+
 
     }
 }
