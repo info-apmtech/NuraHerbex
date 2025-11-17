@@ -35,14 +35,39 @@ namespace NuraHerbex.Controllers
         }
         private System.Net.Http.HttpClient AuthorizedClient => _httpClientFactory.CreateAuthorizedClient(_httpContextAccessor);
         //private string GetUserId() => _httpContextAccessor.GetUserId(_tokenService);
-        public IActionResult Index()
-		{
-			return View();
-		}
-		//public IActionResult UserCreation()
-		//{
-		//	return View();
-		//}
+        [HttpGet]
+        public async Task<IActionResult> Index(CancellationToken ct)
+        {
+            // Call your Admin API – adjust URL to match your route
+            var response = await AuthorizedClient.GetAsync("AdminAPI/dashboard-stats", ct);
+
+            DashboardStatsDto stats;
+
+            if (response.IsSuccessStatusCode)
+            {
+                var json = await response.Content.ReadAsStringAsync(ct);
+                stats = JsonConvert.DeserializeObject<DashboardStatsDto>(json);
+            }
+            else
+            {
+                // Fallback if API fails
+                stats = new DashboardStatsDto();
+            }
+
+            var vm = new DashboardViewModel
+            {
+                TotalCustomers = stats.TotalCustomers,
+                TotalDoctors = stats.TotalDoctors,
+                TotalOrders = stats.TotalOrders
+            };
+
+            return View(vm);
+        }
+
+        //public IActionResult UserCreation()
+        //{
+        //	return View();
+        //}
         //Blog
         [HttpGet]
         public async Task<IActionResult> AdminBlog(int id = 0)

@@ -1382,6 +1382,26 @@ namespace Domain.Implementation
 
             return vm;
         }
+        public async Task<int> GetUserCountByRoleAsync(UserRole role)
+        {
+            return await _usermanager.Users
+                .Where(u => u.Role == role)
+                .CountAsync();
+        }
+        public async Task<DashboardStatsDto> GetDashboardStatsAsync()
+        {
+            var customers = await GetUserCountByRoleAsync(UserRole.Customer);
+            var doctors = await GetUserCountByRoleAsync(UserRole.Doctor);
+
+            var totalOrders = await _db.Orders.CountAsync(); // adjust DbSet name
+
+            return new DashboardStatsDto
+            {
+                TotalCustomers = customers,
+                TotalDoctors = doctors,
+                TotalOrders = totalOrders
+            };
+        }
 
     }
 }

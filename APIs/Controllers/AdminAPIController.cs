@@ -949,6 +949,11 @@ namespace APIs.Controllers
 			var pin = await _adminservice.GetPincodeByCodeAsync(code);
 			return pin is null ? NotFound() : Ok(pin);
 		}
-
-	}
+        [HttpGet("dashboard-stats")]
+        public async Task<ActionResult<DashboardStatsDto>> GetDashboardStats()
+        {
+            var stats = await _adminservice.GetDashboardStatsAsync();
+            return Ok(stats);
+        }
+    }
 }

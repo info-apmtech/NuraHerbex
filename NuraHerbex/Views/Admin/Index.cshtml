@@ -1,10 +1,62 @@
-﻿
+﻿@using Domain.ViewModel
+@model DashboardViewModel
 @{
-    ViewData["Title"] = "Dashboard";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
-}
+    ViewData["Title"] = "Dashboard";
 
+}
 <div class="pcoded-main-container">
     <div class="pcoded-content">
-</div>
+
+        <!-- Page Header -->
+        <div class="row heading-bg mb-3">
+            <div class="col-12">
+                <h4>Dashboard</h4>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12 col-xl-4">
+                <div class="card flat-card widget-primary-card">
+                    <div class="row-table">
+                        <div class="col-sm-3 card-body">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="col-sm-9">
+                            <h4>@Model.TotalCustomers</h4>
+                            <h6>Customer</h6>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-12 col-xl-4">
+                <div class="card flat-card widget-purple-card">
+                    <div class="row-table">
+                        <div class="col-sm-3 card-body">
+                            <i class="fas fa-user-md"></i>
+                        </div>
+                        <div class="col-sm-9">
+                            <h4>@Model.TotalDoctors</h4>
+                            <h6>Doctor</h6>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-12 col-xl-4">
+                <div class="card flat-card widget-purple-card">
+                    <div class="row-table">
+                        <div class="col-sm-3 card-body">
+                            <i class="fas fa-file-invoice"></i>
+                        </div>
+                        <div class="col-sm-9">
+                            <h4>@Model.TotalOrders</h4>
+                            <h6>Order</h6>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>

@@ -130,6 +130,7 @@ namespace Domain.Interface
         Task<bool> UpdateOrderStatusAsync(int orderId, OrderStatus newStatus);
         Task<List<OrderDetail>> GetOrderDetailsAsync(int orderId);
         Task<Order?> GetOrderByIdAsync(int orderId);
-
+        Task<DashboardStatsDto> GetDashboardStatsAsync();
+        Task<int> GetUserCountByRoleAsync(UserRole role);
     }
 }

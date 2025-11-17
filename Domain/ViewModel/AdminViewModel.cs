@@ -493,6 +493,18 @@ namespace Domain.ViewModel
 
     }
 
+    public class DashboardStatsDto
+    {
+        public int TotalCustomers { get; set; }
+        public int TotalDoctors { get; set; }
+        public int TotalOrders { get; set; }
+    }
+    public class DashboardViewModel
+    {
+        public int TotalCustomers { get; set; }
+        public int TotalDoctors { get; set; }
+        public int TotalOrders { get; set; }
+    }
 
 }
 
