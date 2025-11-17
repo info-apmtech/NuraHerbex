@@ -1146,7 +1146,8 @@ namespace NuraHerbex.Controllers
 
             return View(vm);
         }
-        public async Task<IActionResult> AdminOrderStatus(string? orderIdFilter, DateTime? startDate, DateTime? endDate, string? statusFilter)
+        // Order Status Update Only
+        public async Task<IActionResult> AdminOrderStatus()
         {
             var jsonOptions = new JsonSerializerOptions
             {
@@ -1155,22 +1156,16 @@ namespace NuraHerbex.Controllers
             };
 
             var client = AuthorizedClient;
-
             var response = await client.GetAsync("AdminAPI/orders");
             if (!response.IsSuccessStatusCode)
-            {
-                ViewBag.Error = "Unable to load orders.";
                 return View(new OrderListViewModel());
-            }
 
             var orders = await response.Content.ReadFromJsonAsync<List<Order>>(jsonOptions) ?? new List<Order>();
 
             var userResponse = await client.GetAsync("AdminAPI/users");
-            var users = new List<RegisterUser>();
-            if (userResponse.IsSuccessStatusCode)
-            {
-                users = await userResponse.Content.ReadFromJsonAsync<List<RegisterUser>>(jsonOptions);
-            }
+            var users = userResponse.IsSuccessStatusCode
+                ? await userResponse.Content.ReadFromJsonAsync<List<RegisterUser>>(jsonOptions)
+                : new List<RegisterUser>();
 
             foreach (var order in orders)
             {
@@ -1185,29 +1180,64 @@ namespace NuraHerbex.Controllers
                 }
             }
 
-            // If orderIdFilter is supplied, show only that order if it exists
+            var vm = new OrderListViewModel
+            {
+                Orders = orders,
+                UserRole = "Admin"
+            };
+
+            return View(vm);
+        }
+
+        // Filtered Report
+        public async Task<IActionResult> AdminOrderReport(string? orderIdFilter, DateTime? startDate, DateTime? endDate, string? statusFilter)
+        {
+            var jsonOptions = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true,
+                Converters = { new JsonStringEnumConverter() }
+            };
+
+            var client = AuthorizedClient;
+            var response = await client.GetAsync("AdminAPI/orders");
+            if (!response.IsSuccessStatusCode)
+                return View(new OrderListViewModel());
+
+            var orders = await response.Content.ReadFromJsonAsync<List<Order>>(jsonOptions) ?? new List<Order>();
+
+            var userResponse = await client.GetAsync("AdminAPI/users");
+            var users = userResponse.IsSuccessStatusCode
+                ? await userResponse.Content.ReadFromJsonAsync<List<RegisterUser>>(jsonOptions)
+                : new List<RegisterUser>();
+
+            foreach (var order in orders)
+            {
+                if (!string.IsNullOrEmpty(order.UserId))
+                {
+                    var user = users.FirstOrDefault(u => string.Equals(u.Id?.Trim(), order.UserId.Trim(), StringComparison.OrdinalIgnoreCase));
+                    order.UserId = user?.FullName ?? "Unknown User";
+                }
+                else
+                {
+                    order.UserId = "Unknown User";
+                }
+            }
+
+            // Filtering logic is as before
             if (!string.IsNullOrEmpty(orderIdFilter) && int.TryParse(orderIdFilter, out int orderIdVal))
             {
                 orders = orders.Where(o => o.Id == orderIdVal).ToList();
             }
             else
             {
-                // Apply other filters only if orderIdFilter not provided or invalid
-
                 if (startDate.HasValue)
-                {
                     orders = orders.Where(o => o.OrderDate.Date >= startDate.Value.Date).ToList();
-                }
 
                 if (endDate.HasValue)
-                {
                     orders = orders.Where(o => o.OrderDate.Date <= endDate.Value.Date).ToList();
-                }
 
                 if (!string.IsNullOrEmpty(statusFilter) && Enum.TryParse<OrderStatus>(statusFilter, out var statusEnum))
-                {
                     orders = orders.Where(o => o.Status == statusEnum).ToList();
-                }
             }
 
             ViewBag.OrderIdFilter = orderIdFilter;
