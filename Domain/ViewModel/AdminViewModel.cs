@@ -546,7 +546,6 @@ namespace Domain.ViewModel
 
 		public List<CreateOrderDetailDto> Details { get; set; } = new();
 	}
-    }
     public class QuizCategoryViewModel
     {
         public List<QuizCategory> CategoryList { get; set; } = new();
