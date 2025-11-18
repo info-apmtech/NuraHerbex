@@ -1432,42 +1432,57 @@ namespace NuraHerbex.Controllers
 		public async Task<IActionResult> MyProfile(int id = 0)
 		{
 			var userId = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "";
+			if (string.IsNullOrEmpty(userId))
+				return RedirectToAction("SignIn", "Authentication");
 
+			var vm = new UserProfileViewModel
+			{
+				Id = userId
+			};
+
+			// 1️⃣ Get user details
+			var userResponse = await AuthorizedClient.GetAsync($"AdminAPI/user/{userId}");
+			if (userResponse.IsSuccessStatusCode)
+			{
+				var json = await userResponse.Content.ReadAsStringAsync();
+				var user = JsonConvert.DeserializeObject<RegisterUser>(json);
+
+				vm.FirstName = user.FirstName;
+				vm.LastName = user.LastName;
+				vm.Email = user.Email;
+				vm.PhoneNumber = user.PhoneNumber;
+			}
+
+			// 2️⃣ Addresses
 			var addressesResponse = await _httpClient.GetAsync($"AdminAPI/addresses/{userId}");
-			var addresses = addressesResponse.IsSuccessStatusCode
+			vm.Addresses = addressesResponse.IsSuccessStatusCode
 				? await addressesResponse.Content.ReadFromJsonAsync<List<AddressDetail>>()
 				: new List<AddressDetail>();
 
+			// 3️⃣ Countries
 			var countriesResponse = await _httpClient.GetAsync("AdminAPI/countries");
-			var countries = countriesResponse.IsSuccessStatusCode
+			vm.Countries = countriesResponse.IsSuccessStatusCode
 				? await countriesResponse.Content.ReadFromJsonAsync<List<Country>>()
 				: new List<Country>();
 
+			// 4️⃣ States
 			var statesResponse = await _httpClient.GetAsync("AdminAPI/states");
-			var states = statesResponse.IsSuccessStatusCode
+			vm.States = statesResponse.IsSuccessStatusCode
 				? await statesResponse.Content.ReadFromJsonAsync<List<State>>()
 				: new List<State>();
 
-			// Default empty address
-			var selectedAddress = new AddressDetail { UserId = userId };
-
+			// 5️⃣ Selected address (for add/edit popup)
+			vm.AddressDetail = new AddressDetail { UserId = userId };
 			if (id > 0)
 			{
 				var addressResponse = await _httpClient.GetAsync($"AdminAPI/address/{id}");
 				if (addressResponse.IsSuccessStatusCode)
-					selectedAddress = await addressResponse.Content.ReadFromJsonAsync<AddressDetail>();
+					vm.AddressDetail = await addressResponse.Content.ReadFromJsonAsync<AddressDetail>();
 			}
-
-			var vm = new UserProfileViewModel
-			{
-				AddressDetail = selectedAddress,
-				Addresses = addresses,
-				Countries = countries,
-				States = states
-			};
 
 			return View(vm);
 		}
+
 
 
 		[HttpPost]
@@ -1515,6 +1530,54 @@ namespace NuraHerbex.Controllers
 			// reload dropdown data after failure
 			return await MyProfile(model.AddressDetail.Id);
 		}
+
+		[HttpPost]
+		[ValidateAntiForgeryToken]
+		public async Task<IActionResult> UpdateProfile(UserProfileViewModel model)
+		{
+			var userId = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "";
+			if (string.IsNullOrEmpty(userId))
+				return RedirectToAction("SignIn", "Authentication");
+
+			var dto = new ProfileUpdateDto
+			{
+				Id = userId,
+				FirstName = model.FirstName,
+				LastName = model.LastName,
+				Email = model.Email,
+				PhoneNumber = model.PhoneNumber
+			};
+
+			var response = await AuthorizedClient.PostAsJsonAsync("AdminAPI/profile", dto);
+
+			if (response.IsSuccessStatusCode)
+			{
+				TempData["Success"] = "Profile updated successfully";
+				return RedirectToAction(nameof(MyProfile));
+			}
+
+			var errorBody = await response.Content.ReadAsStringAsync();
+			ModelState.AddModelError(string.Empty, errorBody);
+
+			// re-load addresses / dropdown data (same as GET MyProfile)
+			var addressesResponse = await _httpClient.GetAsync($"AdminAPI/addresses/{userId}");
+			model.Addresses = addressesResponse.IsSuccessStatusCode
+				? await addressesResponse.Content.ReadFromJsonAsync<List<AddressDetail>>()
+				: new List<AddressDetail>();
+
+			var countriesResponse = await _httpClient.GetAsync("AdminAPI/countries");
+			model.Countries = countriesResponse.IsSuccessStatusCode
+				? await countriesResponse.Content.ReadFromJsonAsync<List<Country>>()
+        : new List<Country>();
+
+			var statesResponse = await _httpClient.GetAsync("AdminAPI/states");
+			model.States = statesResponse.IsSuccessStatusCode
+				? await statesResponse.Content.ReadFromJsonAsync<List<State>>()
+				: new List<State>();
+
+			return View("MyProfile", model);
+		}
+
 
 
 		[HttpPost]

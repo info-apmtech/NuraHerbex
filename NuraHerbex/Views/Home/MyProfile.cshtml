@@ -104,29 +104,38 @@
         <!-- Personal Information Card -->
         <div class="profile-card">
             <div class="profile-card-title">Personal Information</div>
-            <form class="profile-form">
+
+            <form asp-action="UpdateProfile" method="post" class="profile-form">
+                @Html.AntiForgeryToken()
+
+                <input asp-for="Id" type="hidden" />
+
                 <div class="form-row">
                     <label>
-                        Full Name
-                        <input type="text" placeholder="Placeholder" />
+                        First Name
+                        <input asp-for="FirstName" />
+                    </label>
+                    <label>
+                        Last Name
+                        <input asp-for="LastName" />
                     </label>
                 </div>
                 <div class="form-row row-inline">
                     <label>
                         Phone
-                        <input type="text" placeholder="Placeholder" />
+                        <input asp-for="PhoneNumber" />
                     </label>
                     <label>
                         Email
-                        <input type="text" placeholder="Placeholder" />
+                        <input asp-for="Email" />
                     </label>
                 </div>
+
                 <div class="form-actions">
                     <button type="submit" class="orange-btn">Save Changes</button>
                 </div>
             </form>
         </div>
-
         <!-- Saved Addresses Card -->
         <div class="profile-card address-card">
             <div class="profile-card-title-row">

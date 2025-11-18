@@ -84,23 +84,16 @@
                                                 <td>@user.Role.ToString()</td>
 
                                                 <td>
-                                                    <form method="get"
-                                                          asp-action="UserCreation"
-                                                          asp-controller="Admin"
-                                                          asp-route-id="@user.Id"
-                                                          style="display:inline;">
-                                                        <button type="submit"
-                                                                class="btn btn-sm btn-warning">
-                                                            Edit
+                                                    <form asp-action="ToggleActive" asp-controller="Admin" asp-route-id="@user.Id" method="post" style="display:inline;" onsubmit="return confirm('Are you sure you want to change this user status?');">
+                                                        @Html.AntiForgeryToken()
+                                                        <button type="submit" class="btn btn-sm @(user.isActive ? "btn-secondary" : "btn-success")">
+                                                            @(user.isActive ? "Inactive" : "Active")
                                                         </button>
                                                     </form>
-
-                                                    <form method="post"
-                                                          asp-action="DeleteUser"
-                                                          asp-controller="Admin"
-                                                          asp-route-id="@user.Id"
-                                                          onsubmit="return confirm('Are you sure you want to delete this user?');"
-                                                          style="display:inline;">
+                                                    <a asp-action="UserCreation" asp-controller="Admin" asp-route-id="@user.Id" class="btn btn-sm btn-warning">
+                                                        Edit
+                                                    </a>
+                                                    <form asp-action="DeleteUser" asp-controller="Admin" asp-route-id="@user.Id" method="post" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this user?');">
                                                         @Html.AntiForgeryToken()
                                                         <button type="submit" class="btn btn-sm btn-danger">
                                                             Delete
@@ -140,14 +133,11 @@
                     </div>
 
                     <div class="card-body">
-                        <form asp-action="UserCreation"
-                              asp-controller="Admin"
-                              method="post"
-                              novalidate>
-
+                        <form asp-action="UserCreation" asp-controller="Admin" method="post" novalidate autocomplete="off">
                             @Html.AntiForgeryToken()
-
                             <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+                            <!-- 🔹 Always send Id; empty for Add, filled for Edit -->
+                            <input asp-for="RegisteredUser.Id" type="hidden" />
 
                             <div class="row">
                                 <div class="col-md-4 mb-3">
@@ -162,11 +152,11 @@
                                     <span asp-validation-for="RegisteredUser.LastName" class="text-danger"></span>
                                 </div>
 
-                                <div class="col-md-4 mb-3">
+                              @*   <div class="col-md-4 mb-3">
                                     <label asp-for="RegisteredUser.UserName" class="form-label"></label>
-                                    <input asp-for="RegisteredUser.UserName" class="form-control" />
+                                    <input asp-for="RegisteredUser.UserName" class="form-control" autocomplete="off" />
                                     <span asp-validation-for="RegisteredUser.UserName" class="text-danger"></span>
-                                </div>
+                                </div> *@
 
                                 <div class="col-md-4 mb-3">
                                     <label asp-for="RegisteredUser.Email" class="form-label"></label>
@@ -192,7 +182,7 @@
 
                                 <div class="col-md-4 mb-3">
                                     <label asp-for="RegisteredUser.Password" class="form-label"></label>
-                                    <input asp-for="RegisteredUser.Password" class="form-control" type="password" />
+                                    <input asp-for="RegisteredUser.Password" class="form-control" type="password" autocomplete="new-password" />
                                     <span asp-validation-for="RegisteredUser.Password" class="text-danger"></span>
                                 </div>
 
@@ -214,13 +204,10 @@
                                 @(isEdit ? "Update User" : "Create User")
                             </button>
 
-                            <a asp-action="UserCreation"
-                               asp-controller="Admin"
-                               asp-route-id="0"
-                               class="btn btn-secondary ms-2">
+                            <a asp-action="UserCreation" asp-controller="Admin" class="btn btn-secondary ms-2">
                                 Clear
                             </a>
-
+                            @* asp-route-id="0" *@
                         </form>
                     </div>
                 </div>

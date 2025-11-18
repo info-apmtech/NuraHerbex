@@ -42,10 +42,13 @@ namespace Domain.ViewModel
         public bool IsActive { get; set; } = true;   // "Remember me" / persistent cookie
                                                      //public UserRole? role { get; set; }
 
-        [BindNever][ValidateNever] public RegisterUser? RegisteredUser { get; set; }
-        [BindNever][ValidateNever] public List<RegisterUser>? UserList { get; set; }
-        [BindNever][ValidateNever] public DateTime? FromDate { get; set; }
-        [BindNever][ValidateNever] public DateTime? ToDate { get; set; }
+        public RegisterUser? RegisteredUser { get; set; }
+		[ValidateNever]
+		public List<RegisterUser>? UserList { get; set; }
+		[ValidateNever]
+		public DateTime? FromDate { get; set; }
+		[ValidateNever]
+        public DateTime? ToDate { get; set; }
     }
     public enum ForgotFlowStep { Request = 0, Verify = 1 }
 
@@ -249,8 +252,33 @@ namespace Domain.ViewModel
         public List<AddressDetail> Addresses { get; set; } = new List<AddressDetail>();
         public List<Country> Countries { get; set; } = new List<Country>();
         public List<State> States { get; set; } = new List<State>();
-    }
-    public class ConsultationBookingViewModel
+		// 🔹 Personal info
+		public string Id { get; set; }          // logged in user Id
+		public string FirstName { get; set; }
+		public string LastName { get; set; }
+		public string FullName => $"{FirstName} {LastName}".Trim();
+		public string Email { get; set; }
+		public string PhoneNumber { get; set; }
+	}
+	public class ProfileUpdateDto
+	{
+		[Required]
+		public string Id { get; set; }         
+
+		[Required]
+		public string FirstName { get; set; }
+
+		public string? LastName { get; set; }
+
+		[Required]
+		[EmailAddress]
+		public string Email { get; set; }
+
+		[Phone]
+		public string? PhoneNumber { get; set; }
+	}
+
+	public class ConsultationBookingViewModel
     {
         [Required, MaxLength(100)] public string FirstName { get; set; }
         [Required, MaxLength(100)] public string LastName { get; set; }

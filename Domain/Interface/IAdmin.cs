@@ -16,8 +16,12 @@ namespace Domain.Interface
         Task<List<RegisterUser>> GetUsersByRoleAsync(UserRole role);
 		Task<RegisterUser?> GetUserByIdAsync(string id);
 		Task<IdentityResult> AddOrUpdateUserAsync(RegisterUser user);
-        //Task<IdentityResult> DeleteUserAsync(string userId);
-        Task<LoginResponseModel?> SignInAsync(RegisterUserViewModel model);
+		// update profile
+		Task<IdentityResult> UpdateUserProfileAsync(ProfileUpdateDto dto);
+		//  New method for Active / Inactive toggle
+		Task<IdentityResult> ToggleUserActiveAsync(string id);
+		Task<IdentityResult> DeleteUserAsync(string id);
+		Task<LoginResponseModel?> SignInAsync(RegisterUserViewModel model);
 		Task<bool> SendOtpAsync(string email);
 		Task<bool> VerifyOtpAsync(string email, string otp);
 		Task<string> ResetPasswordWithOtpAsync(ResetPasswordViewModel model);

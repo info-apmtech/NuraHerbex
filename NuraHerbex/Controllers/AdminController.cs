@@ -671,7 +671,6 @@ namespace NuraHerbex.Controllers
             }
             return RedirectToAction("DoctorConsultation");
         }
-
         [HttpGet]
         public async Task<IActionResult> UserCreation(string? id = null)
         {
@@ -701,17 +700,25 @@ namespace NuraHerbex.Controllers
 
             return View(model);
         }
-
-
         [HttpPost]
         public async Task<IActionResult> UserCreation(RegisterUserViewModel model)
         {
-            var response = await AuthorizedClient.PostAsJsonAsync("AdminAPI/register", model.RegisteredUser);
+			if (model.RegisteredUser == null)
+				model.RegisteredUser = new RegisterUser();
+
+			//  NEW user (Add): Id is empty → generate a string Id
+			var isNew = string.IsNullOrWhiteSpace(model.RegisteredUser.Id);
+			if (isNew)
+			{
+				model.RegisteredUser.Id = Guid.NewGuid().ToString();  // string id
+			}
+			var response = await AuthorizedClient.PostAsJsonAsync("AdminAPI/register", model.RegisteredUser);
             if (response.IsSuccessStatusCode)
             {
                 TempData["Success"] = "User Registered Successfully!";
 				if (User.Identity.IsAuthenticated) 
-					return RedirectToAction("UserCreation", new { role = model.RegisteredUser.Role });
+					//return RedirectToAction("UserCreation", new { role = model.RegisteredUser.Role });
+				return RedirectToAction(nameof(UserCreation));
 				else
 					return RedirectToAction("SignIn", "Authentication");
 			}
@@ -1360,6 +1367,19 @@ namespace NuraHerbex.Controllers
 
             return RedirectToAction(nameof(AdminOrderStatus));
         }
-        
-    }
+		[HttpPost]
+		[ValidateAntiForgeryToken]
+		public async Task<IActionResult> ToggleActive(string id)
+		{
+			var response = await AuthorizedClient.PostAsync($"AdminAPI/user/{id}/toggle-active", null);
+
+			if (response.IsSuccessStatusCode)
+				TempData["Success"] = "User status updated successfully!";
+			else
+				TempData["Error"] = "Failed to update user status.";
+
+			return RedirectToAction(nameof(UserCreation));
+		}
+
+	}
 }

@@ -48,28 +48,39 @@ namespace APIs.Controllers
 
         [AllowAnonymous]
         [HttpPost("register")]
-        public async Task<IActionResult> AddOrUpdateUser([FromBody] RegisterUser user)
+		public async Task<IActionResult> AddOrUpdateUser([FromBody] RegisterUser user)
+		{
+			var isNew = string.IsNullOrWhiteSpace(user.Id);
+
+			// For new users, ignore “Id is required” validation
+			if (isNew)
+			{
+				ModelState.Remove("Id");
+				ModelState.Remove("user.Id");
+			}
+
+			if (!ModelState.IsValid)
+				return BadRequest(ModelState);
+
+			var result = await _adminservice.AddOrUpdateUserAsync(user);
+
+			if (result.Succeeded)
+				return Ok(new { success = true, message = "User saved successfully" });
+
+			return BadRequest(result.Errors);
+		}
+
+
+        [AllowAnonymous]
+        [HttpDelete("delete/{id}")]
+        public async Task<IActionResult> DeleteUser(string id)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            var result = await _adminservice.AddOrUpdateUserAsync(user);
-
+            var result = await _adminservice.DeleteUserAsync(id);
             if (result.Succeeded)
-                return Ok(new { success = true, message = "User saved successfully" });
+                return Ok(new { success = true, message = "User deleted successfully" });
 
             return BadRequest(result.Errors);
         }
-        //[AllowAnonymous]
-        //[HttpDelete("delete/{id}")]
-        //public async Task<IActionResult> DeleteUser(string id)
-        //{
-        //    var result = await _adminservice.DeleteUserAsync(id);
-        //    if (result.Succeeded)
-        //        return Ok(new { success = true, message = "User deleted successfully" });
-
-        //    return BadRequest(result.Errors);
-        //}
 
 
         //BlogCategory
@@ -1012,5 +1023,32 @@ namespace APIs.Controllers
             var stats = await _adminservice.GetDashboardStatsAsync();
             return Ok(stats);
         }
-    }
+		[AllowAnonymous]
+		[HttpPost("profile")]
+		public async Task<IActionResult> UpdateProfile([FromBody] ProfileUpdateDto dto)
+		{
+			if (!ModelState.IsValid)
+				return BadRequest(ModelState);
+
+			var result = await _adminservice.UpdateUserProfileAsync(dto);
+
+			if (result.Succeeded)
+				return Ok(new { success = true, message = "Profile updated successfully" });
+
+			return BadRequest(result.Errors);
+		}
+		[AllowAnonymous]  // ⬅️ important
+		[HttpPost("user/{id}/toggle-active")]
+		public async Task<IActionResult> ToggleUserActive(string id)
+		{
+			var result = await _adminservice.ToggleUserActiveAsync(id);
+
+			if (result.Succeeded)
+				return Ok(new { success = true, message = "User status updated successfully" });
+
+			return BadRequest(result.Errors);
+		}
+
+
+	}
 }

@@ -149,6 +149,25 @@
                         </button>
 
                         <ul class="dropdown-menu dropdown-menu-end">
+                            @* Role-based home/dashboard link *@
+                            @if (User.IsInRole("Admin"))
+                            {
+                                <li>
+                                    <a class="dropdown-item" asp-controller="Admin" asp-action="UserCreation">
+                                        Admin Panel
+                                    </a>
+                                </li>
+                            }
+                            else if (User.IsInRole("Customer"))
+                            {
+                                <li>
+                                    <a class="dropdown-item" asp-controller="Home" asp-action="MyOrders">
+                                        Customer Panel
+                                    </a>
+                                </li>
+                            }
+
+                            <li><hr class="dropdown-divider" /></li>
                             <li>
                                 <form asp-controller="Authentication" asp-action="LogOut" method="post" style="margin: 0;">
                                     @Html.AntiForgeryToken()
