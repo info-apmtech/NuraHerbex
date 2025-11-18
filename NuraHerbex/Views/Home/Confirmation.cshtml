@@ -1,0 +1,250 @@
+﻿<style>
+    .confirmation-wrapper {
+        max-width: 900px;
+        margin: 40px auto;
+        padding: 20px;
+        font-family: 'Inter', sans-serif;
+        color: #333;
+    }
+
+    .success-icon {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 20px;
+    }
+
+        .success-icon svg {
+            width: 85px;
+            height: 85px;
+            stroke: #22c55e;
+        }
+
+    .confirmation-title {
+        text-align: center;
+        font-size: 32px;
+        font-weight: 700;
+        margin-bottom: 10px;
+    }
+
+    .confirmation-subtitle {
+        text-align: center;
+        font-size: 16px;
+        color: #777;
+        margin-bottom: 35px;
+    }
+
+    .order-card {
+        border: 1px solid #ddd;
+        border-radius: 12px;
+        padding: 30px;
+        background: #fff;
+        margin-bottom: 25px;
+    }
+
+    .order-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        row-gap: 20px;
+        margin-bottom: 25px;
+        color: #555;
+    }
+
+        .order-grid div span {
+            font-weight: 600;
+            color: #333;
+        }
+
+    .delivery-date {
+        color: #ff4500;
+        font-weight: 700;
+    }
+
+    .order-items-label {
+        font-weight: 700;
+        font-size: 16px;
+        margin-bottom: 10px;
+        color: #333;
+    }
+
+    .order-item-box {
+        background: #fff7f2;
+        padding: 20px;
+        border-radius: 10px;
+        display: grid;
+        grid-template-columns: 120px 1fr 120px;
+        align-items: center;
+        gap: 15px;
+    }
+
+        .order-item-box img {
+            width: 110px;
+            height: auto;
+            border-radius: 6px;
+        }
+
+    .order-amount-label {
+        grid-column: 3;
+        text-align: right;
+        font-weight: 600;
+        color: #555;
+        margin-bottom: 5px;
+    }
+
+    .order-amount-total {
+        font-size: 20px;
+        font-weight: 700;
+        color: #ff4500;
+        text-align: right;
+    }
+
+    .order-actions {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        margin-top: 25px;
+    }
+
+    .order-btn {
+        padding: 12px 25px;
+        border-radius: 6px;
+        border: none;
+        font-size: 15px;
+        cursor: pointer;
+        font-weight: 600;
+        min-width: 140px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        justify-content: center;
+    }
+
+    .track-btn {
+        background: #ff5722;
+        color: #fff;
+    }
+
+    .invoice-btn {
+        background: #fff;
+        border: 2px solid #ff5722;
+        color: #ff5722;
+    }
+
+    .shopping-btn {
+        background: #fff;
+        border: 2px solid #333;
+        color: #333;
+    }
+
+    .email-box {
+        margin-top: 25px;
+        background: #e9f3ff;
+        padding: 20px;
+        border-radius: 10px;
+        display: flex;
+        gap: 15px;
+        border-left: 4px solid #1e90ff;
+        align-items: center;
+        font-size: 14px;
+        color: #555;
+    }
+
+        .email-box svg {
+            width: 28px;
+            height: 28px;
+            stroke: #1e90ff;
+            flex-shrink: 0;
+        }
+
+        .email-box div p:first-child {
+            font-weight: 700;
+            color: #333;
+            margin: 0;
+        }
+
+        .email-box div p:last-child {
+            margin: 3px 0 0 0;
+        }
+
+</style>
+
+<div class="confirmation-wrapper">
+
+    <div class="success-icon">
+        <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="16 8 11 13 8 10"></polyline>
+        </svg>
+    </div>
+
+    <h1 class="confirmation-title">Thank You!</h1>
+    <p class="confirmation-subtitle">Your Order Has Been Placed Successfully</p>
+
+    <div class="order-card">
+
+        <div class="order-grid">
+            <div>
+                <span>Order</span>
+                <br />
+                ORD34YUON311
+            </div>
+
+            <div>
+                <span>Order Date</span>
+                <br />
+                09/10/2025
+            </div>
+
+            <div>
+                <span>Estimated Delivery</span>
+                <br />
+                <span class="delivery-date">16/10/2025</span>
+            </div>
+
+            <div>
+                <span>Payment Method</span>
+                <br />
+                UPI
+            </div>
+        </div>
+
+        <div class="order-items-label">Order Items</div>
+
+        <div class="order-item-box">
+            <img src="/image/shop/Stamix1.png" alt="Product Image" />
+            <div>
+                <p><strong>Quantity :</strong> 1</p>
+                <p><strong>Order Summary</strong></p>
+                <p style="color:#ff4500;font-weight:700;">$ 49</p>
+            </div>
+            <div>
+                <div class="order-amount-label">Total Amount</div>
+                <div class="order-amount-total">$ 54.00</div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="order-actions">
+        <button class="order-btn track-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h18"></path><path d="M12 3l9 9-9 9"></path></svg>
+            Track Order
+        </button>
+        <button class="order-btn invoice-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="#ff5722" stroke-width="2" width="18" height="18" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            Download Invoice
+        </button>
+        <button class="order-btn shopping-btn" onclick="window.location.href='/'">Continue Shopping</button>
+    </div>
+
+    <div class="email-box">
+        <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <rect x="3" y="5" width="18" height="14" rx="2"></rect>
+            <polyline points="3 7 12 13 21 7"></polyline>
+        </svg>
+        <div>
+            <p>Confirmation Email Sent</p>
+            <p>We've sent a confirmation email to <strong>merin@123456</strong> with your order details and tracking information.</p>
+        </div>
+    </div>
+
+</div>
