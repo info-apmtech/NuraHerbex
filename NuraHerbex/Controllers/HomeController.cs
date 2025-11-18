@@ -30,7 +30,7 @@ using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace NuraHerbex.Controllers
 {
-	public class HomeController : Controller
+    public class HomeController : Controller
 	{
 		private readonly IHttpClientFactory _httpClientFactory;
 		private readonly ILogger<HomeController> _logger;
@@ -317,25 +317,71 @@ namespace NuraHerbex.Controllers
 
 			return View("BlogsByCategory", vm);
 		}
+        [HttpGet]
+        public async Task<IActionResult> Plan(int? score)
+        {
+            var plans = await GetPlansFromApi();
 
-		public async Task<IActionResult> Plan()
-		{
-			var plans = await GetPlansFromApi();
-			return View(plans);
-		}
-		public async Task<List<PricingPlan>> GetPlansFromApi()
-		{
-			var plans = new List<PricingPlan>();
-			var response = await _httpClient.GetAsync("AdminAPI/pricingplans");
-			if (response.IsSuccessStatusCode)
-			{
-				var json = await response.Content.ReadAsStringAsync();
-				plans = JsonConvert.DeserializeObject<List<PricingPlan>>(json) ?? new List<PricingPlan>();
-			}
-			return plans;
-		}
+            // If score is null → user came directly → show all plans
+            if (score == null)
+            {
+                ViewBag.IsFromQuiz = false;
+                return View(plans);
+            }
 
-		public async Task<IActionResult> Shop(int id = 0)
+            // User came via quiz
+            ViewBag.IsFromQuiz = true;
+            ViewBag.Score = score.Value;
+
+            List<PricingPlan> filteredPlans;
+
+            if (score <= 10)
+            {
+                filteredPlans = plans.Where(p => p.PlanName == "Elite Pack").ToList();
+            }
+            else if (score > 10 && score <= 15)
+            {
+                filteredPlans = plans.Where(p => p.PlanName == "Performance Pack").ToList();
+            }
+            else 
+            {
+                filteredPlans = plans.Where(p => p.PlanName == "Essential Pack").ToList();
+            }
+
+            return View(filteredPlans);
+        }
+
+
+
+        private async Task<List<PricingPlan>> GetPlansFromApi()
+        {
+            var plans = new List<PricingPlan>();
+            var response = await _httpClient.GetAsync("AdminAPI/pricingplans");
+            if (response.IsSuccessStatusCode)
+            {
+                var json = await response.Content.ReadAsStringAsync();
+                plans = JsonConvert.DeserializeObject<List<PricingPlan>>(json) ?? new List<PricingPlan>();
+            }
+            return plans;
+        }
+        //public async Task<IActionResult> Plan()
+        //{
+        //	var plans = await GetPlansFromApi();
+        //	return View(plans);
+        //}
+        //public async Task<List<PricingPlan>> GetPlansFromApi()
+        //{
+        //	var plans = new List<PricingPlan>();
+        //	var response = await _httpClient.GetAsync("AdminAPI/pricingplans");
+        //	if (response.IsSuccessStatusCode)
+        //	{
+        //		var json = await response.Content.ReadAsStringAsync();
+        //		plans = JsonConvert.DeserializeObject<List<PricingPlan>>(json) ?? new List<PricingPlan>();
+        //	}
+        //	return plans;
+        //}
+
+        public async Task<IActionResult> Shop(int id = 0)
 		{
 			var products = new List<Product>();
 			var feedbacks = new List<FeedbackViewModel>();
@@ -437,12 +483,107 @@ namespace NuraHerbex.Controllers
 				forThis4 = p.ForThis4
 			});
 		}
+        //[HttpGet]
+        //public async Task<IActionResult> Quiz()
+        //{
+        //    var categoriesResponse = await _httpClient.GetAsync("AdminAPI/quizcategories");
+        //    categoriesResponse.EnsureSuccessStatusCode();
+        //    var categoriesJson = await categoriesResponse.Content.ReadAsStringAsync();
+        //    var categories = JsonConvert.DeserializeObject<List<QuizCategory>>(categoriesJson);
 
-		public IActionResult Quiz()
-		{
-			return View();
-		}
-		public async Task<IActionResult> Ingredients()
+        //    return View(categories); // initial load with categories only
+        //}
+
+        //[HttpGet]
+        //public async Task<IActionResult> GetQuestion(int categoryId, int questionIndex = 0, int totalPoints = 0)
+        //{
+        //    // Fetch questions for category
+        //    var questionsResponse = await _httpClient.GetAsync("AdminAPI/quizquestions");
+        //    questionsResponse.EnsureSuccessStatusCode();
+        //    var questionsJson = await questionsResponse.Content.ReadAsStringAsync();
+        //    var allQuestions = JsonConvert.DeserializeObject<List<QuizQuestion>>(questionsJson);
+        //    var questions = allQuestions.Where(q => q.CategoryId == categoryId).ToList();
+
+        //    if (questionIndex >= questions.Count)
+        //    {
+        //        return Json(new
+        //        {
+        //            quizFinished = true,
+        //            totalPoints = totalPoints,
+        //            totalQuestions = questions.Count
+        //        });
+        //    }
+
+        //    var currentQuestion = questions[questionIndex];
+
+        //    // Fetch options for the current question
+        //    var optionsResponse = await _httpClient.GetAsync("AdminAPI/quizoptions");
+        //    optionsResponse.EnsureSuccessStatusCode();
+        //    var optionsJson = await optionsResponse.Content.ReadAsStringAsync();
+        //    var allOptions = JsonConvert.DeserializeObject<List<QuizOption>>(optionsJson);
+        //    var options = allOptions.Where(o => o.QuestionId == currentQuestion.Id).ToList();
+
+        //    return Json(new
+        //    {
+        //        quizFinished = false,
+        //        currentQuestionIndex = questionIndex,
+        //        totalPoints,
+        //        currentQuestion = currentQuestion,
+        //        options
+        //    });
+        //}
+
+        [HttpGet]
+        public async Task<IActionResult> Quiz()
+        {
+            var categoriesResponse = await _httpClient.GetAsync("AdminAPI/quizcategories");
+            categoriesResponse.EnsureSuccessStatusCode();
+            var categoriesJson = await categoriesResponse.Content.ReadAsStringAsync();
+            var categories = JsonConvert.DeserializeObject<List<QuizCategory>>(categoriesJson);
+            return View(categories); // initial load with categories only
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetQuestion(int categoryId = 0, int questionIndex = 0, int totalPoints = 0)
+        {
+            // Get all questions for category
+            var questionsResponse = await _httpClient.GetAsync("AdminAPI/quizquestions");
+            questionsResponse.EnsureSuccessStatusCode();
+            var questionsJson = await questionsResponse.Content.ReadAsStringAsync();
+            var allQuestions = JsonConvert.DeserializeObject<List<QuizQuestion>>(questionsJson);
+            var questions = allQuestions.Where(q => q.CategoryId == categoryId).ToList();
+
+            if (questionIndex >= questions.Count)
+            {
+                // Quiz finished -> redirect to Plan page with totalPoints
+                return Json(new
+                {
+                    quizFinished = true,
+                    totalPoints = totalPoints,
+                    totalQuestions = questions.Count,
+                    redirectUrl = Url.Action("Plan", "Home", new { score = totalPoints })
+                });
+            }
+
+            var currentQuestion = questions[questionIndex];
+
+            var optionsResponse = await _httpClient.GetAsync("AdminAPI/quizoptions");
+            optionsResponse.EnsureSuccessStatusCode();
+            var optionsJson = await optionsResponse.Content.ReadAsStringAsync();
+            var allOptions = JsonConvert.DeserializeObject<List<QuizOption>>(optionsJson);
+            var options = allOptions.Where(o => o.QuestionId == currentQuestion.Id).ToList();
+
+            return Json(new
+            {
+                quizFinished = false,
+                currentQuestionIndex = questionIndex,
+                totalPoints,
+                currentQuestion = currentQuestion,
+                options
+            });
+        }
+
+        public async Task<IActionResult> Ingredients()
 		{
 			var ingredientsResponse = await _httpClient.GetAsync("AdminAPI/ingredients");
 			var categoriesResponse = await _httpClient.GetAsync("AdminAPI/ingredientcategories");

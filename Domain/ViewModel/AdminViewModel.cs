@@ -510,14 +510,21 @@ namespace Domain.ViewModel
         public QuizOption NewOption { get; set; } = new();
         public List<QuizQuestion> Questions { get; set; } = new(); 
     }
-    public class QuizSessionData
+    public class QuizPageViewModel
     {
-        public int CategoryId { get; set; }
+        public List<QuizCategory> Categories { get; set; }
+        public int? SelectedCategoryId { get; set; }
+
+        public List<QuizQuestion> Questions { get; set; }
+        public QuizQuestion CurrentQuestion { get; set; }
+        public List<QuizOption> Options { get; set; }
         public int CurrentQuestionIndex { get; set; }
+
         public int TotalPoints { get; set; }
-        // Stores user's answers as (QuestionId, OptionLabel)
-        public List<(int QuestionId, string OptionLabel)> Answers { get; set; } = new();
+        public int TotalQuestions { get; set; }
+        public bool QuizFinished { get; set; } = false;
     }
+
 
 }
 

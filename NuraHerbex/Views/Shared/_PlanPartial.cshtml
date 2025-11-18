@@ -1,144 +1,41 @@
 ﻿@using Domain.Models
-@* <section class="pricing-plans-section">
-    <div class="pricing-plans-container">
-        <div class="pricing-plans-grid">
+@model List<PricingPlan>
 
-            <!-- Essential Pack -->
-            <div class="pricing-plan-card">
-                <h3 class="plan-name">Essential Pack</h3>
-                <p class="plan-subtitle">Everyday Vitality</p>
-                <p class="plan-description">Perfect for starting your wellness Journey with foundational support</p>
-
-                <div class="plan-price">
-                    <span class="price-currency">₹</span>
-                    <span class="price-amount">3500</span>
-                    <span class="price-duration">/ 4 Week</span>
-                </div>
-
-                <ul class="plan-features">
-                    <li>
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                            <polyline points="20 6 9 17 4 12"></polyline>
-                        </svg>
-                        <span>Daily Energy Boost Formula</span>
-                    </li>
-                    <li>
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                            <polyline points="20 6 9 17 4 12"></polyline>
-                        </svg>
-                        <span>Basic Nutrient Support</span>
-                    </li>
-                    <li>
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                            <polyline points="20 6 9 17 4 12"></polyline>
-                        </svg>
-                        <span>Mobile App access</span>
-                    </li>
-                </ul>
-
-                <button class="plan-subscribe-btn">Subscribe Now</button>
-            </div>
-
-            <!-- Performance Pack - Most Popular -->
-            <div class="pricing-plan-card pricing-plan-featured">
-                <span class="popular-badge">Most Popular</span>
-
-                <h3 class="plan-name">Performance Pack</h3>
-                <p class="plan-subtitle">Boost Stamina & recovery</p>
-                <p class="plan-description">Designed for active men who demand peak performance and faster recovery</p>
-
-                <div class="plan-price">
-                    <span class="price-currency">₹</span>
-                    <span class="price-amount">6000</span>
-                    <span class="price-duration">/ 8 Week</span>
-                </div>
-
-                <ul class="plan-features">
-                    <li>
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                            <polyline points="20 6 9 17 4 12"></polyline>
-                        </svg>
-                        <span>Premium performance blend</span>
-                    </li>
-                    <li>
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                            <polyline points="20 6 9 17 4 12"></polyline>
-                        </svg>
-                        <span>Advanced recovery support</span>
-                    </li>
-                    <li>
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                            <polyline points="20 6 9 17 4 12"></polyline>
-                        </svg>
-                        <span>Priority Customer support</span>
-                    </li>
-                </ul>
-
-                <button class="plan-subscribe-btn">Subscribe Now</button>
-            </div>
-
-            <!-- Elite Pack -->
-            <div class="pricing-plan-card">
-                <h3 class="plan-name">Elite Pack</h3>
-                <p class="plan-subtitle">Peak strength and Longevity</p>
-                <p class="plan-description">The Ultimate Package for men who refuse to settle for anything less than excellence.</p>
-
-                <div class="plan-price">
-                    <span class="price-currency">₹</span>
-                    <span class="price-amount">8500</span>
-                    <span class="price-duration">/ 12 Week</span>
-                </div>
-
-                <ul class="plan-features">
-                    <li>
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                            <polyline points="20 6 9 17 4 12"></polyline>
-                        </svg>
-                        <span>Elite performance Formula</span>
-                    </li>
-                    <li>
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                            <polyline points="20 6 9 17 4 12"></polyline>
-                        </svg>
-                        <span>Longevity optimization blend</span>
-                    </li>
-                    <li>
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                            <polyline points="20 6 9 17 4 12"></polyline>
-                        </svg>
-                        <span>24/7 premium support</span>
-                    </li>
-                </ul>
-
-                <button class="plan-subscribe-btn">Subscribe Now</button>
-            </div>
-
-        </div>
-    </div>
-</section>
- *@
- @model List<PricingPlan>
+@{
+    bool isSinglePlan = Model.Count == 1;
+    string gridClass = isSinglePlan ? "pricing-plans-grid single-plan-center" : "pricing-plans-grid";
+}
 
 <section class="pricing-plans-section">
     <div class="pricing-plans-container">
-        <div class="pricing-plans-grid">
+        <div class="@gridClass">
+
             @foreach (var plan in Model)
             {
-                var featureList = (plan.PlanFeatures ?? "").Split(',', StringSplitOptions.RemoveEmptyEntries);
-                var featuredClass = plan.IsMostPopular ? "pricing-plan-card pricing-plan-featured" : "pricing-plan-card";
+                var featureList = (plan.PlanFeatures ?? "")
+                .Split(',', StringSplitOptions.RemoveEmptyEntries);
+
+                var featuredClass = plan.IsMostPopular
+                ? "pricing-plan-card pricing-plan-featured"
+                : "pricing-plan-card";
+
                 <div class="@featuredClass">
+
                     @if (plan.IsMostPopular)
                     {
                         <span class="popular-badge">Most Popular</span>
                     }
+
                     <h3 class="plan-name">@plan.PlanName</h3>
                     <p class="plan-subtitle">@plan.PlanSubtitle</p>
                     <p class="plan-description">@plan.PlanDescription</p>
+
                     <div class="plan-price">
                         <span class="price-currency">₹</span>
                         <span class="price-amount">@plan.PriceAmount.ToString("N0")</span>
                         <span class="price-duration">/ @plan.Duration</span>
                     </div>
+
                     <ul class="plan-features">
                         @foreach (var feature in featureList)
                         {
@@ -150,9 +47,33 @@
                             </li>
                         }
                     </ul>
-                    <button class="plan-subscribe-btn" onclick="window.location.href='@Url.Action("Plan", "Home")'">Subscribe Now</button>
+
+                    <button class="plan-subscribe-btn"
+                            onclick="window.location.href='@Url.Action("Plan", "Home")'">
+                        Subscribe Now
+                    </button>
+
                 </div>
             }
+
         </div>
     </div>
 </section>
+<style>
+    /* Default grid remains untouched */
+
+    /* When only 1 plan, switch grid → flex to center it */
+    .single-plan-center {
+        display: flex !important;
+        justify-content: center !important;
+        align-items: flex-start !important;
+    }
+
+        /* Restrict width so it doesn’t stretch full-width */
+        .single-plan-center .pricing-plan-card {
+            margin: 0 auto !important;
+            width: auto !important;
+            max-width: 420px; /* adjust if needed */
+        }
+
+</style>

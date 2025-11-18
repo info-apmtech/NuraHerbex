@@ -1,7 +1,10 @@
 ﻿@using Domain.Models
 @model List<PricingPlan>
+
 @{
     ViewData["Title"] = "Plans";
+    bool isFromQuiz = ViewBag.IsFromQuiz ?? false;
+    int score = ViewBag.Score ?? 0;
 }
 
 <!-- Plan Hero Section -->
@@ -17,6 +20,21 @@
         </p>
     </div>
 </section>
+@if (isFromQuiz)
+{
+    <h2 style="
+        font-size: 26px;
+        font-weight: 700;
+        color: #2a7f62;
+        text-align: center;
+        margin-bottom: 25px;
+        padding: 15px 20px;
+        background: #e8f9f3;
+        border: 1px solid #c7eedd;
+        border-radius: 8px;">
+        Your Score is @score — We Recommend:
+    </h2>
+}
 
 <!-- Pricing Plans Section -->
 @Html.Partial("_PlanPartial",Model)
