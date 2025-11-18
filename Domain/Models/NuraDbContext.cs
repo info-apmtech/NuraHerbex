@@ -33,5 +33,8 @@ namespace Domain.Models
         public DbSet<PaymentGatewayDetails> PaymentGatewayDetails { get; set; }
         public DbSet<Order> Orders { get; set; }
         public DbSet<OrderDetail> orderDetails { get; set; }
+        public DbSet<QuizCategory> QuizCategories { get; set; }
+        public DbSet<QuizQuestion> QuizQuestions { get; set; }
+        public DbSet<QuizOption> QuizOptions { get; set; }
     }
 }

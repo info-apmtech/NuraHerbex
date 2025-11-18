@@ -386,4 +386,27 @@ namespace Domain.Models
         [NotMapped]
         public string StateName { get; set; } = string.Empty;
     }
+
+    public class QuizCategory
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public bool IsActive { get; set; } = true;
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
+    }
+    public class QuizQuestion
+    {
+        public int Id { get; set; }
+        public int CategoryId { get; set; }
+        public string QuestionText { get; set; }
+        public bool IsActive { get; set; } = true;
+    }
+    public class QuizOption
+    {
+        public int Id { get; set; }
+        public int QuestionId { get; set; }
+        public string Label { get; set; }
+        public string OptionText { get; set; }
+        public int Points { get; set; }
+    }
 }

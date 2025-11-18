@@ -1048,6 +1048,143 @@ namespace APIs.Controllers
 
 			return BadRequest(result.Errors);
 		}
+        // ====================== QUIZ CATEGORY API ========================= //
+
+        [AllowAnonymous]
+        [HttpGet("quizcategory/{id}")]
+        public async Task<IActionResult> GetQuizCategory(int id)
+        {
+            var category = await _adminservice.GetQuizCategoryByIdAsync(id);
+            if (category == null)
+                return NotFound();
+
+            return Ok(category);
+        }
+
+        [AllowAnonymous]
+        [HttpGet("quizcategories")]
+        public async Task<IActionResult> GetQuizCategories()
+        {
+            var categories = await _adminservice.GetQuizCategoriesAsync();
+            return Ok(categories);
+        }
+
+        [AllowAnonymous]
+        [HttpPost("quizcategory")]
+        public async Task<IActionResult> AddOrUpdateQuizCategory([FromBody] QuizCategory category)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var result = await _adminservice.AddOrUpdateQuizCategoryAsync(category);
+
+            if (result.Succeeded)
+                return Ok(new { success = true, message = "Quiz category saved successfully" });
+
+            return BadRequest(result.Errors);
+        }
+
+        [AllowAnonymous]
+        [HttpDelete("quizcategory/{id}")]
+        public async Task<IActionResult> DeleteQuizCategory(int id)
+        {
+            var result = await _adminservice.DeleteQuizCategoryAsync(id);
+            if (result.Succeeded)
+                return Ok(new { success = true, message = "Quiz category deleted successfully" });
+
+            return BadRequest(result.Errors);
+        }
+        // ====================== QUIZ QUESTION API ========================= //
+
+        [AllowAnonymous]
+        [HttpGet("quizquestion/{id}")]
+        public async Task<IActionResult> GetQuizQuestion(int id)
+        {
+            var question = await _adminservice.GetQuizQuestionByIdAsync(id);
+            if (question == null)
+                return NotFound();
+
+            return Ok(question);
+        }
+
+        [AllowAnonymous]
+        [HttpGet("quizquestions")]
+        public async Task<IActionResult> GetQuizQuestions()
+        {
+            var questions = await _adminservice.GetQuizQuestionsAsync();
+            return Ok(questions);
+        }
+
+        [AllowAnonymous]
+        [HttpPost("quizquestion")]
+        public async Task<IActionResult> AddOrUpdateQuizQuestion([FromBody] QuizQuestion question)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var result = await _adminservice.AddOrUpdateQuizQuestionAsync(question);
+
+            if (result.Succeeded)
+                return Ok(new { success = true, message = "Quiz question saved successfully" });
+
+            return BadRequest(result.Errors);
+        }
+
+        [AllowAnonymous]
+        [HttpDelete("quizquestion/{id}")]
+        public async Task<IActionResult> DeleteQuizQuestion(int id)
+        {
+            var result = await _adminservice.DeleteQuizQuestionAsync(id);
+            if (result.Succeeded)
+                return Ok(new { success = true, message = "Quiz question deleted successfully" });
+
+            return BadRequest(result.Errors);
+        }
+
+        // ====================== QUIZ OPTION API ========================= //
+
+        [AllowAnonymous]
+        [HttpGet("quizoptions")]
+        public async Task<IActionResult> GetQuizOptions()
+        {
+            var options = await _adminservice.GetQuizOptionsAsync();
+            return Ok(options);
+        }
+
+        [AllowAnonymous]
+        [HttpGet("quizoption/{id}")]
+        public async Task<IActionResult> GetQuizOption(int id)
+        {
+            var option = await _adminservice.GetQuizOptionByIdAsync(id);
+            if (option == null)
+                return NotFound();
+
+            return Ok(option);
+        }
+
+        [AllowAnonymous]
+        [HttpPost("quizoption")]
+        public async Task<IActionResult> AddOrUpdateQuizOption([FromBody] QuizOption option)
+        {
+            var result = await _adminservice.AddOrUpdateQuizOptionAsync(option);
+
+            if (result.Succeeded)
+                return Ok(new { success = true });
+
+            return BadRequest(result.Errors);
+        }
+
+        [AllowAnonymous]
+        [HttpDelete("quizoption/{id}")]
+        public async Task<IActionResult> DeleteQuizOption(int id)
+        {
+            var result = await _adminservice.DeleteQuizOptionAsync(id);
+
+            if (result.Succeeded)
+                return Ok(new { success = true });
+
+            return BadRequest(result.Errors);
+        }
 
 
 	}

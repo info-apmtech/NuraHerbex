@@ -1460,6 +1460,158 @@ namespace Domain.Implementation
 
 			return await _usermanager.UpdateAsync(user);
 		}
+        // ====================== QUIZ CATEGORY ========================= //
+
+        public async Task<QuizCategory> GetQuizCategoryByIdAsync(int id)
+        {
+            return await _db.QuizCategories.FindAsync(id);
+        }
+
+        public async Task<List<QuizCategory>> GetQuizCategoriesAsync()
+        {
+            return await _db.QuizCategories
+                            .OrderByDescending(c => c.CreatedAt)
+                            .ToListAsync();
+        }
+
+        public async Task<IdentityResult> AddOrUpdateQuizCategoryAsync(QuizCategory category)
+        {
+            if (category == null)
+                return IdentityResult.Failed(new IdentityError { Description = "Category cannot be null" });
+
+            if (category.Id > 0)
+            {
+                var existing = await _db.QuizCategories.FindAsync(category.Id);
+                if (existing == null)
+                    return IdentityResult.Failed(new IdentityError { Description = "Category not found" });
+
+                existing.Name = category.Name;
+                existing.IsActive = category.IsActive;
+
+                _db.QuizCategories.Update(existing);
+            }
+            else
+            {
+                category.CreatedAt = DateTime.UtcNow;
+                await _db.QuizCategories.AddAsync(category);
+            }
+
+            await _db.SaveChangesAsync();
+            return IdentityResult.Success;
+        }
+
+        public async Task<IdentityResult> DeleteQuizCategoryAsync(int id)
+        {
+            var existing = await _db.QuizCategories.FindAsync(id);
+            if (existing == null)
+                return IdentityResult.Failed(new IdentityError { Description = "Category not found" });
+
+            _db.QuizCategories.Remove(existing);
+            await _db.SaveChangesAsync();
+
+            return IdentityResult.Success;
+        }
+        // ====================== QUIZ QUESTION ========================= //
+
+        public async Task<QuizQuestion> GetQuizQuestionByIdAsync(int id)
+        {
+            return await _db.QuizQuestions.FindAsync(id);
+        }
+
+        public async Task<List<QuizQuestion>> GetQuizQuestionsAsync()
+        {
+            return await _db.QuizQuestions
+                .OrderByDescending(q => q.Id)
+                .ToListAsync();
+        }
+
+        public async Task<IdentityResult> AddOrUpdateQuizQuestionAsync(QuizQuestion question)
+        {
+            if (question == null)
+                return IdentityResult.Failed(new IdentityError { Description = "Question cannot be null" });
+
+            if (question.Id > 0)
+            {
+                var existing = await _db.QuizQuestions.FindAsync(question.Id);
+                if (existing == null)
+                    return IdentityResult.Failed(new IdentityError { Description = "Question not found" });
+
+                existing.CategoryId = question.CategoryId;
+                existing.QuestionText = question.QuestionText;
+                existing.IsActive = question.IsActive;
+
+                _db.QuizQuestions.Update(existing);
+            }
+            else
+            {
+                await _db.QuizQuestions.AddAsync(question);
+            }
+
+            await _db.SaveChangesAsync();
+            return IdentityResult.Success;
+        }
+
+        public async Task<IdentityResult> DeleteQuizQuestionAsync(int id)
+        {
+            var existing = await _db.QuizQuestions.FindAsync(id);
+            if (existing == null)
+                return IdentityResult.Failed(new IdentityError { Description = "Question not found" });
+
+            _db.QuizQuestions.Remove(existing);
+            await _db.SaveChangesAsync();
+
+            return IdentityResult.Success;
+        }
+        // ====================== QUIZ OPTIONS ========================= //
+
+        public async Task<List<QuizOption>> GetQuizOptionsAsync()
+        {
+            return await _db.QuizOptions
+                .OrderBy(o => o.QuestionId)
+                .ThenBy(o => o.Label)
+                .ToListAsync();
+        }
+
+        public async Task<QuizOption> GetQuizOptionByIdAsync(int id)
+        {
+            return await _db.QuizOptions.FindAsync(id);
+        }
+
+        public async Task<IdentityResult> AddOrUpdateQuizOptionAsync(QuizOption option)
+        {
+            if (option.Id > 0)
+            {
+                var existing = await _db.QuizOptions.FindAsync(option.Id);
+                if (existing == null)
+                    return IdentityResult.Failed(new IdentityError { Description = "Option not found" });
+
+                existing.Label = option.Label;
+                existing.OptionText = option.OptionText;
+                existing.Points = option.Points;
+                existing.QuestionId = option.QuestionId;
+
+                _db.QuizOptions.Update(existing);
+            }
+            else
+            {
+                await _db.QuizOptions.AddAsync(option);
+            }
+
+            await _db.SaveChangesAsync();
+            return IdentityResult.Success;
+        }
+
+        public async Task<IdentityResult> DeleteQuizOptionAsync(int id)
+        {
+            var existing = await _db.QuizOptions.FindAsync(id);
+            if (existing == null)
+                return IdentityResult.Failed(new IdentityError { Description = "Option not found" });
+
+            _db.QuizOptions.Remove(existing);
+            await _db.SaveChangesAsync();
+
+            return IdentityResult.Success;
+        }
 
 	}
 }

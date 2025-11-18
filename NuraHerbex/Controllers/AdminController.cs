@@ -565,15 +565,14 @@ namespace NuraHerbex.Controllers
                 Converters = { new JsonStringEnumConverter() }
             };
 
-            // 1️⃣ Get logged-in user id
+            // Get logged user id
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized();
 
             var client = AuthorizedClient;
 
-            // 2️⃣ Get full user info from RegisterUser API
+            // Get full user info
             var userResponse = await client.GetAsync($"AdminAPI/user/{userId}");
             if (!userResponse.IsSuccessStatusCode)
                 return Unauthorized();
@@ -584,16 +583,15 @@ namespace NuraHerbex.Controllers
 
             var userRole = loggedInUser.Role;
 
-            // 3️⃣ Get all doctors for mapping
+            // Get all doctors
             var doctorResponse = await client.GetAsync("AdminAPI/users/doctor");
-            var doctors = new List<RegisterUser>();
-            if (doctorResponse.IsSuccessStatusCode)
-            {
-                doctors = await doctorResponse.Content.ReadFromJsonAsync<List<RegisterUser>>(jsonOptions);
-            }
+            var doctors = doctorResponse.IsSuccessStatusCode
+                ? await doctorResponse.Content.ReadFromJsonAsync<List<RegisterUser>>(jsonOptions)
+                : new List<RegisterUser>();
 
-            // 4️⃣ Get consultations based on role
+            // Get consultations depending on role
             HttpResponseMessage consultationResponse;
+
             if (userRole == UserRole.Admin)
             {
                 consultationResponse = await client.GetAsync("AdminAPI/consultationbooking/all");
@@ -607,20 +605,18 @@ namespace NuraHerbex.Controllers
                 consultationResponse = await client.GetAsync($"AdminAPI/consultationbooking/user/{userId}");
             }
 
-            var consultations = new List<ConsultationBooking>();
-            if (consultationResponse.IsSuccessStatusCode)
-            {
-                consultations = await consultationResponse.Content.ReadFromJsonAsync<List<ConsultationBooking>>(jsonOptions);
-            }
+            var consultations = consultationResponse.IsSuccessStatusCode
+                ? await consultationResponse.Content.ReadFromJsonAsync<List<ConsultationBooking>>(jsonOptions)
+                : new List<ConsultationBooking>();
 
-            // 5️⃣ Map consultations with doctors
+            // Map consultations
             var consultationWithDoctors = consultations.Select(c => new ConsultationWithAssignedDoctorViewModel
             {
                 Consultation = c,
-                Doctor = doctors.FirstOrDefault(d => d.Id.Trim() == c.PreferredDoctorId?.Trim())
+                Doctor = doctors.FirstOrDefault(d =>
+                    d.Id.Trim().Equals(c.PreferredDoctorId?.Trim(), StringComparison.OrdinalIgnoreCase))
             }).ToList();
 
-            // 6️⃣ Build view model
             var model = new ConsultationListViewModel
             {
                 Consultations = consultationWithDoctors,
@@ -646,11 +642,14 @@ namespace NuraHerbex.Controllers
                 MeetingLink = meetingLink
             };
 
-            var response = await AuthorizedClient.PostAsJsonAsync($"AdminAPI/consultationbooking/{consultationId}/status", updateModel);
+            var response = await AuthorizedClient.PostAsJsonAsync(
+                $"AdminAPI/consultationbooking/{consultationId}/status",
+                updateModel
+            );
+
             if (!response.IsSuccessStatusCode)
-            {
-                TempData["Error"] = "Failed to update consultation status.";
-            }
+                TempData["Error"] = "Failed to update consultation.";
+
             return RedirectToAction("DoctorConsultation");
         }
 
@@ -664,13 +663,18 @@ namespace NuraHerbex.Controllers
                 MeetingLink = null
             };
 
-            var response = await AuthorizedClient.PostAsJsonAsync($"AdminAPI/consultationbooking/{consultationId}/status", updateModel);
+            var response = await AuthorizedClient.PostAsJsonAsync(
+                $"AdminAPI/consultationbooking/{consultationId}/status",
+                updateModel
+            );
+
             if (!response.IsSuccessStatusCode)
-            {
                 TempData["Error"] = "Failed to reject consultation.";
-            }
+
             return RedirectToAction("DoctorConsultation");
         }
+
+
         [HttpGet]
         public async Task<IActionResult> UserCreation(string? id = null)
         {
@@ -1222,7 +1226,12 @@ namespace NuraHerbex.Controllers
         }
 
         // Filtered Report
-        public async Task<IActionResult> AdminOrderReport(string? orderIdFilter, DateTime? startDate, DateTime? endDate, string? statusFilter)
+        public async Task<IActionResult> AdminOrderReport(
+            string? orderIdFilter,
+            DateTime? startDate,
+            DateTime? endDate,
+            string? statusFilter,
+            string? userNameFilter)
         {
             var jsonOptions = new JsonSerializerOptions
             {
@@ -1231,55 +1240,180 @@ namespace NuraHerbex.Controllers
             };
 
             var client = AuthorizedClient;
+
+            // Fetch orders
             var response = await client.GetAsync("AdminAPI/orders");
             if (!response.IsSuccessStatusCode)
                 return View(new OrderListViewModel());
 
             var orders = await response.Content.ReadFromJsonAsync<List<Order>>(jsonOptions) ?? new List<Order>();
 
+            // Fetch users
             var userResponse = await client.GetAsync("AdminAPI/users");
             var users = userResponse.IsSuccessStatusCode
                 ? await userResponse.Content.ReadFromJsonAsync<List<RegisterUser>>(jsonOptions)
                 : new List<RegisterUser>();
 
-            foreach (var order in orders)
-            {
-                if (!string.IsNullOrEmpty(order.UserId))
-                {
-                    var user = users.FirstOrDefault(u => string.Equals(u.Id?.Trim(), order.UserId.Trim(), StringComparison.OrdinalIgnoreCase));
-                    order.UserId = user?.FullName ?? "Unknown User";
-                }
-                else
-                {
-                    order.UserId = "Unknown User";
-                }
-            }
+            // Build UserId -> FullName map
+            var userMap = users
+                .Where(u => !string.IsNullOrEmpty(u.Id))
+                .ToDictionary(u => u.Id.Trim(), u => u.FullName ?? "Unknown User", StringComparer.OrdinalIgnoreCase);
 
-            // Filtering logic is as before
-            if (!string.IsNullOrEmpty(orderIdFilter) && int.TryParse(orderIdFilter, out int orderIdVal))
+            // Map orders to include UserName for filtering
+            var ordersWithUserName = orders.Select(o =>
             {
-                orders = orders.Where(o => o.Id == orderIdVal).ToList();
+                var userName = !string.IsNullOrEmpty(o.UserId) && userMap.ContainsKey(o.UserId.Trim())
+                    ? userMap[o.UserId.Trim()]
+                    : "Unknown User";
+
+                return new
+                {
+                    Order = o,
+                    UserName = userName
+                };
+            }).ToList();
+
+            bool filtersApplied =
+                !string.IsNullOrEmpty(orderIdFilter) ||
+                startDate.HasValue ||
+                endDate.HasValue ||
+                !string.IsNullOrEmpty(statusFilter) ||
+                !string.IsNullOrEmpty(userNameFilter);
+
+            // DEFAULT: last 7 days excluding Delivered and Cancelled
+            if (!filtersApplied)
+            {
+                DateTime lastWeek = DateTime.UtcNow.AddDays(-7);
+
+                ordersWithUserName = ordersWithUserName
+                    .Where(x => x.Order.OrderDate >= lastWeek &&
+                                x.Order.Status != OrderStatus.Delivered &&
+                                x.Order.Status != OrderStatus.Cancelled)
+                    .OrderByDescending(x => x.Order.OrderDate)
+                    .ToList();
             }
             else
             {
+                // Order ID filter
+                if (!string.IsNullOrEmpty(orderIdFilter) && int.TryParse(orderIdFilter, out int orderIdVal))
+                    ordersWithUserName = ordersWithUserName.Where(x => x.Order.Id == orderIdVal).ToList();
+
+                // Username filter
+                if (!string.IsNullOrEmpty(userNameFilter))
+                    ordersWithUserName = ordersWithUserName
+                        .Where(x => x.UserName.Contains(userNameFilter.Trim(), StringComparison.OrdinalIgnoreCase))
+                        .ToList();
+
+                // Date filters
                 if (startDate.HasValue)
-                    orders = orders.Where(o => o.OrderDate.Date >= startDate.Value.Date).ToList();
+                    ordersWithUserName = ordersWithUserName.Where(x => x.Order.OrderDate.Date >= startDate.Value.Date).ToList();
 
                 if (endDate.HasValue)
-                    orders = orders.Where(o => o.OrderDate.Date <= endDate.Value.Date).ToList();
+                    ordersWithUserName = ordersWithUserName.Where(x => x.Order.OrderDate.Date <= endDate.Value.Date).ToList();
 
-                if (!string.IsNullOrEmpty(statusFilter) && Enum.TryParse<OrderStatus>(statusFilter, out var statusEnum))
-                    orders = orders.Where(o => o.Status == statusEnum).ToList();
+                // Status filter
+                if (!string.IsNullOrEmpty(statusFilter) &&
+                    Enum.TryParse<OrderStatus>(statusFilter, out var statusEnum))
+                    ordersWithUserName = ordersWithUserName.Where(x => x.Order.Status == statusEnum).ToList();
             }
 
+            // Persist filter values
             ViewBag.OrderIdFilter = orderIdFilter;
             ViewBag.StartDate = startDate?.ToString("yyyy-MM-dd");
             ViewBag.EndDate = endDate?.ToString("yyyy-MM-dd");
             ViewBag.StatusFilter = statusFilter;
+            ViewBag.UserNameFilter = userNameFilter;
+            ViewBag.UserMap = userMap; // For display in table
 
             var vm = new OrderListViewModel
             {
-                Orders = orders,
+                Orders = ordersWithUserName.Select(x => x.Order).ToList(),
+                UserRole = "Admin"
+            };
+
+            return View(vm);
+        }
+
+        public async Task<IActionResult> AdminDispatchedOrders(
+    string? orderIdFilter,
+    DateTime? startDate,
+    DateTime? endDate,
+    string? userNameFilter)
+        {
+            var jsonOptions = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true,
+                Converters = { new JsonStringEnumConverter() }
+            };
+
+            var client = AuthorizedClient;
+
+            // Fetch orders
+            var response = await client.GetAsync("AdminAPI/orders");
+            if (!response.IsSuccessStatusCode)
+                return View(new OrderListViewModel());
+
+            var orders = await response.Content.ReadFromJsonAsync<List<Order>>(jsonOptions)
+                         ?? new List<Order>();
+
+            // Fetch users
+            var userResponse = await client.GetAsync("AdminAPI/users");
+            var users = userResponse.IsSuccessStatusCode
+                ? await userResponse.Content.ReadFromJsonAsync<List<RegisterUser>>(jsonOptions)
+                : new List<RegisterUser>();
+
+            // Build map UserId -> FullName
+            var userMap = users
+                .Where(u => !string.IsNullOrEmpty(u.Id))
+                .ToDictionary(u => u.Id.Trim(), u => u.FullName ?? "Unknown User",
+                              StringComparer.OrdinalIgnoreCase);
+
+            // Filter ONLY SHIPPED orders
+            var shippedOrders = orders
+                .Where(o => o.Status == OrderStatus.Shipped)
+                .ToList();
+
+            // Map with username for filtering
+            var mappedOrders = shippedOrders.Select(o =>
+            {
+                var name = (!string.IsNullOrEmpty(o.UserId) && userMap.ContainsKey(o.UserId.Trim()))
+                            ? userMap[o.UserId.Trim()]
+                            : "Unknown User";
+
+                return new
+                {
+                    Order = o,
+                    UserName = name
+                };
+            }).ToList();
+
+            // Apply filters
+            if (!string.IsNullOrEmpty(orderIdFilter) && int.TryParse(orderIdFilter, out int oid))
+                mappedOrders = mappedOrders.Where(x => x.Order.Id == oid).ToList();
+
+            if (!string.IsNullOrEmpty(userNameFilter))
+                mappedOrders = mappedOrders.Where(x =>
+                    x.UserName.Contains(userNameFilter, StringComparison.OrdinalIgnoreCase)).ToList();
+
+            if (startDate.HasValue)
+                mappedOrders = mappedOrders.Where(x =>
+                    x.Order.OrderDate.Date >= startDate.Value.Date).ToList();
+
+            if (endDate.HasValue)
+                mappedOrders = mappedOrders.Where(x =>
+                    x.Order.OrderDate.Date <= endDate.Value.Date).ToList();
+
+            // Persist filter values
+            ViewBag.OrderIdFilter = orderIdFilter;
+            ViewBag.StartDate = startDate?.ToString("yyyy-MM-dd");
+            ViewBag.EndDate = endDate?.ToString("yyyy-MM-dd");
+            ViewBag.UserNameFilter = userNameFilter;
+            ViewBag.UserMap = userMap;
+
+            // Prepare view model
+            var vm = new OrderListViewModel
+            {
+                Orders = mappedOrders.Select(x => x.Order).ToList(),
                 UserRole = "Admin"
             };
 
@@ -1381,5 +1515,223 @@ namespace NuraHerbex.Controllers
 			return RedirectToAction(nameof(UserCreation));
 		}
 
-	}
+        // ====================== ADMIN QUIZ CATEGORY ========================= //
+
+        [HttpGet]
+        public async Task<IActionResult> AdminQuizCategory(int id = 0)
+        {
+            var response = await AuthorizedClient.GetAsync("AdminAPI/quizcategories");
+
+            List<QuizCategory> categories = new List<QuizCategory>();
+
+            if (response.IsSuccessStatusCode)
+            {
+                var json = await response.Content.ReadAsStringAsync();
+                categories = JsonConvert.DeserializeObject<List<QuizCategory>>(json) ?? new List<QuizCategory>();
+            }
+
+            var model = new QuizCategoryViewModel
+            {
+                CategoryList = categories,
+                NewCategory = new QuizCategory()
+            };
+
+            if (id > 0)
+            {
+                var catResponse = await AuthorizedClient.GetAsync($"AdminAPI/quizcategory/{id}");
+
+                if (catResponse.IsSuccessStatusCode)
+                {
+                    var json = await catResponse.Content.ReadAsStringAsync();
+                    var category = JsonConvert.DeserializeObject<QuizCategory>(json);
+                    if (category != null)
+                        model.NewCategory = category;
+                }
+            }
+
+            return View(model);
+        }
+
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AdminQuizCategory(QuizCategoryViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                TempData["Error"] = "Validation failed";
+                return View(model);
+            }
+
+            var response = await AuthorizedClient.PostAsJsonAsync("AdminAPI/quizcategory", model.NewCategory);
+
+            if (response.IsSuccessStatusCode)
+            {
+                TempData["Success"] = model.NewCategory.Id > 0
+                    ? "Quiz category updated successfully"
+                    : "Quiz category added successfully";
+
+                return RedirectToAction(nameof(AdminQuizCategory), new { id = 0 });
+            }
+
+            var error = await response.Content.ReadAsStringAsync();
+            TempData["Error"] = $"Error: {error}";
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteQuizCategory(int id)
+        {
+            var response = await AuthorizedClient.DeleteAsync($"AdminAPI/quizcategory/{id}");
+
+            if (response.IsSuccessStatusCode)
+            {
+                TempData["Success"] = "Quiz category deleted successfully!";
+            }
+            else
+            {
+                var error = await response.Content.ReadAsStringAsync();
+                TempData["Error"] = $"Delete failed: {error}";
+            }
+
+            return RedirectToAction(nameof(AdminQuizCategory));
+        }
+
+        // ====================== ADMIN QUIZ QUESTION ========================= //
+
+        [HttpGet]
+        public async Task<IActionResult> AdminQuizQuestion(int id = 0)
+        {
+            var questionResponse = await AuthorizedClient.GetAsync("AdminAPI/quizquestions");
+            var categoryResponse = await AuthorizedClient.GetAsync("AdminAPI/quizcategories");
+
+            var model = new QuizQuestionViewModel();
+
+            if (questionResponse.IsSuccessStatusCode)
+            {
+                var json = await questionResponse.Content.ReadAsStringAsync();
+                model.QuestionList = JsonConvert.DeserializeObject<List<QuizQuestion>>(json) ?? new();
+            }
+
+            if (categoryResponse.IsSuccessStatusCode)
+            {
+                var json = await categoryResponse.Content.ReadAsStringAsync();
+                model.Categories = JsonConvert.DeserializeObject<List<QuizCategory>>(json) ?? new();
+            }
+
+            if (id > 0)
+            {
+                var qResponse = await AuthorizedClient.GetAsync($"AdminAPI/quizquestion/{id}");
+                if (qResponse.IsSuccessStatusCode)
+                {
+                    var json = await qResponse.Content.ReadAsStringAsync();
+                    model.NewQuestion = JsonConvert.DeserializeObject<QuizQuestion>(json) ?? new();
+                }
+            }
+
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AdminQuizQuestion(QuizQuestionViewModel model)
+        {
+            var response = await AuthorizedClient.PostAsJsonAsync("AdminAPI/quizquestion", model.NewQuestion);
+
+            if (response.IsSuccessStatusCode)
+            {
+                TempData["Success"] = model.NewQuestion.Id > 0
+                    ? "Quiz question updated successfully"
+                    : "Quiz question added successfully";
+
+                return RedirectToAction(nameof(AdminQuizQuestion), new { id = 0 });
+
+            }
+
+            TempData["Error"] = await response.Content.ReadAsStringAsync();
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteQuizQuestion(int id)
+        {
+            var response = await AuthorizedClient.DeleteAsync($"AdminAPI/quizquestion/{id}");
+
+            if (response.IsSuccessStatusCode)
+                TempData["Success"] = "Question deleted successfully!";
+            else
+                TempData["Error"] = await response.Content.ReadAsStringAsync();
+
+            return RedirectToAction(nameof(AdminQuizQuestion));
+        }
+
+        // ====================== ADMIN QUIZ OPTION ========================= //
+
+        [HttpGet]
+        public async Task<IActionResult> AdminQuizOption(int id = 0)
+        {
+            var optionResponse = await AuthorizedClient.GetAsync("AdminAPI/quizoptions");
+            var questionResponse = await AuthorizedClient.GetAsync("AdminAPI/quizquestions");
+
+            var model = new QuizOptionViewModel();
+
+            if (optionResponse.IsSuccessStatusCode)
+            {
+                var json = await optionResponse.Content.ReadAsStringAsync();
+                model.OptionList = JsonConvert.DeserializeObject<List<QuizOption>>(json) ?? new();
+            }
+
+            if (questionResponse.IsSuccessStatusCode)
+            {
+                var json = await questionResponse.Content.ReadAsStringAsync();
+                model.Questions = JsonConvert.DeserializeObject<List<QuizQuestion>>(json) ?? new();
+            }
+
+            if (id > 0)
+            {
+                var oResponse = await AuthorizedClient.GetAsync($"AdminAPI/quizoption/{id}");
+                if (oResponse.IsSuccessStatusCode)
+                {
+                    var json = await oResponse.Content.ReadAsStringAsync();
+                    model.NewOption = JsonConvert.DeserializeObject<QuizOption>(json);
+                }
+            }
+
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AdminQuizOption(QuizOptionViewModel model)
+        {
+            var response = await AuthorizedClient.PostAsJsonAsync("AdminAPI/quizoption", model.NewOption);
+
+            if (response.IsSuccessStatusCode)
+            {
+                TempData["Success"] = model.NewOption.Id > 0 ? "Option updated" : "Option added";
+                return RedirectToAction(nameof(AdminQuizOption), new { id = 0 });
+
+            }
+
+            TempData["Error"] = "Something went wrong";
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteQuizOption(int id)
+        {
+            var response = await AuthorizedClient.DeleteAsync($"AdminAPI/quizoption/{id}");
+
+            if (response.IsSuccessStatusCode)
+                TempData["Success"] = "Option deleted";
+            else
+                TempData["Error"] = "Delete failed";
+
+            return RedirectToAction(nameof(AdminQuizOption));
+        }
+
+    }
 }

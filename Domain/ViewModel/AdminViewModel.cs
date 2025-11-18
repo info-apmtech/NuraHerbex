@@ -546,6 +546,38 @@ namespace Domain.ViewModel
 
 		public List<CreateOrderDetailDto> Details { get; set; } = new();
 	}
+    }
+    public class QuizCategoryViewModel
+    {
+        public List<QuizCategory> CategoryList { get; set; } = new();
+        public QuizCategory NewCategory { get; set; } = new();
+    }
+    public class QuizQuestionViewModel
+    {
+        public List<QuizQuestion> QuestionList { get; set; } = new();
+        public QuizQuestion NewQuestion { get; set; } = new();
+        public List<QuizCategory> Categories { get; set; } = new(); 
+    }
+    public class QuizOptionViewModel
+    {
+        public List<QuizOption> OptionList { get; set; } = new();
+        public QuizOption NewOption { get; set; } = new();
+        public List<QuizQuestion> Questions { get; set; } = new(); 
+    }
+    public class QuizPageViewModel
+    {
+        public List<QuizCategory> Categories { get; set; }
+        public int? SelectedCategoryId { get; set; }
+
+        public List<QuizQuestion> Questions { get; set; }
+        public QuizQuestion CurrentQuestion { get; set; }
+        public List<QuizOption> Options { get; set; }
+        public int CurrentQuestionIndex { get; set; }
+
+        public int TotalPoints { get; set; }
+        public int TotalQuestions { get; set; }
+        public bool QuizFinished { get; set; } = false;
+    }
 
     public class DashboardStatsDto
     {

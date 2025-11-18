@@ -127,6 +127,7 @@ namespace Domain.Interface
         Task<IdentityResult> AddPaymentGatewayDetails(PaymentGatewayDetails payment);
         Task<List<PaymentGatewayDetails>> GetPaymentGatewayDetailsAsync();
 		Task<Pincode?> GetPincodeByCodeAsync(string code);
+
 		//order
 		Task<int> CreateAsync(Order order, List<OrderDetail> details);
         Task <OrderSummaryViewModel> GetOrderAsync(int orderId);
@@ -136,5 +137,25 @@ namespace Domain.Interface
         Task<Order?> GetOrderByIdAsync(int orderId);
         Task<DashboardStatsDto> GetDashboardStatsAsync();
         Task<int> GetUserCountByRoleAsync(UserRole role);
+
+        //QUIZ CATEGORY
+        Task<QuizCategory> GetQuizCategoryByIdAsync(int id);
+        Task<List<QuizCategory>> GetQuizCategoriesAsync();
+        Task<IdentityResult> AddOrUpdateQuizCategoryAsync(QuizCategory category);
+        Task<IdentityResult> DeleteQuizCategoryAsync(int id);
+
+        //QUIZ QUESTION
+        Task<QuizQuestion> GetQuizQuestionByIdAsync(int id);
+        Task<List<QuizQuestion>> GetQuizQuestionsAsync();
+        Task<IdentityResult> AddOrUpdateQuizQuestionAsync(QuizQuestion question);
+        Task<IdentityResult> DeleteQuizQuestionAsync(int id);
+
+        // QUIZ OPTIONS
+        Task<List<QuizOption>> GetQuizOptionsAsync();
+        Task<QuizOption> GetQuizOptionByIdAsync(int id);
+        Task<IdentityResult> AddOrUpdateQuizOptionAsync(QuizOption option);
+        Task<IdentityResult> DeleteQuizOptionAsync(int id);
+
+
     }
 }

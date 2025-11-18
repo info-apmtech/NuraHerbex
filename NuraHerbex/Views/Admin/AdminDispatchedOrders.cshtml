@@ -1,0 +1,108 @@
+﻿@model Domain.ViewModel.OrderListViewModel
+@using Domain.Models
+
+@{
+    ViewData["Title"] = "Dispatched Orders";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="pcoded-main-container">
+    <div class="pcoded-content">
+
+        <div class="row heading-bg mb-3">
+            <div class="col-12">
+                <h4>Dispatched (Shipped) Orders</h4>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <form asp-action="AdminDispatchedOrders" method="get" class="row g-3 mb-4">
+
+            <div class="col-md-2">
+                <label for="orderIdFilter" class="form-label">Order ID</label>
+                <input type="text" name="orderIdFilter" id="orderIdFilter"
+                       class="form-control" value="@ViewBag.OrderIdFilter" />
+            </div>
+
+            <div class="col-md-3">
+                <label for="userNameFilter" class="form-label">User Name</label>
+                <input type="text" name="userNameFilter" id="userNameFilter"
+                       class="form-control" value="@ViewBag.UserNameFilter" />
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label">Start Date</label>
+                <input type="date" name="startDate" class="form-control" value="@ViewBag.StartDate" />
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label">End Date</label>
+                <input type="date" name="endDate" class="form-control" value="@ViewBag.EndDate" />
+            </div>
+
+            <div class="col-md-2 d-flex align-items-end">
+                <button class="btn btn-primary me-2">Filter</button>
+                <a class="btn btn-secondary" href="@Url.Action("AdminDispatchedOrders","Admin")">Clear</a>
+            </div>
+        </form>
+
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Shipped Orders</h5>
+            </div>
+
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped w-100">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>#</th>
+                                <th>Order ID</th>
+                                <th>User Name</th>
+                                <th>Order Date</th>
+                                <th>Total</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            @if (Model.Orders.Any())
+                            {
+                                int i = 1;
+                                foreach (var order in Model.Orders)
+                                {
+                                    <tr>
+                                        <td>@i</td>
+                                        <td>@order.Id</td>
+                                        <td>
+                                            @(ViewBag.UserMap.ContainsKey(order.UserId)
+                                                ? ViewBag.UserMap[order.UserId]
+                                                : "Unknown User")
+                                        </td>
+                                        <td>@order.OrderDate.ToString("dd MMM yyyy hh:mm tt")</td>
+                                        <td>@order.Total.ToString("C", new System.Globalization.CultureInfo("hi-IN"))</td>
+                                        <td>
+                                            <span class="badge bg-info">@order.Status</span>
+                                        </td>
+                                    </tr>
+
+                                    i++;
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="6" class="text-center">
+                                        No shipped orders found.
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>

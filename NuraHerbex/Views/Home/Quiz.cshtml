@@ -1,4 +1,6 @@
-﻿@{
+﻿@using Domain.Models
+@model List<QuizCategory>
+@{
     ViewData["Title"] = "Quiz";
 }
 
@@ -33,6 +35,101 @@
         <div class="quiz-header">
             <h2 class="quiz-title">Quiz</h2>
         </div>
+
+        <div class="container">
+            <div class="quiz-box" id="quiz-container">
+
+                <div class="quiz-question">
+                    <p>Select a Quiz Category</p>
+                </div>
+
+                <div class="quiz-options">
+                    @foreach (var category in Model.OrderBy(c => c.Id))
+                    {
+                        <button class="quiz-option category-btn" data-category-id="@category.Id">
+                            @category.Name
+                        </button>
+                    }
+                </div>
+
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+    let currentQuestionIndex = 0;
+    let totalPoints = 0;
+    let selectedCategoryId = null;
+
+    // Start quiz when a category is clicked
+    document.querySelectorAll('.category-btn').forEach(btn => {
+        btn.addEventListener('click', async () => {
+            selectedCategoryId = btn.dataset.categoryId;
+            currentQuestionIndex = 0;
+            totalPoints = 0;
+            await loadQuestion();
+        });
+    });
+
+    // Load a single question via HomeController's GetQuestion
+    async function loadQuestion(selectedPoints = 0) {
+        totalPoints += selectedPoints;
+
+        try {
+            const response = await fetch(`/Home/GetQuestion?categoryId=${selectedCategoryId}&questionIndex=${currentQuestionIndex}&totalPoints=${totalPoints}`);
+            const data = await response.json();
+
+            const container = document.getElementById('quiz-container');
+            container.innerHTML = '';
+
+            // Finish
+            if (data.quizFinished) {
+                window.location.href = data.redirectUrl;
+                return;
+            }
+
+            // Build question UI
+            const questionHtml = `
+                <div class="quiz-question">
+                    <span class="quiz-badge">Q${data.currentQuestionIndex + 1}</span>
+                    <p>${data.currentQuestion.QuestionText}</p>
+                </div>
+
+                <div class="quiz-options">
+                    ${data.options.map(o =>
+                        `<button class="quiz-option" onclick="nextQuestion(${o.Points})">${o.OptionText}</button>`
+                    ).join('')}
+                </div>
+
+                <div class="quiz-footer">
+                    <span class="quiz-progress">Question ${data.currentQuestionIndex + 1}</span>
+                </div>
+
+                <p>Score so far: ${data.totalPoints}</p>
+            `;
+
+            container.innerHTML = questionHtml;
+            currentQuestionIndex++;
+
+        } catch (error) {
+            console.error('Error loading question', error);
+            alert('Failed to load the question. Check console for details.');
+        }
+    }
+
+    function nextQuestion(points) {
+        loadQuestion(points);
+    }
+</script>
+
+
+
+@* <section class="quiz-section">
+    <div class="quiz-wrapper">
+        <div class="quiz-header">
+            <h2 class="quiz-title">Quiz</h2>
+        </div>
         <div class="container">
             <div class="quiz-box">
                 <div class="quiz-question">
@@ -53,7 +150,7 @@
         </div>
     </div>
 </section>
-
+ *@
 <!-- Result Section -->
 <section class="result-section">
     <h2>Your Personalized <span class="highlight">Path to Wellness</span></h2>

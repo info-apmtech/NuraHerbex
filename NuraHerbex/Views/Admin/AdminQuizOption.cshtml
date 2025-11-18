@@ -1,0 +1,141 @@
+﻿@using Domain.ViewModel
+@model QuizOptionViewModel
+
+@{
+    var isEdit = Model.NewOption.Id > 0;
+    ViewData["Title"] = "Quiz Option Management";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="pcoded-main-container">
+    <div class="pcoded-content">
+
+        <h4 class="mb-3">Quiz Options</h4>
+
+        <ul class="nav nav-tabs mb-3">
+            <li class="nav-item">
+                <a class="nav-link @(isEdit ? "" : "active")" data-toggle="tab" href="#list">List</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link @(isEdit ? "active" : "")" data-toggle="tab" href="#add">
+                    @(isEdit ? "Edit Option" : "Add Option")
+                </a>
+            </li>
+        </ul>
+
+        <div class="tab-content">
+
+            <!-- LIST -->
+            <div class="tab-pane fade @(isEdit ? "" : "show active")" id="list">
+                <div class="card">
+                    <div class="card-header bg-white"><h5>Option List</h5></div>
+                    <div class="card-body">
+
+                        <table class="table table-bordered table-striped">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>#</th>
+                                    <th>Question</th>
+                                    <th>Label</th>
+                                    <th>Option</th>
+                                    <th>Points</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model.OptionList.Any())
+                                {
+                                    int i = 1;
+                                    foreach (var o in Model.OptionList)
+                                    {
+                                        var q = Model.Questions.FirstOrDefault(x => x.Id == o.QuestionId);
+
+                                        <tr>
+                                            <td>@i</td>
+                                            <td>@q?.QuestionText</td>
+                                            <td>@o.Label</td>
+                                            <td>@o.OptionText</td>
+                                            <td>@o.Points</td>
+                                            <td>
+                                                <form method="get" asp-action="AdminQuizOption" asp-route-id="@o.Id" style="display:inline;">
+                                                    <button class="btn btn-sm btn-warning">Edit</button>
+                                                </form>
+
+                                                <form method="post" asp-action="DeleteQuizOption" asp-route-id="@o.Id"
+                                                      onsubmit="return confirm('Delete this option?');"
+                                                      style="display:inline;">
+                                                    @Html.AntiForgeryToken()
+                                                    <button class="btn btn-sm btn-danger">Delete</button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                        i++;
+                                    }
+                                }
+                                else
+                                {
+                                    <tr><td colspan="6" class="text-center">No options found</td></tr>
+                                }
+                            </tbody>
+                        </table>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- ADD / EDIT FORM -->
+            <div class="tab-pane fade @(isEdit ? "show active" : "")" id="add">
+                <div class="card">
+                    <div class="card-header bg-white"><h5>Add / Edit Option</h5></div>
+                    <div class="card-body">
+
+                        <form asp-action="AdminQuizOption" method="post">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" asp-for="NewOption.Id" />
+
+                            <div class="mb-3">
+                                <label>Question</label>
+                                <select asp-for="NewOption.QuestionId" class="form-control" required>
+                                    <option value="">-- Select Question --</option>
+                                    @foreach (var q in Model.Questions)
+                                    {
+                                        <option value="@q.Id">@q.QuestionText</option>
+                                    }
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label>Option Label</label>
+                                <select asp-for="NewOption.Label" class="form-control" required>
+                                    <option value="">-- Select Label --</option>
+                                    <option>A</option>
+                                    <option>B</option>
+                                    <option>C</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label>Option Text</label>
+                                <input asp-for="NewOption.OptionText" class="form-control" required />
+                            </div>
+
+                            <div class="mb-3">
+                                <label>Points</label>
+                                <input asp-for="NewOption.Points" type="number" class="form-control" required min="1" max="10" />
+                            </div>
+
+                            <button class="btn btn-primary">
+                                @(isEdit ? "Update Option" : "Add Option")
+                            </button>
+
+                            <a asp-action="AdminQuizOption" class="btn btn-secondary">Clear</a>
+                        </form>
+
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+</div>
