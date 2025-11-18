@@ -1552,6 +1552,140 @@ namespace NuraHerbex.Controllers
             return RedirectToAction(nameof(AdminQuizCategory));
         }
 
+        // ====================== ADMIN QUIZ QUESTION ========================= //
+
+        [HttpGet]
+        public async Task<IActionResult> AdminQuizQuestion(int id = 0)
+        {
+            var questionResponse = await AuthorizedClient.GetAsync("AdminAPI/quizquestions");
+            var categoryResponse = await AuthorizedClient.GetAsync("AdminAPI/quizcategories");
+
+            var model = new QuizQuestionViewModel();
+
+            if (questionResponse.IsSuccessStatusCode)
+            {
+                var json = await questionResponse.Content.ReadAsStringAsync();
+                model.QuestionList = JsonConvert.DeserializeObject<List<QuizQuestion>>(json) ?? new();
+            }
+
+            if (categoryResponse.IsSuccessStatusCode)
+            {
+                var json = await categoryResponse.Content.ReadAsStringAsync();
+                model.Categories = JsonConvert.DeserializeObject<List<QuizCategory>>(json) ?? new();
+            }
+
+            if (id > 0)
+            {
+                var qResponse = await AuthorizedClient.GetAsync($"AdminAPI/quizquestion/{id}");
+                if (qResponse.IsSuccessStatusCode)
+                {
+                    var json = await qResponse.Content.ReadAsStringAsync();
+                    model.NewQuestion = JsonConvert.DeserializeObject<QuizQuestion>(json) ?? new();
+                }
+            }
+
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AdminQuizQuestion(QuizQuestionViewModel model)
+        {
+            var response = await AuthorizedClient.PostAsJsonAsync("AdminAPI/quizquestion", model.NewQuestion);
+
+            if (response.IsSuccessStatusCode)
+            {
+                TempData["Success"] = model.NewQuestion.Id > 0
+                    ? "Quiz question updated successfully"
+                    : "Quiz question added successfully";
+
+                return RedirectToAction(nameof(AdminQuizQuestion), new { id = 0 });
+
+            }
+
+            TempData["Error"] = await response.Content.ReadAsStringAsync();
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteQuizQuestion(int id)
+        {
+            var response = await AuthorizedClient.DeleteAsync($"AdminAPI/quizquestion/{id}");
+
+            if (response.IsSuccessStatusCode)
+                TempData["Success"] = "Question deleted successfully!";
+            else
+                TempData["Error"] = await response.Content.ReadAsStringAsync();
+
+            return RedirectToAction(nameof(AdminQuizQuestion));
+        }
+
+        // ====================== ADMIN QUIZ OPTION ========================= //
+
+        [HttpGet]
+        public async Task<IActionResult> AdminQuizOption(int id = 0)
+        {
+            var optionResponse = await AuthorizedClient.GetAsync("AdminAPI/quizoptions");
+            var questionResponse = await AuthorizedClient.GetAsync("AdminAPI/quizquestions");
+
+            var model = new QuizOptionViewModel();
+
+            if (optionResponse.IsSuccessStatusCode)
+            {
+                var json = await optionResponse.Content.ReadAsStringAsync();
+                model.OptionList = JsonConvert.DeserializeObject<List<QuizOption>>(json) ?? new();
+            }
+
+            if (questionResponse.IsSuccessStatusCode)
+            {
+                var json = await questionResponse.Content.ReadAsStringAsync();
+                model.Questions = JsonConvert.DeserializeObject<List<QuizQuestion>>(json) ?? new();
+            }
+
+            if (id > 0)
+            {
+                var oResponse = await AuthorizedClient.GetAsync($"AdminAPI/quizoption/{id}");
+                if (oResponse.IsSuccessStatusCode)
+                {
+                    var json = await oResponse.Content.ReadAsStringAsync();
+                    model.NewOption = JsonConvert.DeserializeObject<QuizOption>(json);
+                }
+            }
+
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AdminQuizOption(QuizOptionViewModel model)
+        {
+            var response = await AuthorizedClient.PostAsJsonAsync("AdminAPI/quizoption", model.NewOption);
+
+            if (response.IsSuccessStatusCode)
+            {
+                TempData["Success"] = model.NewOption.Id > 0 ? "Option updated" : "Option added";
+                return RedirectToAction(nameof(AdminQuizOption), new { id = 0 });
+
+            }
+
+            TempData["Error"] = "Something went wrong";
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteQuizOption(int id)
+        {
+            var response = await AuthorizedClient.DeleteAsync($"AdminAPI/quizoption/{id}");
+
+            if (response.IsSuccessStatusCode)
+                TempData["Success"] = "Option deleted";
+            else
+                TempData["Error"] = "Delete failed";
+
+            return RedirectToAction(nameof(AdminQuizOption));
+        }
 
     }
 }

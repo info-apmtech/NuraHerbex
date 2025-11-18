@@ -138,6 +138,18 @@ namespace Domain.Interface
         Task<IdentityResult> AddOrUpdateQuizCategoryAsync(QuizCategory category);
         Task<IdentityResult> DeleteQuizCategoryAsync(int id);
 
+        //QUIZ QUESTION
+        Task<QuizQuestion> GetQuizQuestionByIdAsync(int id);
+        Task<List<QuizQuestion>> GetQuizQuestionsAsync();
+        Task<IdentityResult> AddOrUpdateQuizQuestionAsync(QuizQuestion question);
+        Task<IdentityResult> DeleteQuizQuestionAsync(int id);
+
+        // QUIZ OPTIONS
+        Task<List<QuizOption>> GetQuizOptionsAsync();
+        Task<QuizOption> GetQuizOptionByIdAsync(int id);
+        Task<IdentityResult> AddOrUpdateQuizOptionAsync(QuizOption option);
+        Task<IdentityResult> DeleteQuizOptionAsync(int id);
+
 
     }
 }

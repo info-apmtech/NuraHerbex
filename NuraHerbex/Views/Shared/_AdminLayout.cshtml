@@ -163,28 +163,46 @@
                         </li>
                         <li class="nav-item">
                             <a href="@Url.Action("AdminOrderStatus", "Admin")" class="nav-link">
-                                <span class="pcoded-micon"><i class="feather icon-refresh-ccw"></i></span>
+                                <span class="pcoded-micon"><i class="feather icon-list"></i></span>
                                 <span class="pcoded-mtext">Order Status</span>
                             </a>
                         </li>
+
                         <li class="nav-item">
                             <a href="@Url.Action("AdminOrderReport", "Admin")" class="nav-link">
-                                <span class="pcoded-micon"><i class="feather icon-refresh-ccw"></i></span>
+                                <span class="pcoded-micon"><i class="feather icon-file-text"></i></span>
                                 <span class="pcoded-mtext">Order Report</span>
                             </a>
                         </li>
+
                         <li class="nav-item">
                             <a href="@Url.Action("AdminDispatchedOrders", "Admin")" class="nav-link">
-                                <span class="pcoded-micon"><i class="feather icon-refresh-ccw"></i></span>
+                                <span class="pcoded-micon"><i class="feather icon-package"></i></span>
                                 <span class="pcoded-mtext">Dispatched Orders</span>
                             </a>
                         </li>
+
                         <li class="nav-item">
                             <a href="@Url.Action("AdminQuizCategory", "Admin")" class="nav-link">
-                                <span class="pcoded-micon"><i class="feather icon-refresh-ccw"></i></span>
+                                <span class="pcoded-micon"><i class="feather icon-grid"></i></span>
                                 <span class="pcoded-mtext">Quiz Category</span>
                             </a>
                         </li>
+
+                        <li class="nav-item">
+                            <a href="@Url.Action("AdminQuizQuestion", "Admin")" class="nav-link">
+                                <span class="pcoded-micon"><i class="feather icon-help-circle"></i></span>
+                                <span class="pcoded-mtext">Quiz Question</span>
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a href="@Url.Action("AdminQuizOption", "Admin")" class="nav-link">
+                                <span class="pcoded-micon"><i class="feather icon-check-square"></i></span>
+                                <span class="pcoded-mtext">Quiz Option</span>
+                            </a>
+                        </li>
+
                     }
                     else if (User.IsInRole("Doctor"))
                     {
