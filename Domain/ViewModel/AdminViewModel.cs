@@ -42,10 +42,13 @@ namespace Domain.ViewModel
         public bool IsActive { get; set; } = true;   // "Remember me" / persistent cookie
                                                      //public UserRole? role { get; set; }
 
-        [BindNever][ValidateNever] public RegisterUser? RegisteredUser { get; set; }
-        [BindNever][ValidateNever] public List<RegisterUser>? UserList { get; set; }
-        [BindNever][ValidateNever] public DateTime? FromDate { get; set; }
-        [BindNever][ValidateNever] public DateTime? ToDate { get; set; }
+        public RegisterUser? RegisteredUser { get; set; }
+		[ValidateNever]
+		public List<RegisterUser>? UserList { get; set; }
+		[ValidateNever]
+		public DateTime? FromDate { get; set; }
+		[ValidateNever]
+        public DateTime? ToDate { get; set; }
     }
     public enum ForgotFlowStep { Request = 0, Verify = 1 }
 
@@ -249,8 +252,33 @@ namespace Domain.ViewModel
         public List<AddressDetail> Addresses { get; set; } = new List<AddressDetail>();
         public List<Country> Countries { get; set; } = new List<Country>();
         public List<State> States { get; set; } = new List<State>();
-    }
-    public class ConsultationBookingViewModel
+		// 🔹 Personal info
+		public string Id { get; set; }          // logged in user Id
+		public string FirstName { get; set; }
+		public string LastName { get; set; }
+		public string FullName => $"{FirstName} {LastName}".Trim();
+		public string Email { get; set; }
+		public string PhoneNumber { get; set; }
+	}
+	public class ProfileUpdateDto
+	{
+		[Required]
+		public string Id { get; set; }         
+
+		[Required]
+		public string FirstName { get; set; }
+
+		public string? LastName { get; set; }
+
+		[Required]
+		[EmailAddress]
+		public string Email { get; set; }
+
+		[Phone]
+		public string? PhoneNumber { get; set; }
+	}
+
+	public class ConsultationBookingViewModel
     {
         [Required, MaxLength(100)] public string FirstName { get; set; }
         [Required, MaxLength(100)] public string LastName { get; set; }
@@ -367,34 +395,31 @@ namespace Domain.ViewModel
         public int OrderId { get; set; }
         public string CustomerId { get; set; }
     }
-    public class OrderSummaryViewModel
-    {
-        public List<CartItemViewModel> Items { get; set; } = new();
-        public decimal SubTotal => Items.Sum(i => i.LineTotal);
+	public class OrderSummaryViewModel
+	{
+		public List<CartItemViewModel> Items { get; set; } = new();
+		public decimal SubTotal => Items.Sum(i => i.LineTotal);
 
-        public CartViewModel Cart { get; set; } = new();
-        public List<AddressDetail> Addresses { get; set; } = new();
-        public int? SelectedAddressId { get; set; }
-        // For the dropdown
-        public IEnumerable<SelectListItem> AddressItems { get; set; } = Enumerable.Empty<SelectListItem>();
-		public Order Order { get; set; } = new();                 // your domain header
-		public List<OrderDetail> Details { get; set; } = new();   // domain line items
-																  // Optional UI inputs
-		public string? DeliveryOption { get; set; }  
-		//public string? CouponCode { get; set; }
+		public CartViewModel Cart { get; set; } = new();
+		public List<AddressDetail> Addresses { get; set; } = new();
+		public int? SelectedAddressId { get; set; }
+		public IEnumerable<SelectListItem> AddressItems { get; set; } = Enumerable.Empty<SelectListItem>();
 
-		// UI-only (server will recompute on POST)
+		public Order Order { get; set; } = new();
+		public List<OrderDetail> Details { get; set; } = new();
+
+		public string? DeliveryOption { get; set; }
+
 		public decimal? Shipping { get; set; } = 0m;
 		public decimal Tax { get; set; } = 0m;
 		public decimal TotalDiscount { get; set; } = 0m;
 		public decimal? GrandTotal => SubTotal + Shipping + Tax - TotalDiscount;
-		// ✅ Use Pincode directly
+
 		public List<Pincode> Pincodes { get; set; } = new();
 
-		// For initial render (selected address’s pincode)
 		public decimal? SelectedStandard { get; set; } = 0m;
 		public decimal? SelectedExpress { get; set; } = 0m;
-		// ---------- NEW: custom address ----------
+
 		public bool UseCustomAddress { get; set; } = false;
 
 		public string? FirstName { get; set; }
@@ -404,11 +429,9 @@ namespace Domain.ViewModel
 		public string? State { get; set; }
 		public string? ZipCode { get; set; }
 		public string? Phone { get; set; }
-      
-        
+	}
 
-    }
-    public class PincodeViewModel
+	public class PincodeViewModel
     {
         public List<Pincode> PincodeList { get; set; } = new();
         public Pincode NewPincode { get; set; } = new();
@@ -493,6 +516,36 @@ namespace Domain.ViewModel
 
 
     }
+	public class CreateOrderDetailDto
+	{
+		public int? ProductId { get; set; }
+		public int Quantity { get; set; }
+		public decimal UnitPrice { get; set; }
+	}
+
+	public class CreateOrderDto
+	{
+		public string UserId { get; set; } = default!;
+		public int? AddressId { get; set; }
+
+		public string? DoorNo { get; set; }
+		public string? PhoneNo { get; set; }
+		public string? Address { get; set; } = default!;
+		public int? State { get; set; }
+		public string? PinCode { get; set; }
+		public int? Country { get; set; }
+
+		public DateTime OrderDate { get; set; }
+		public OrderStatus Status { get; set; }
+
+		public decimal Subtotal { get; set; }
+		public decimal Tax { get; set; }
+		public decimal Shipping { get; set; }
+		public decimal TotalDiscount { get; set; }
+		public decimal Total { get; set; }
+
+		public List<CreateOrderDetailDto> Details { get; set; } = new();
+	}
     public class QuizCategoryViewModel
     {
         public List<QuizCategory> CategoryList { get; set; } = new();
@@ -525,6 +578,18 @@ namespace Domain.ViewModel
         public bool QuizFinished { get; set; } = false;
     }
 
+    public class DashboardStatsDto
+    {
+        public int TotalCustomers { get; set; }
+        public int TotalDoctors { get; set; }
+        public int TotalOrders { get; set; }
+    }
+    public class DashboardViewModel
+    {
+        public int TotalCustomers { get; set; }
+        public int TotalDoctors { get; set; }
+        public int TotalOrders { get; set; }
+    }
 
 }
 

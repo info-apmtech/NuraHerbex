@@ -980,14 +980,33 @@
 			</div>
 
 			<!-- Proceed Button -->
-			<div class="proceed-section">
+			@* <div class="proceed-section">
 
 				@Html.AntiForgeryToken()
 				<input type="hidden" name="SelectedAddressId" value="@Model.SelectedAddressId" />
 				<input type="hidden" name="DeliveryOption" value="standard" />
 				<button type="submit" class="proceed-btn">Proceed to Payment</button>
 
+			</div> *@
+			<div class="proceed-section">
+				<form id="proceedToPaymentForm" asp-action="ProceedToPayment" method="post">
+					@Html.AntiForgeryToken()
+					<input type="hidden" name="SelectedAddressId" value="@Model.SelectedAddressId" />
+					<input type="hidden" name="DeliveryOption" value="standard" />
+
+					<input type="hidden" id="CustomerInfo_hasPaid" name="HasPaid" value="false" />
+					<input type="hidden" id="RazorpayPaymentId" name="RazorpayPaymentId" />
+					<input type="hidden" id="RazorpayOrderId" name="RazorpayOrderId" />
+					<input type="hidden" id="RazorpaySignature" name="RazorpaySignature" />
+
+					<button type="button"
+							class="proceed-btn"
+							onclick="razorpayIntegrationPaymentConfirm(this, 'false')">
+						Proceed to Payment
+					</button>
+				</form>
 			</div>
+
 		</form>
 	</div>
 </div>
@@ -1456,5 +1475,6 @@
 		deliveryRadios.forEach(r => r.addEventListener('change', recalcFromLabels));
 	})();
 </script>
-
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script src="~/js/payment.js"></script>
 

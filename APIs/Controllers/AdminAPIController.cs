@@ -48,28 +48,39 @@ namespace APIs.Controllers
 
         [AllowAnonymous]
         [HttpPost("register")]
-        public async Task<IActionResult> AddOrUpdateUser([FromBody] RegisterUser user)
+		public async Task<IActionResult> AddOrUpdateUser([FromBody] RegisterUser user)
+		{
+			var isNew = string.IsNullOrWhiteSpace(user.Id);
+
+			// For new users, ignore “Id is required” validation
+			if (isNew)
+			{
+				ModelState.Remove("Id");
+				ModelState.Remove("user.Id");
+			}
+
+			if (!ModelState.IsValid)
+				return BadRequest(ModelState);
+
+			var result = await _adminservice.AddOrUpdateUserAsync(user);
+
+			if (result.Succeeded)
+				return Ok(new { success = true, message = "User saved successfully" });
+
+			return BadRequest(result.Errors);
+		}
+
+
+        [AllowAnonymous]
+        [HttpDelete("delete/{id}")]
+        public async Task<IActionResult> DeleteUser(string id)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            var result = await _adminservice.AddOrUpdateUserAsync(user);
-
+            var result = await _adminservice.DeleteUserAsync(id);
             if (result.Succeeded)
-                return Ok(new { success = true, message = "User saved successfully" });
+                return Ok(new { success = true, message = "User deleted successfully" });
 
             return BadRequest(result.Errors);
         }
-        //[AllowAnonymous]
-        //[HttpDelete("delete/{id}")]
-        //public async Task<IActionResult> DeleteUser(string id)
-        //{
-        //    var result = await _adminservice.DeleteUserAsync(id);
-        //    if (result.Succeeded)
-        //        return Ok(new { success = true, message = "User deleted successfully" });
-
-        //    return BadRequest(result.Errors);
-        //}
 
 
         //BlogCategory
@@ -846,18 +857,54 @@ namespace APIs.Controllers
             return BadRequest(result.Errors);
         }
 
-        //Orders
-        [AllowAnonymous]
-        [HttpPost("orders")]
-        public async Task<IActionResult> Create([FromBody] OrderSummaryViewModel vm)
-        {
-            if (vm == null || vm.Order == null || vm.Details == null || vm.Details.Count == 0)
-                return BadRequest("Invalid data.");
-            var orderId = await _adminservice.CreateAsync(vm.Order, vm.Details);
-            return Ok(new { id = orderId });
-        }
+		//Orders
+		[AllowAnonymous]
+		[HttpPost("orders")]
+		public async Task<IActionResult> Create([FromBody] CreateOrderDto dto)
+		{
+			if (!ModelState.IsValid)
+				return ValidationProblem(ModelState);
 
-        [AllowAnonymous]
+			if (dto == null || dto.Details == null || dto.Details.Count == 0)
+				return BadRequest("Invalid data.");
+
+			// Map DTO -> EF Order entity
+			var order = new Order
+			{
+				UserId        = dto.UserId,
+				AddressId     = dto.AddressId,
+				DoorNo        = dto.DoorNo,
+				PhoneNo       = dto.PhoneNo,
+				Address       = dto.Address,
+				State         = dto.State,
+				PinCode       = dto.PinCode,
+				Country       = dto.Country,
+				OrderDate     = dto.OrderDate,
+				Status        = dto.Status,
+				Subtotal      = dto.Subtotal,
+				Tax           = dto.Tax,
+				Shipping      = dto.Shipping,
+				TotalDiscount = dto.TotalDiscount,
+				Total         = dto.Total
+			};
+
+			// Map DTO details -> EF OrderDetail entities
+			var details = dto.Details.Select(d => new OrderDetail
+			{
+				ProductId       = d.ProductId,
+				Quantity        = d.Quantity,
+				UnitPrice       = d.UnitPrice,
+				ProductDiscount = 0m // or compute if needed
+									 // OrderId will be set inside CreateAsync when order is saved
+			}).ToList();
+
+			var orderId = await _adminservice.CreateAsync(order, details);
+
+			return Ok(new { id = orderId });
+		}
+
+
+		[AllowAnonymous]
         [HttpPost("updateStatus")]
         public async Task<IActionResult> UpdateStatus([FromBody] UpdateOrderStatusRequest request)
         {
@@ -915,6 +962,15 @@ namespace APIs.Controllers
             if (order == null) return NotFound();
             return Ok(order);
         }
+        [AllowAnonymous]
+        //[HttpGet("{orderId:int}")]
+        [HttpGet("orders/{orderId:int}")]
+        public async Task<IActionResult> GetOrder(int orderId)
+        {
+            var order = await _adminservice.GetOrderAsync(orderId);
+            if (order == null) return NotFound();
+            return Ok(order);
+        }
 
         [AllowAnonymous]
         //[HttpGet("{orderId:int}")]
@@ -960,6 +1016,37 @@ namespace APIs.Controllers
 
 			var pin = await _adminservice.GetPincodeByCodeAsync(code);
 			return pin is null ? NotFound() : Ok(pin);
+		}
+        [HttpGet("dashboard-stats")]
+        public async Task<ActionResult<DashboardStatsDto>> GetDashboardStats()
+        {
+            var stats = await _adminservice.GetDashboardStatsAsync();
+            return Ok(stats);
+        }
+		[AllowAnonymous]
+		[HttpPost("profile")]
+		public async Task<IActionResult> UpdateProfile([FromBody] ProfileUpdateDto dto)
+		{
+			if (!ModelState.IsValid)
+				return BadRequest(ModelState);
+
+			var result = await _adminservice.UpdateUserProfileAsync(dto);
+
+			if (result.Succeeded)
+				return Ok(new { success = true, message = "Profile updated successfully" });
+
+			return BadRequest(result.Errors);
+		}
+		[AllowAnonymous]  // ⬅️ important
+		[HttpPost("user/{id}/toggle-active")]
+		public async Task<IActionResult> ToggleUserActive(string id)
+		{
+			var result = await _adminservice.ToggleUserActiveAsync(id);
+
+			if (result.Succeeded)
+				return Ok(new { success = true, message = "User status updated successfully" });
+
+			return BadRequest(result.Errors);
 		}
         // ====================== QUIZ CATEGORY API ========================= //
 
@@ -1099,5 +1186,6 @@ namespace APIs.Controllers
             return BadRequest(result.Errors);
         }
 
-    }
+
+	}
 }

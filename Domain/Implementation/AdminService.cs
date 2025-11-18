@@ -84,9 +84,12 @@ namespace Domain.Implementation
 				// ✅ Update existing user
 				existingUser.Email = user.Email;
 				existingUser.UserName = user.Email;
+				existingUser.Password = user.Password;
 				existingUser.PhoneNumber = user.PhoneNumber;
 				existingUser.Role = user.Role;
-				existingUser.UserName = user.Email;
+				existingUser.FirstName = user.FirstName;
+				existingUser.LastName = user.LastName;
+				existingUser.Address = user.Address;
 				existingUser.UpdatedAt = DateTime.UtcNow;
 
 				// Update password only if explicitly provided
@@ -101,7 +104,22 @@ namespace Domain.Implementation
 				return await _usermanager.UpdateAsync(existingUser);
 			}
 		}
-        public async Task<LoginResponseModel?> SignInAsync(RegisterUserViewModel model)
+		public async Task<IdentityResult> DeleteUserAsync(string id)
+		{
+			var user = await _usermanager.FindByIdAsync(id);
+
+			if (user == null)
+			{
+				return IdentityResult.Failed(new IdentityError
+				{
+					Code = "UserNotFound",
+					Description = "User not found."
+				});
+			}
+			return await _usermanager.DeleteAsync(user);
+		}
+
+		public async Task<LoginResponseModel?> SignInAsync(RegisterUserViewModel model)
         {
             var user = await _usermanager.FindByNameAsync(model.Username);
             if (user == null || !await _usermanager.CheckPasswordAsync(user, model.Password))
@@ -1374,6 +1392,26 @@ namespace Domain.Implementation
 
             return vm;
         }
+        public async Task<int> GetUserCountByRoleAsync(UserRole role)
+        {
+            return await _usermanager.Users
+                .Where(u => u.Role == role)
+                .CountAsync();
+        }
+        public async Task<DashboardStatsDto> GetDashboardStatsAsync()
+        {
+            var customers = await GetUserCountByRoleAsync(UserRole.Customer);
+            var doctors = await GetUserCountByRoleAsync(UserRole.Doctor);
+
+            var totalOrders = await _db.Orders.CountAsync(); // adjust DbSet name
+
+            return new DashboardStatsDto
+            {
+                TotalCustomers = customers,
+                TotalDoctors = doctors,
+                TotalOrders = totalOrders
+            };
+        }
 
         //Payment
         public async Task<List<PaymentGatewayDetails>> GetPaymentGatewayDetailsAsync()
@@ -1383,7 +1421,45 @@ namespace Domain.Implementation
 		public async Task<Pincode?> GetPincodeByCodeAsync(string code)
 	   => await _db.Pincodes.AsNoTracking()
 			 .FirstOrDefaultAsync(p => p.Code == code);
+		public async Task<IdentityResult> UpdateUserProfileAsync(ProfileUpdateDto dto)
+		{
+			var user = await _usermanager.FindByIdAsync(dto.Id);
+			if (user == null)
+			{
+				return IdentityResult.Failed(new IdentityError
+				{
+					Code = "UserNotFound",
+					Description = "User not found."
+				});
+			}
 
+			user.FirstName   = dto.FirstName;
+			user.LastName    = dto.LastName;
+			user.Email       = dto.Email;
+			user.UserName    = dto.Email;
+			user.PhoneNumber = dto.PhoneNumber;
+			user.UpdatedAt   = DateTime.UtcNow;
+
+			return await _usermanager.UpdateAsync(user);
+		}
+		public async Task<IdentityResult> ToggleUserActiveAsync(string id)
+		{
+			var user = await _usermanager.FindByIdAsync(id);
+
+			if (user == null)
+			{
+				return IdentityResult.Failed(new IdentityError
+				{
+					Code = "UserNotFound",
+					Description = "User not found."
+				});
+			}
+
+			user.isActive = !user.isActive;
+			user.UpdatedAt = DateTime.UtcNow;
+
+			return await _usermanager.UpdateAsync(user);
+		}
         // ====================== QUIZ CATEGORY ========================= //
 
         public async Task<QuizCategory> GetQuizCategoryByIdAsync(int id)
@@ -1537,7 +1613,7 @@ namespace Domain.Implementation
             return IdentityResult.Success;
         }
 
-    }
+	}
 }
 
 

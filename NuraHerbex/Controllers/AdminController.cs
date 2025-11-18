@@ -35,14 +35,39 @@ namespace NuraHerbex.Controllers
         }
         private System.Net.Http.HttpClient AuthorizedClient => _httpClientFactory.CreateAuthorizedClient(_httpContextAccessor);
         //private string GetUserId() => _httpContextAccessor.GetUserId(_tokenService);
-        public IActionResult Index()
-		{
-			return View();
-		}
-		//public IActionResult UserCreation()
-		//{
-		//	return View();
-		//}
+        [HttpGet]
+        public async Task<IActionResult> Index(CancellationToken ct)
+        {
+            // Call your Admin API – adjust URL to match your route
+            var response = await AuthorizedClient.GetAsync("AdminAPI/dashboard-stats", ct);
+
+            DashboardStatsDto stats;
+
+            if (response.IsSuccessStatusCode)
+            {
+                var json = await response.Content.ReadAsStringAsync(ct);
+                stats = JsonConvert.DeserializeObject<DashboardStatsDto>(json);
+            }
+            else
+            {
+                // Fallback if API fails
+                stats = new DashboardStatsDto();
+            }
+
+            var vm = new DashboardViewModel
+            {
+                TotalCustomers = stats.TotalCustomers,
+                TotalDoctors = stats.TotalDoctors,
+                TotalOrders = stats.TotalOrders
+            };
+
+            return View(vm);
+        }
+
+        //public IActionResult UserCreation()
+        //{
+        //	return View();
+        //}
         //Blog
         [HttpGet]
         public async Task<IActionResult> AdminBlog(int id = 0)
@@ -679,17 +704,25 @@ namespace NuraHerbex.Controllers
 
             return View(model);
         }
-
-
         [HttpPost]
         public async Task<IActionResult> UserCreation(RegisterUserViewModel model)
         {
-            var response = await AuthorizedClient.PostAsJsonAsync("AdminAPI/register", model.RegisteredUser);
+			if (model.RegisteredUser == null)
+				model.RegisteredUser = new RegisterUser();
+
+			//  NEW user (Add): Id is empty → generate a string Id
+			var isNew = string.IsNullOrWhiteSpace(model.RegisteredUser.Id);
+			if (isNew)
+			{
+				model.RegisteredUser.Id = Guid.NewGuid().ToString();  // string id
+			}
+			var response = await AuthorizedClient.PostAsJsonAsync("AdminAPI/register", model.RegisteredUser);
             if (response.IsSuccessStatusCode)
             {
                 TempData["Success"] = "User Registered Successfully!";
 				if (User.Identity.IsAuthenticated) 
-					return RedirectToAction("UserCreation", new { role = model.RegisteredUser.Role });
+					//return RedirectToAction("UserCreation", new { role = model.RegisteredUser.Role });
+				return RedirectToAction(nameof(UserCreation));
 				else
 					return RedirectToAction("SignIn", "Authentication");
 			}
@@ -1468,6 +1501,19 @@ namespace NuraHerbex.Controllers
 
             return RedirectToAction(nameof(AdminOrderStatus));
         }
+		[HttpPost]
+		[ValidateAntiForgeryToken]
+		public async Task<IActionResult> ToggleActive(string id)
+		{
+			var response = await AuthorizedClient.PostAsync($"AdminAPI/user/{id}/toggle-active", null);
+
+			if (response.IsSuccessStatusCode)
+				TempData["Success"] = "User status updated successfully!";
+			else
+				TempData["Error"] = "Failed to update user status.";
+
+			return RedirectToAction(nameof(UserCreation));
+		}
 
         // ====================== ADMIN QUIZ CATEGORY ========================= //
 

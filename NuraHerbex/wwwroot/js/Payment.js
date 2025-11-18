@@ -1,11 +1,17 @@
 ﻿
-function razorpayIntegrationPaymentConfirm(hasSticker) {
+function razorpayIntegrationPaymentConfirm(button, hasSticker) {
+    // ===== 0. Get the parent form from the button =====
+    var form = button.closest('form');
+
+    if (!form) {
+        console.error("Could not find parent form from button.");
+        return;
+    }
+
     // ===== 1. Get total amount from the #total span =====
-    // Example innerText: "₹1,234.00"
     var totalEl = document.getElementById('total');
     var totalText = totalEl ? totalEl.innerText : '';
 
-    // Remove everything except digits, dot, minus: "₹1,234.00" -> "1234.00"
     var cleaned = totalText.replace(/[^\d.-]/g, '');
     var paymentAmount = parseFloat(cleaned) || 0; // in ₹
 
@@ -32,21 +38,12 @@ function razorpayIntegrationPaymentConfirm(hasSticker) {
 
     var domain = "NURA"; // must match what your backend expects
 
-    // The form that posts to ProceedToPayment
-    var form = document.querySelector('.proceed-section form');
-    if (!form) {
-        console.error("ProceedToPayment form not found by id.");
-        return;
-    }
-
-    // ===== 3. Call your existing create-order API (cannot change backend) =====
-    // Signature: CreateOrder([FromBody] AmountRequest model)
-    // -> model.Amount (decimal), model.DomainName (string)
+    // ===== 3. Call create-order API =====
     fetch('https://payment.tracole.com/payment/create-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-            amount: paymentAmount,   // decimal in RUPEES (NOT * 100)
+            amount: paymentAmount,   // decimal in RUPEES
             domainName: domain
         })
     })
@@ -56,7 +53,6 @@ function razorpayIntegrationPaymentConfirm(hasSticker) {
             console.log('create-order raw response:', raw);
 
             if (!response.ok) {
-                // This will send us to the catch() below
                 throw new Error("HTTP " + response.status + ": " + raw);
             }
 
@@ -72,8 +68,6 @@ function razorpayIntegrationPaymentConfirm(hasSticker) {
         .then(order => {
             console.log('Parsed order object:', order);
 
-            // Your backend returns whatever _razorpayService.CreateOrder(...) returns.
-            // In your previous project, you used order.id, so we keep that assumption.
             if (!(order && order.id)) {
                 if (window.toastr) {
                     toastr.error("Order response missing id from payment service.", "Error");
@@ -85,15 +79,13 @@ function razorpayIntegrationPaymentConfirm(hasSticker) {
 
             // ===== 4. Configure Razorpay checkout =====
             var options = {
-                key: "rzp_live_UBscLASQP7fAT4", // Tracole Production Razorpay Key
-                // key: "rzp_test_jSPTP0C4WotdSJ", // Use this for testing if needed
-
-                amount: paymentAmount * 100,   // paise (Razorpay expects paise)
+                key: "rzp_live_UBscLASQP7fAT4",
+                amount: paymentAmount * 100,   // paise
                 currency: "INR",
                 name: "Tracole Technologies",
                 description: "Order Payment",
                 image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSif0XXHotoAg5YT0ltoVrNIfqwKrb5KLWwOo0ITuphqh7qrwnEdVe-aecCnV6Ai8l0awI&usqp=CAU",
-                order_id: order.id,           // Razorpay order id from backend
+                order_id: order.id,
 
                 handler: function (response) {
                     console.log('razorpay response', response);
@@ -106,7 +98,7 @@ function razorpayIntegrationPaymentConfirm(hasSticker) {
                         amount: paymentAmount
                     };
 
-                    // ===== 5. Verify payment with your existing verify-payment API =====
+                    // ===== 5. Verify payment =====
                     fetch('https://payment.tracole.com/payment/verify-payment', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -118,11 +110,7 @@ function razorpayIntegrationPaymentConfirm(hasSticker) {
                             console.log('Payment verification result:', verificationResult);
 
                             if (verificationResult.message === "Payment verified successfully") {
-
-                                // Mark as paid
                                 document.getElementById('CustomerInfo_hasPaid').value = "true";
-
-                                // Save payment info for server (optional)
                                 document.getElementById('RazorpayPaymentId').value = paymentData.paymentId;
                                 document.getElementById('RazorpayOrderId').value = paymentData.orderId;
                                 document.getElementById('RazorpaySignature').value = paymentData.signature;
@@ -131,7 +119,7 @@ function razorpayIntegrationPaymentConfirm(hasSticker) {
                                     toastr.success("Payment Successful!", "Success");
                                 }
 
-                                // ===== 6. Submit MVC form to ProceedToPayment =====
+                                // ===== 6. Submit MVC form =====
                                 form.submit();
                             } else {
                                 document.getElementById('CustomerInfo_hasPaid').value = "false";
@@ -176,6 +164,7 @@ function razorpayIntegrationPaymentConfirm(hasSticker) {
             }
         });
 }
+
 //async function razorpayIntegrationPaymentConfirm(hasSticker) {
 //    const ctx = window.PaymentContext || {};
 //    const { orderId, customerId, amountPaise, amountRupees, domain } = ctx;
