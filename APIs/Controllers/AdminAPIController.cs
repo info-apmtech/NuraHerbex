@@ -812,9 +812,10 @@ namespace APIs.Controllers
             return Ok(new { saved.Id, saved.OrderID, saved.CustomerID, saved.RatingCount, saved.Message, saved.SubmittedAt });
         }
 
-        //Pincode
-        [Authorize(Roles = "Admin,Employee")]
-        [HttpGet("pincodes")]
+		//Pincode
+		//[Authorize(Roles = "Admin,Employee")]
+		[AllowAnonymous]
+		[HttpGet("pincodes")]
         public async Task<IActionResult> GetPincodes()
         {
             var pincodes = await _adminservice.GetPincodesAsync();
