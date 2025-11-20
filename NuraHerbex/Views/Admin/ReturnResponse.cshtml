@@ -1,0 +1,114 @@
+﻿@using Domain.ViewModel          
+@model List<ReturnRequestViewDto>
+@using Domain.Models  
+@{
+    ViewData["Title"] = "Return Requests";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="pcoded-main-container">
+    <div class="pcoded-content">
+        <div class="row heading-bg mb-3">
+            <div class="col-12">
+                <h4>Order Return</h4>
+            </div>
+        </div>
+
+        @if (ViewBag.Error != null)
+        {
+            <div class="alert alert-danger">@ViewBag.Error</div>
+        }
+        @if (TempData["Success"] != null)
+        {
+            <div class="alert alert-success">@TempData["Success"]</div>
+        }
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger">@TempData["Error"]</div>
+        }
+
+        <div class="card shadow-sm">
+            @* <div class="card-header bg-white border-bottom-0">
+                <h5 class="mb-0">Pending Return Requests</h5>
+            </div> *@
+            <div class="card-body p-3">
+                <div class="table-responsive">
+                    <table id="nuradataTable" class="table table-bordered table-striped w-100 align-middle">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>#</th>
+                               @*  <th>Return ID</th> *@
+                                @* <th>Order ID</th> *@
+                                <th>Order No</th>
+                                <th>User</th>
+                                <th>Requested At</th>
+                                <th>Status</th>
+                                <th>Refund Amount</th>
+                                <th>Reason</th>
+                                <th>Product</th>
+                                <th style="min-width: 220px;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model != null && Model.Any())
+                            {
+                                int index = 1;
+                                foreach (var r in Model)
+                                {
+                                    <tr>
+                                        <td>@index</td>
+                                        @* <td>@r.Id</td> *@
+                                        <td>@r.OrderId</td>
+                                        @* <td>@r.OrderNumber</td> *@
+                                        <td>@r.UserId</td>
+                                        <td>@r.RequestedAt.ToLocalTime().ToString("dd MMM yyyy hh:mm tt")</td>
+                                        <td>@r.Status</td>
+                                        <td>@r.RefundAmount.ToString("0.00")</td>
+                                        <td>
+                                            @if (!string.IsNullOrWhiteSpace(r.Reason) && r.Reason.Length > 40)
+                                            {
+                                                @r.Reason.Substring(0, 40)
+                                            }
+                                            else
+                                            {
+                                                @r.Reason
+                                            }
+                                        </td>
+                                        <td>@r.ProductSummary</td>
+                                        <td>
+                                            <!-- Example: Approve / Reject return -->
+                                            <form asp-action="ReturnStatusUpdate" asp-controller="Admin" method="post" class="d-flex align-items-center">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="id" value="@r.Id" />
+                                                <select name="status" class="form-control form-control-sm me-2">
+                                                    @foreach (ReturnStatus s in Enum.GetValues(typeof(ReturnStatus)))
+                                                    {
+                                                        <option value="@s" selected="@(r.Status == s ? "selected" : null)">@s</option>
+                                                    }
+                                                </select>
+                                                <button type="submit" class="btn btn-primary btn-sm me-1">Update</button>
+
+                                                <!-- Optional: button to see order details -->
+                                                @* <a href="@Url.Action("AdminOrderDetails", "Admin", new { orderId = r.OrderId })" 
+                                                   class="btn btn-outline-secondary btn-sm">
+                                                    Order
+                                                </a> *@
+                                                </form>
+                                            </td>
+                                    </tr>
+                                    index++;
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="11" class="text-center">No return requests found.</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

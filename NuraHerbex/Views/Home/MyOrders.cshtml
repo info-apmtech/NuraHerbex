@@ -105,9 +105,20 @@
                             @switch (order.Status)
                             {
                                 case OrderStatus.Delivered:
-                                    <button class="orders-ghost-btn">
-                                        <img class="orders-btn-icon" src="~/image/userSidebar/Vector.png" alt="Return" />Return Item
+                                    // <button class="orders-ghost-btn">
+                                    //     <img class="orders-btn-icon" src="~/image/userSidebar/Vector.png" alt="Return" />Return Item
+                                    // </button>
+                                    <button type="button"
+                                            class="orders-ghost-btn open-return"
+                                            data-order-id="@order.Id"
+                                            data-order-number="ORD-@order.Id">
+                                        <img class="orders-btn-icon" src="~/image/userSidebar/Vector.png" alt="Return" />
+                                        Return Item
                                     </button>
+
+
+
+
                                     <button class="orders-buyagain">Buy Again</button>
                                     <button class="orders-ghost-btn open-feedback"
                                             data-order-id="@order.Id"
@@ -177,6 +188,86 @@
         <button type="button" class="checkout-btn" id="btnSubmitFeedback">Submit</button>
     </div>
 </div>
+
+<!--My Returns-->
+<div class="cart-popup" id="returnPopup" style="display:none">
+    <form asp-action="RequestReturn"
+          asp-controller="Home"
+          method="post"
+          id="returnForm">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="OrderId" id="retOrderId" />
+
+        <div class="cart-header">
+            <span>Return Item</span>
+            <span class="close-btn" data-close="#returnPopup">&times;</span>
+        </div>
+
+        <div class="cart-content" style="display:block; gap:16px">
+            <div>
+                <div style="font-weight:600;color:#444;">
+                    Order: <span id="retOrderNumberLabel"></span>
+                </div>
+            </div>
+
+            <textarea id="retReason"
+                      name="Reason"
+                      class="cart-textarea"
+                      rows="4"
+                      placeholder="Tell us why you are returning this product"
+                      required></textarea>
+        </div>
+
+        <div class="cart-footer">
+            <button type="submit" class="checkout-btn">Submit Return Request</button>
+        </div>
+    </form>
+</div>
+
+<script>
+    // Handle Return Item button clicks
+    document.addEventListener('click', function (e) {
+        const returnBtn = e.target.closest('.open-return');
+        if (returnBtn) {
+            const orderId = returnBtn.dataset.orderId;
+            const orderNumber = returnBtn.dataset.orderNumber;
+
+            console.log('Opening return popup for:', orderId, orderNumber);
+
+            document.getElementById('retOrderId').value = orderId;
+            document.getElementById('retOrderNumberLabel').textContent = orderNumber;
+            document.getElementById('retReason').value = '';
+
+            const popup = document.getElementById('returnPopup');
+            popup.style.display = 'block';
+        }
+
+        // Close buttons for any popup using data-close
+        if (e.target.matches('.close-btn')) {
+            const target = e.target.getAttribute('data-close');
+            if (target) {
+                const popup = document.querySelector(target);
+                if (popup) popup.style.display = 'none';
+            }
+        }
+    });
+
+    // Optional: click outside to close *return* popup (if you want)
+    window.addEventListener('click', function (e) {
+        const popup = document.getElementById('returnPopup');
+        if (!popup) return;
+
+        // If you ever wrap returnPopup in a backdrop, adjust this condition
+        if (e.target === popup) {
+            popup.style.display = 'none';
+        }
+    });
+</script>
+
+
+
+
+
 
 <script>
     window.AF_TOKEN = document.querySelector('input[name="__RequestVerificationToken"]')?.value || '';
@@ -300,6 +391,16 @@
 
 
 <style>
+    #returnPopup {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 1000;
+        width: 400px;
+        max-width: 90vw;
+        margin: 0;
+    }
     .orders-card-header-container {
         display: flex;
         justify-content: space-between;

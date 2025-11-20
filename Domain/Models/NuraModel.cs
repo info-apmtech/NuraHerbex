@@ -417,5 +417,36 @@ namespace Domain.Models
         public string OptionText { get; set; }
         public int Points { get; set; }
     }
+	public class ReturnRequest
+	{
+		public int Id { get; set; }
+
+		//[Required]
+		public int OrderId { get; set; }
+		//public Order Order { get; set; }   // navigation
+
+		//[Required]
+		public string UserId { get; set; } = default!;
+
+		// When they asked for the return
+		public DateTime RequestedAt { get; set; } = DateTime.UtcNow;
+
+		// Status of the request
+		public ReturnStatus Status { get; set; } = ReturnStatus.Pending;
+
+		// Reason typed by user (from your popup)
+		[Required]
+		[StringLength(500)]
+		public string Reason { get; set; } = string.Empty;
+
+		// How much you plan to refund (you can fill with Order.Total)
+		[Column(TypeName = "decimal(18,2)")]
+		public decimal RefundAmount { get; set; }
+
+		// (Optional) short summary to display in UI, e.g. first product name
+		[StringLength(200)]
+		public string? ProductSummary { get; set; }
+	}
+
 
 }

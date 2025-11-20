@@ -1,109 +1,10 @@
-﻿@{
+﻿@model IEnumerable<Domain.ViewModel.ReturnRequestViewDto>
+@using Domain.Models  
+
+
+@{
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
-<div class="returns-layout">
-    @Html.Partial("_UserSidebar")
-    <div class="returns-main">
-        <h2 class="returns-headline">My Returns</h2>
-        <p class="returns-subhead">Track your return requests.</p>
-        <div class="returns-tabs">
-            <button class="returns-tab active">All</button>
-            <button class="returns-tab">Approved</button>
-            <button class="returns-tab">Under Review</button>
-            <button class="returns-tab">Cancelled</button>
-        </div>
-        <div class="returns-list">
-            <!-- Approved Example -->
-            <div class="returns-card">
-                <div class="returns-card-top">
-                    <div class="returns-info-left">
-                        <div class="returns-id-status-row">
-                            <span class="returns-card-id">Return RET-2025-001</span>
-                            <span class="returns-status returns-status-approved">Approved</span>
-                        </div>
-                        <div class="returns-card-orderid">
-                            Order: ORD-2025-001<br />
-                            Requested on March 25, 2025
-                        </div>
-                    </div>
-                    <div class="returns-refund-block">
-                        <div class="returns-refund-label">Refund Amount</div>
-                        <div class="returns-refund-details">
-                            <div class="returns-refund-amount">$149.99</div>
-                            <div class="returns-refund-processed">Processed</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="returns-card-items">
-                    <div class="returns-item-row">
-                        <div class="returns-item-left">
-                            <img class="returns-item-img" src="~/image/userSidebar/Stamixproduct.png" alt="Product" />
-                            <div class="returns-item-details">
-                                <div class="returns-item-title">STAMIX Performance Plus</div>
-                                <div class="returns-item-qty">Quantity: 2</div>
-                            </div>
-                        </div>
-                        <div class="returns-item-right">
-                            <div class="returns-reason-label">Return Reason:</div>
-                            <div class="returns-reason">Product not as expected</div>
-                        </div>
-                    </div>
-                </div>
-                <!-- Mobile Return Reason (OUTSIDE items block) -->
-                <div class="returns-item-right-mobile">
-                    <div class="returns-reason-label">Return Reason:</div>
-                    <div class="returns-reason">Product not as expected</div>
-                </div>
-            </div>
-            <!-- Under Review Example -->
-            <div class="returns-card">
-                <div class="returns-card-top">
-                    <div class="returns-info-left">
-                        <div class="returns-id-status-row">
-                            <span class="returns-card-id">Return RET-2025-002</span>
-                            <span class="returns-status returns-status-review">Under Review</span>
-                        </div>
-                        <div class="returns-card-orderid">
-                            Order: ORD-2025-002<br />
-                            Requested on March 25, 2025
-                        </div>
-                    </div>
-                    <div class="returns-refund-block">
-                        <div class="returns-refund-label">Refund Amount</div>
-                        <div class="returns-refund-details">
-                            <div class="returns-refund-amount">$149.99</div>
-                            <div class="returns-refund-pending">Pending</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="returns-card-items">
-                    <div class="returns-item-row">
-                        <div class="returns-item-left">
-                            <img class="returns-item-img" src="~/image/userSidebar/Stamixproduct.png" alt="Product" />
-                            <div class="returns-item-details">
-                                <div class="returns-item-title">STAMIX Performance Plus</div>
-                                <div class="returns-item-qty">Quantity: 2</div>
-                            </div>
-                        </div>
-                        <div class="returns-item-right">
-                            <div class="returns-reason-label">Return Reason:</div>
-                            <div class="returns-reason">Product not as expected</div>
-                        </div>
-                    </div>
-                </div>
-                <!-- Mobile Return Reason (OUTSIDE items block) -->
-                <div class="returns-item-right-mobile">
-                    <div class="returns-reason-label">Return Reason:</div>
-                    <div class="returns-reason">Product not as expected</div>
-                </div>
-                <div class="returns-card-bottom">
-                    <button class="returns-cancel-btn"><img class="returns-btn-icon" src="~/image/userSidebar/Vector.png" alt="" />Cancel Return</button>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
 <style>
     /* Layout and main blocks (unchanged) */
     .returns-layout {
@@ -219,6 +120,12 @@
     }
 
     .returns-status-review {
+        background: #fff9f3;
+        color: #ef6e00;
+        border: 1px solid #ffd8ba;
+    }
+
+    .returns-status-cancelled {
         background: #fff9f3;
         color: #ef6e00;
         border: 1px solid #ffd8ba;
@@ -379,217 +286,388 @@
     }
     /* Mobile view */
     @@media (max-width: 600px) {
-        .returns-layout
+        .returns-layout {
+            flex-direction: column;
+            gap: 0;
+        }
 
-    {
-        flex-direction: column;
-        gap: 0;
-    }
+        .returns-main {
+            padding: 20px 2vw 36px 2vw;
+            overflow-x: hidden;
+        }
 
-    .returns-main {
-        padding: 20px 2vw 36px 2vw;
-        overflow-x: hidden;
-    }
+        .returns-headline, .returns-subhead {
+            padding-left: 0;
+        }
 
-    .returns-headline, .returns-subhead {
-        padding-left: 0;
-    }
+        .returns-tabs {
+            padding: 0 0vw;
+            gap: 5px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
 
-    .returns-tabs {
-        padding: 0 0vw;
-        gap: 5px;
-        margin-bottom: 12px;
-        flex-wrap: wrap;
-    }
+        .returns-tab {
+            font-size: 0.96rem;
+            padding: 6px 8px;
+            flex: 1 1 auto;
+            text-align: center;
+        }
 
-    .returns-tab {
-        font-size: 0.96rem;
-        padding: 6px 8px;
-        flex: 1 1 auto;
-        text-align: center;
-    }
+        .returns-list {
+            gap: 15px;
+        }
 
-    .returns-list {
-        gap: 15px;
-    }
+        .returns-card {
+            padding: 14px 8px 11px 8px;
+            border-radius: 15px;
+            width: 100%;
+            box-sizing: border-box;
+        }
 
-    .returns-card {
-        padding: 14px 8px 11px 8px;
-        border-radius: 15px;
-        width: 100%;
-        box-sizing: border-box;
-    }
+        .returns-card-top {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0;
+            margin-bottom: 7px;
+        }
 
-    .returns-card-top {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 0;
-        margin-bottom: 7px;
-    }
+        .returns-info-left {
+            min-width: auto;
+            gap: 2px;
+        }
 
-    .returns-info-left {
-        min-width: auto;
-        gap: 2px;
-    }
+        .returns-id-status-row {
+            gap: 6px;
+            margin-bottom: 1px;
+        }
 
-    .returns-id-status-row {
-        gap: 6px;
-        margin-bottom: 1px;
-    }
+        .returns-card-id {
+            font-size: 1.02rem;
+        }
 
-    .returns-card-id {
-        font-size: 1.02rem;
-    }
+        .returns-status {
+            font-size: 0.86rem;
+            padding: 2px 11px;
+        }
 
-    .returns-status {
-        font-size: 0.86rem;
-        padding: 2px 11px;
-    }
+        .returns-card-orderid {
+            font-size: 0.91rem;
+            margin-top: 1px;
+            white-space: normal;
+        }
 
-    .returns-card-orderid {
-        font-size: 0.91rem;
-        margin-top: 1px;
-        white-space: normal;
-    }
+        .returns-refund-block {
+            flex-direction: row;
+            align-items: flex-start;
+            justify-content: space-between;
+            margin-top: 9px;
+            width: 100%;
+            min-width: 0;
+            gap: 0;
+        }
 
-    .returns-refund-block {
-        flex-direction: row;
-        align-items: flex-start;
-        justify-content: space-between;
-        margin-top: 9px;
-        width: 100%;
-        min-width: 0;
-        gap: 0;
-    }
+        .returns-refund-label {
+            color: #ada49b;
+            font-size: 0.98rem;
+            margin-bottom: 0;
+            font-weight: 500;
+            flex: 1 1 auto;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            min-width: 0;
+        }
 
-    .returns-refund-label {
-        color: #ada49b;
-        font-size: 0.98rem;
-        margin-bottom: 0;
-        font-weight: 500;
-        flex: 1 1 auto;
-        text-align: left;
-        display: flex;
-        align-items: center;
-        min-width: 0;
-    }
+        .returns-refund-details {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            flex: 1 0 75px;
+            min-width: 70px;
+            text-align: right;
+            gap: 0;
+        }
 
-    .returns-refund-details {
-        display: flex;
-        flex-direction: column;
-        align-items: flex-end;
-        flex: 1 0 75px;
-        min-width: 70px;
-        text-align: right;
-        gap: 0;
-    }
+        .returns-refund-amount {
+            font-size: 1.05rem;
+            color: #232323;
+            font-weight: 700;
+            margin: 0;
+            line-height: 1;
+        }
 
-    .returns-refund-amount {
-        font-size: 1.05rem;
-        color: #232323;
-        font-weight: 700;
-        margin: 0;
-        line-height: 1;
-    }
+        .returns-refund-processed, .returns-refund-pending {
+            font-size: 0.94rem;
+            font-weight: 600;
+            margin: 0;
+            margin-top: 2px;
+            line-height: 1.1;
+            text-align: right;
+        }
 
-    .returns-refund-processed, .returns-refund-pending {
-        font-size: 0.94rem;
-        font-weight: 600;
-        margin: 0;
-        margin-top: 2px;
-        line-height: 1.1;
-        text-align: right;
-    }
+        .returns-refund-pending {
+            color: #fd7906;
+        }
 
-    .returns-refund-pending {
-        color: #fd7906;
-    }
+        .returns-card-items {
+            padding: 9px 8px 10px 8px;
+            border-radius: 13px;
+            margin-bottom: 0;
+        }
 
-    .returns-card-items {
-        padding: 9px 8px 10px 8px;
-        border-radius: 13px;
-        margin-bottom: 0;
-    }
+        .returns-item-row {
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+            gap: 11px;
+        }
 
-    .returns-item-row {
-        display: flex;
-        justify-content: flex-start;
-        align-items: center;
-        gap: 11px;
-    }
+        .returns-item-left {
+            display: flex;
+            align-items: center;
+            gap: 11px;
+        }
 
-    .returns-item-left {
-        display: flex;
-        align-items: center;
-        gap: 11px;
-    }
+        .returns-item-img {
+            width: 41px;
+            height: 41px;
+            border-radius: 7px;
+            margin-top: 2px;
+            margin-right: 1px;
+        }
 
-    .returns-item-img {
-        width: 41px;
-        height: 41px;
-        border-radius: 7px;
-        margin-top: 2px;
-        margin-right: 1px;
-    }
+        .returns-item-details {
+            min-width: 0;
+            gap: 1px;
+        }
 
-    .returns-item-details {
-        min-width: 0;
-        gap: 1px;
-    }
+        .returns-item-title {
+            font-size: 0.98rem;
+            font-weight: 500;
+            margin-bottom: 0;
+        }
 
-    .returns-item-title {
-        font-size: 0.98rem;
-        font-weight: 500;
-        margin-bottom: 0;
-    }
+        .returns-item-qty {
+            font-size: 0.89rem;
+            color: #b7b7b7;
+            margin-bottom: 1px;
+        }
+        /* Desktop Return Reason: Hide */
+        .returns-item-right {
+            display: none;
+        }
+        /* Mobile reason OUTSIDE block: Show */
+        .returns-item-right-mobile {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            justify-content: flex-start;
+            width: 100%;
+            margin-left: 0;
+            margin-top: 7px;
+            padding: 0 3px;
+        }
 
-    .returns-item-qty {
-        font-size: 0.89rem;
-        color: #b7b7b7;
-        margin-bottom: 1px;
-    }
-    /* Desktop Return Reason: Hide */
-    .returns-item-right {
-        display: none;
-    }
-    /* Mobile reason OUTSIDE block: Show */
-    .returns-item-right-mobile {
-        display: flex;
-        flex-direction: column;
-        align-items: flex-start;
-        justify-content: flex-start;
-        width: 100%;
-        margin-left: 0;
-        margin-top: 7px;
-        padding: 0 3px;
-    }
+        .returns-reason-label {
+            color: #ada49b;
+            font-size: 0.97rem;
+            font-weight: 500;
+        }
 
-    .returns-reason-label {
-        color: #ada49b;
-        font-size: 0.97rem;
-        font-weight: 500;
-    }
+        .returns-reason {
+            color: #232323;
+            font-size: 0.97rem;
+            font-weight: 500;
+            margin-top: 1px;
+        }
 
-    .returns-reason {
-        color: #232323;
-        font-size: 0.97rem;
-        font-weight: 500;
-        margin-top: 1px;
-    }
+        .returns-card-bottom {
+            margin-top: 9px;
+            justify-content: flex-start;
+        }
 
-    .returns-card-bottom {
-        margin-top: 9px;
-        justify-content: flex-start;
-    }
+        .returns-cancel-btn {
+            padding: 7px 11px;
+            font-size: 0.92rem;
+        }
 
-    .returns-cancel-btn {
-        padding: 7px 11px;
-        font-size: 0.92rem;
-    }
-
-    .user-sidebar {
-        display: none !important;
-    }
-
+        .user-sidebar {
+            display: none !important;
+        }
     }
 </style>
+@functions {
+    string GetStatusText(ReturnStatus status) =>
+        status switch
+        {
+            ReturnStatus.Approved => "Approved",
+            ReturnStatus.Pending => "Under Review",
+            ReturnStatus.Rejected => "Cancelled",
+            ReturnStatus.Completed => "Completed",
+            _ => status.ToString()
+        };
+
+    string GetStatusCss(ReturnStatus status) =>
+        status switch
+        {
+            ReturnStatus.Approved => "returns-status-approved",
+            ReturnStatus.Pending => "returns-status-review",   // your orange "Under Review"
+            ReturnStatus.Rejected => "returns-status-cancelled",
+            ReturnStatus.Completed => "returns-status-approved", // or your own class
+            _ => "returns-status-review"
+        };
+
+    string GetRefundSubText(ReturnStatus status) =>
+        status switch
+        {
+            ReturnStatus.Approved => "Processed",
+            ReturnStatus.Completed => "Processed",
+            ReturnStatus.Pending => "Pending",
+            ReturnStatus.Rejected => "Cancelled",
+            _ => ""
+        };
+}
+
+<div class="returns-layout">
+    @Html.Partial("_UserSidebar")
+
+    <div class="returns-main">
+        <h2 class="returns-headline">My Returns</h2>
+        <p class="returns-subhead">Track your return requests.</p>
+
+        <div class="returns-tabs">
+            <button class="returns-tab active" data-filter="all">All</button>
+            <button class="returns-tab" data-filter="Approved">Approved</button>
+            <button class="returns-tab" data-filter="Pending">Under Review</button>
+            <button class="returns-tab" data-filter="Rejected">Cancelled</button>
+        </div>
+
+        <div class="returns-list">
+            @if (!Model.Any())
+            {
+                <p>No return requests found.</p>
+            }
+            else
+            {
+                foreach (var r in Model)
+                {
+                    var statusText = GetStatusText(r.Status);
+                    var statusCss = GetStatusCss(r.Status);
+                    var refundSub = GetRefundSubText(r.Status);
+                    var retNumber = $"RET-{r.Id:D6}"; // e.g. RET-000123
+                    var requestedOn = r.RequestedAt.ToString("MMMM dd, yyyy");
+                    var orderNumber = string.IsNullOrEmpty(r.OrderNumber)
+                    ? $"ORD-{r.OrderId}"
+                    : r.OrderNumber;
+
+                    <div class="returns-card" data-status="@r.Status">
+                        <div class="returns-card-top">
+                            <div class="returns-info-left">
+                                <div class="returns-id-status-row">
+                                    <span class="returns-card-id">Return @retNumber</span>
+                                    <span class="returns-status @statusCss">@statusText</span>
+                                </div>
+                                <div class="returns-card-orderid">
+                                    Order: @orderNumber<br />
+                                    Requested on @requestedOn
+                                </div>
+                            </div>
+
+                            <div class="returns-refund-block">
+                                <div class="returns-refund-label">Refund Amount</div>
+                                <div class="returns-refund-details">
+                                    <div class="returns-refund-amount">
+                                        @r.RefundAmount.ToString("C")  @* currency *@
+                                    </div>
+                                    @if (!string.IsNullOrWhiteSpace(refundSub))
+                                    {
+                                        <div class="@(r.Status == ReturnStatus.Pending ? "returns-refund-pending" : "returns-refund-processed")">
+                                            @refundSub
+                                        </div>
+                                    }
+                        </div>
+                    </div>
+                </div>
+
+                <div class="returns-card-items">
+                    <div class="returns-item-row">
+                        <div class="returns-item-left">
+                            <img class="returns-item-img"
+                                 src="~/image/userSidebar/Stamixproduct.png"
+                                 alt="Product" />
+                            <div class="returns-item-details">
+                                <div class="returns-item-title">
+                                    @(!string.IsNullOrEmpty(r.ProductSummary)
+                                                                        ? r.ProductSummary
+                                                                        : "Product(s) from this order")
+                                </div>
+                                @* If you later add Quantity to DTO, show it here *@
+                            </div>
+                        </div>
+                        <div class="returns-item-right">
+                            <div class="returns-reason-label">Return Reason:</div>
+                            <div class="returns-reason">@r.Reason</div>
+                        </div>
+                    </div>
+                </div>
+
+                        <!-- Mobile Return Reason -->
+                        <div class="returns-item-right-mobile">
+                            <div class="returns-reason-label">Return Reason:</div>
+                            <div class="returns-reason">@r.Reason</div>
+                        </div>
+
+                        @* Show Cancel button only for pending (under review) *@
+                @if (r.Status == ReturnStatus.Pending)
+                        {
+                            <div class="returns-card-bottom">
+                                <form asp-action="CancelReturn"asp-controller="Home" method="post">
+                                    @Html.AntiForgeryToken()
+
+                                    <input type="hidden" name="id" value="@r.Id" />  @* or ReturnRequestId *@
+
+                                    <button class="returns-cancel-btn" type="submit">
+                                        <img class="returns-btn-icon"
+                                             src="~/image/userSidebar/Vector.png" alt="" />
+                                        Cancel Return
+                                    </button>
+                                </form>
+                            </div>
+
+                        }
+                    </div>
+                }
+            }
+        </div>
+    </div>
+</div>
+
+
+    <script>
+        // Simple client-side tab filtering
+        document.addEventListener('click', function (e) {
+            const tab = e.target.closest('.returns-tab');
+            if (!tab) return;
+
+            // toggle active tab
+            document.querySelectorAll('.returns-tab').forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+
+            const filter = tab.getAttribute('data-filter'); // all, Approved, Pending, Rejected
+            document.querySelectorAll('.returns-card').forEach(card => {
+                if (filter === 'all') {
+                    card.style.display = '';
+                } else {
+                    const status = card.getAttribute('data-status'); // enum string
+                    card.style.display = (status === filter) ? '' : 'none';
+                }
+            });
+        });
+    </script>
+
+
+<!-- keep your existing <style> block below or in a CSS file -->
+
+
+

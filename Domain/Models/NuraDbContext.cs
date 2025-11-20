@@ -38,4 +38,6 @@ namespace Domain.Models
         public DbSet<QuizOption> QuizOptions { get; set; }
         public DbSet<Subscription> Subscriptions { get; set; }
     }
+		public DbSet<ReturnRequest> ReturnRequests { get; set; }
+	}
 }

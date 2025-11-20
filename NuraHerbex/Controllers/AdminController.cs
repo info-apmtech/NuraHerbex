@@ -1732,6 +1732,110 @@ namespace NuraHerbex.Controllers
 
             return RedirectToAction(nameof(AdminQuizOption));
         }
+		//Return
+		//[HttpGet]
+		//public async Task<IActionResult> Index(ReturnStatus? status)
+		//{
+		//	string url = "api/admin/returns";
+		//	if (status.HasValue)
+		//		url += $"?status={status}";
 
-    }
+		//	var list = await AuthorizedClient.GetFromJsonAsync<List<ReturnRequest>>(url)
+		//			   ?? new List<ReturnRequest>();
+
+		//	return View(list);
+		//}
+
+		// GET: /AdminReturn
+		//public async Task<IActionResult> ReturnResponse()
+		//{
+		//	var jsonOptions = new JsonSerializerOptions(JsonSerializerDefaults.Web);
+		//	jsonOptions.Converters.Add(new JsonStringEnumConverter());
+
+		//	var list = await AuthorizedClient
+		//		.GetFromJsonAsync<List<ReturnRequestViewDto>>(
+		//			"AdminAPI/ReturnRequest/pending",
+		//			jsonOptions)
+		//		?? new List<ReturnRequestViewDto>();
+
+		//	return View(list);
+		//}
+		public async Task<IActionResult> ReturnResponse()
+		{
+			// JSON options for enum handling
+			var jsonOptions = new JsonSerializerOptions(JsonSerializerDefaults.Web);
+			jsonOptions.Converters.Add(new JsonStringEnumConverter());
+
+			// 1️⃣ Load return requests
+			var list = await AuthorizedClient
+				.GetFromJsonAsync<List<ReturnRequestViewDto>>(
+					"AdminAPI/ReturnRequest/getreturn",
+					jsonOptions)
+				?? new List<ReturnRequestViewDto>();
+
+
+			// 2️⃣ Load users (same as your other action)
+			var userResponse = await AuthorizedClient.GetAsync("AdminAPI/users");
+
+			var users = userResponse.IsSuccessStatusCode
+				? await userResponse.Content.ReadFromJsonAsync<List<RegisterUser>>(jsonOptions)
+				: new List<RegisterUser>();
+
+
+			// 3️⃣ Replace UserId with FullName
+			foreach (var request in list)
+			{
+				if (!string.IsNullOrEmpty(request.UserId))
+				{
+					var user = users.FirstOrDefault(u =>
+						string.Equals(u.Id?.Trim(), request.UserId.Trim(), StringComparison.OrdinalIgnoreCase));
+
+					request.UserId = user?.FullName ?? "Unknown User"; // <-- fill FullName
+				}
+				else
+				{
+					request.UserId = "Unknown User";
+				}
+			}
+
+			return View(list);
+		}
+
+
+		// GET: /AdminReturn/Details/5
+		//public async Task<IActionResult> DeleteReturn(int id)
+		//{
+		//	var rr = await AuthorizedClient
+		//		.GetFromJsonAsync<ReturnRequestViewDto>($"AdminAPI/ReturnRequest/{id}");
+
+		//	if (rr == null) return NotFound();
+
+		//	return View(rr); // @model ReturnRequestViewDto
+		//}
+
+		// POST: /AdminReturn/UpdateStatus
+		[HttpPost]
+		[ValidateAntiForgeryToken]
+		public async Task<IActionResult> ReturnStatusUpdate(UpdateReturnStatusDto dto)
+		{
+			var response = await AuthorizedClient
+				.PutAsJsonAsync($"AdminAPI/ReturnRequest/{dto.Id}/status", dto);
+
+			if (response.IsSuccessStatusCode)
+			{
+				TempData["AdminSuccess"] = "Return status updated.";
+			}
+			else
+			{
+				var content = await response.Content.ReadAsStringAsync();
+				TempData["AdminError"] = $"Failed to update status: {content}";
+			}
+
+			return RedirectToAction("ReturnResponse");
+		}
+		
+
+
+
+	}
 }

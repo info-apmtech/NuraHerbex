@@ -157,6 +157,16 @@ namespace Domain.Interface
         Task<IdentityResult> AddOrUpdateQuizOptionAsync(QuizOption option);
         Task<IdentityResult> DeleteQuizOptionAsync(int id);
 
+		//Return request
 
-    }
+		// Customer side
+		//Task<ReturnRequest> CreateReturnRequestAsync(string userId, int orderId, string reason);
+		//Task<List<ReturnRequest>> GetUserReturnsAsync(string userId, ReturnStatus? status = null);
+		Task<ReturnRequestViewDto> CreateReturnAsync(string userId, ReturnRequestDto dto);
+		Task<IReadOnlyList<ReturnRequestViewDto>> GetUserReturnsAsync(string userId);
+		Task<IReadOnlyList<ReturnRequestViewDto>> GetOrderReturnsAsync();
+		Task<ReturnRequestViewDto?> GetByIdAsync(int id);
+		Task<ReturnRequestViewDto?> UpdateStatusAsync(UpdateReturnStatusDto dto);
+		Task<bool> DeleteReturnAsync(int id);   // <-- add this
+	}
 }

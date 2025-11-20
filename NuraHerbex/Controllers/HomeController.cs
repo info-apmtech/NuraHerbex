@@ -23,9 +23,9 @@ using System.Security.Claims;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
-using SmtpClient = MailKit.Net.Smtp.SmtpClient;
-using System.Text.Json.Serialization;
+//using static ServiceStack.Diagnostics.Events;
 using JsonSerializer = System.Text.Json.JsonSerializer;
+using SmtpClient = MailKit.Net.Smtp.SmtpClient;
 //using static ServiceStack.Diagnostics.Events;
 
 namespace NuraHerbex.Controllers
@@ -951,11 +951,35 @@ namespace NuraHerbex.Controllers
             return RedirectToAction("MyOrders");
         }
 
-   
-        public IActionResult MyReturns()
+
+		// GET: /Home/MyReturns (uses API to get user's returns)
+		// Show user's return requests
+		[HttpGet]
+		public async Task<IActionResult> MyReturns()
 		{
-			return View();
-		} 
+			var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+			if (userId == null)
+			{
+				return RedirectToAction("SignIn", "Authentication");
+			}
+
+			// 🔥 FIX: enable enum string conversion ONLY here
+			var options = new JsonSerializerOptions
+			{
+				PropertyNameCaseInsensitive = true
+			};
+			options.Converters.Add(new JsonStringEnumConverter());
+
+			var url = $"AdminAPI/ReturnRequest/my?userId={Uri.EscapeDataString(userId)}";
+
+			// 🔥 FIX APPLIED ONLY TO THIS CALL
+			var list = await AuthorizedClient
+				.GetFromJsonAsync<List<ReturnRequestViewDto>>(url, options)
+				?? new List<ReturnRequestViewDto>();
+
+			return View(list);
+		}
+
 		[HttpPost]
 		public async Task<IActionResult> ToggleWishlist(int productId)
 		{
@@ -2083,7 +2107,56 @@ namespace NuraHerbex.Controllers
             return OrderStatus.OrderPlaced;
         }
 
+		// POST: /Home/RequestReturn  (called by your popup form)
+		// Called by your popup form
+		// Called by your popup form
+		[HttpPost]
+		[ValidateAntiForgeryToken]
+		public async Task<IActionResult> RequestReturn(ReturnRequestDto dto)
+		{
+			
+			dto.UserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+			//if (!ModelState.IsValid)
+			//{
+			//	TempData["ReturnError"] = "Please provide a reason.";
+			//	return RedirectToAction("MyOrders", "Home");
+			//}
+			var response = await AuthorizedClient.PostAsJsonAsync("AdminAPI/ReturnRequest", dto);
+
+			if (response.IsSuccessStatusCode)
+			{
+				TempData["ReturnSuccess"] = "Return request submitted.";
+			}
+			else
+			{
+				var content = await response.Content.ReadAsStringAsync();
+				TempData["ReturnError"] = $"Failed to submit return: {content}";
+			}
+
+			return RedirectToAction("MyOrders", "Home");
+		}
+
+		[HttpPost]
+		[ValidateAntiForgeryToken]
+		public async Task<IActionResult> CancelReturn(int id)
+		{
+			// Call AdminAPI DELETE endpoint
+			var response = await AuthorizedClient.DeleteAsync($"AdminAPI/DeleteReturn/{id}");
+
+			if (response.IsSuccessStatusCode)
+			{
+				TempData["Success"] = "Return request cancelled.";
+			}
+			else
+			{
+				TempData["Error"] = "Unable to cancel return request.";
+			}
+
+			// Redirect back to whatever page shows returns
+			return RedirectToAction("MyOrders", "Home"); 
+		}
 
 
-    }
+
+	}
 }

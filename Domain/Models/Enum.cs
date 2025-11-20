@@ -45,4 +45,13 @@ namespace Domain.Models
         Delivered,
         Cancelled
     }
+	public enum ReturnStatus
+	{
+		Pending,
+		Approved,
+		Rejected,
+		Completed 
+	}
+
+
 }

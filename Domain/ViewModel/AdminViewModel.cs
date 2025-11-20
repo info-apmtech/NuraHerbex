@@ -590,6 +590,56 @@ namespace Domain.ViewModel
         public int TotalDoctors { get; set; }
         public int TotalOrders { get; set; }
     }
+	public class ReturnRequestDto
+	{
+		public int OrderId { get; set; }
+		public string Reason { get; set; } = string.Empty;
+		public string UserId { get; set; } // NEW
+	}
+
+	// What you send back to user or admin in lists/details
+	public class ReturnRequestViewDto
+	{
+		public int Id { get; set; }
+		public int OrderId { get; set; }
+		public string OrderNumber { get; set; } = string.Empty; // e.g. ORD-123
+		public string UserId { get; set; } = string.Empty;
+		public DateTime RequestedAt { get; set; }
+		public ReturnStatus Status { get; set; }
+		public string Reason { get; set; } = string.Empty;
+		public decimal RefundAmount { get; set; }
+		public string? ProductSummary { get; set; }
+		//public string? AdminComment { get; set; }
+	}
+
+	// Admin uses this to update status & comment
+	public class UpdateReturnStatusDto
+	{
+		public int Id { get; set; }               // ReturnRequest Id
+		public ReturnStatus Status { get; set; }  // Approved/Rejected/Completed
+		public string? AdminComment { get; set; }
+	}
+
+	//public class ReturnApproveDto
+	//{
+	//	public bool Approve { get; set; } = true;
+	//	public string? Comment { get; set; }
+	//}
+	//public class ReturnRequestDto
+	//{
+	//	public int Id { get; set; }
+	//	public int OrderId { get; set; }
+	//	public string UserId { get; set; }
+
+	//	public string OrderNumber { get; set; }
+	//	public string ProductName { get; set; }
+	//	public int Quantity { get; set; }
+	//	public decimal RefundAmount { get; set; }
+
+	//	public string Reason { get; set; }
+	//	public DateTime RequestedAt { get; set; }
+	//	public ReturnStatus Status { get; set; }
+	//}
     public class OrderConfirmationViewModel
     {
         public Order Order { get; set; }

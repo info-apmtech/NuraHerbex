@@ -1633,6 +1633,227 @@ namespace Domain.Implementation
 
             return IdentityResult.Success;
         }
+		//Return request
+		//public async Task<ReturnRequest> CreateReturnRequestAsync(string userId, int orderId, string reason)
+		//{
+		//	var order = await _db.Orders
+		//		.Include(o => o.OrderDetails)
+		//		.FirstOrDefaultAsync(o => o.Id == orderId && o.UserId == userId);
+
+		//	if (order == null)
+		//		throw new InvalidOperationException("Order not found for this user.");
+
+		//	var alreadyPending = await _db.ReturnRequests
+		//		.AnyAsync(r => r.OrderId == orderId && r.Status == ReturnStatus.Pending);
+
+		//	if (alreadyPending)
+		//		throw new InvalidOperationException("A pending return request already exists for this order.");
+
+		//	var firstProductName = order.OrderDetails.FirstOrDefault()?.productName ?? "Order items";
+
+		//	var request = new ReturnRequest
+		//	{
+		//		OrderId       = order.Id,
+		//		UserId        = userId,
+		//		RequestedAt   = DateTime.UtcNow,
+		//		Reason        = reason,
+		//		Status        = ReturnStatus.Pending,
+		//		RefundAmount  = order.Total,
+		//		ProductSummary = firstProductName
+		//	};
+
+		//	_db.ReturnRequests.Add(request);
+		//	await _db.SaveChangesAsync();
+
+		//	return request;
+		//}
+
+		//public async Task<List<ReturnRequest>> GetUserReturnsAsync(string userId, ReturnStatus? status = null)
+		//{
+		//	var query = _db.ReturnRequests
+		//		.Where(r => r.UserId == userId)
+		//		.OrderByDescending(r => r.RequestedAt)
+		//		.AsQueryable();
+
+		//	if (status.HasValue)
+		//		query = query.Where(r => r.Status == status.Value);
+
+		//	return await query.ToListAsync();
+		//}
+		public async Task<ReturnRequestViewDto> CreateReturnAsync(string userId, ReturnRequestDto dto)
+		{
+			var order = await _db.Orders
+				.Include(o => o.OrderDetails)
+				.FirstOrDefaultAsync(o => o.Id == dto.OrderId && o.UserId == userId);
+
+			if (order == null)
+				throw new InvalidOperationException("Order not found or does not belong to the current user.");
+
+			var daysSinceOrder = (DateTime.UtcNow - order.OrderDate).TotalDays;
+			if (daysSinceOrder > 30)
+				throw new InvalidOperationException("Return window has expired.");
+
+			string productSummary = "";
+
+			if (order.OrderDetails != null && order.OrderDetails.Any())
+			{
+				var firstDetail = order.OrderDetails.First();
+
+				string productName = "Product";
+
+				if (firstDetail.ProductId.HasValue)
+				{
+					var product = await _db.ProductDetails
+						.AsNoTracking()
+						.FirstOrDefaultAsync(p => p.Id == firstDetail.ProductId.Value);
+
+					if (product != null)
+					{
+						productName = product.ProductName;   // <-- REAL product name from DB
+					}
+				}
+
+				productSummary = $"{productName} (Qty: {firstDetail.Quantity})";
+			}
+
+			var entity = new ReturnRequest
+			{
+				OrderId = order.Id,
+				UserId = userId,
+				RequestedAt = DateTime.UtcNow,
+				Status = ReturnStatus.Pending,
+				Reason = dto.Reason,
+				RefundAmount = order.Total,
+				ProductSummary = productSummary
+			};
+
+			_db.ReturnRequests.Add(entity);
+			await _db.SaveChangesAsync();
+
+			return MapToViewDto(entity, order);
+		}
+
+
+		public async Task<IReadOnlyList<ReturnRequestViewDto>> GetUserReturnsAsync(string userId)
+		{
+			return await _db.ReturnRequests
+				.Where(r => r.UserId == userId)
+				.OrderByDescending(r => r.RequestedAt)
+				.AsNoTracking()
+				.Select(r => new ReturnRequestViewDto
+				{
+					Id = r.Id,
+					OrderId = r.OrderId,
+					OrderNumber = "ORD-" + r.OrderId,
+					UserId = r.UserId,
+					RequestedAt = r.RequestedAt,
+					Status = r.Status,
+					Reason = r.Reason,
+					RefundAmount = r.RefundAmount,
+					ProductSummary = r.ProductSummary
+				})
+				.ToListAsync();
+		}
+
+
+		public async Task<IReadOnlyList<ReturnRequestViewDto>> GetOrderReturnsAsync()
+		{
+			return await _db.ReturnRequests
+				//.Where(r => r.Status == ReturnStatus.Pending)
+				.OrderBy(r => r.RequestedAt)
+				.AsNoTracking()
+				.Select(r => new ReturnRequestViewDto
+				{
+					Id = r.Id,
+					OrderId = r.OrderId,
+					OrderNumber = "ORD-" + r.OrderId,
+					UserId = r.UserId,
+					RequestedAt = r.RequestedAt,
+					Status = r.Status,
+					Reason = r.Reason,
+					RefundAmount = r.RefundAmount,
+					ProductSummary = r.ProductSummary
+				})
+				.ToListAsync();
+		}
+
+
+		public async Task<ReturnRequestViewDto?> GetByIdAsync(int id)
+		{
+			return await _db.ReturnRequests
+				.Where(r => r.Id == id)
+				.AsNoTracking()
+				.Select(r => new ReturnRequestViewDto
+				{
+					Id = r.Id,
+					OrderId = r.OrderId,
+					OrderNumber = "ORD-" + r.OrderId,
+					UserId = r.UserId,
+					RequestedAt = r.RequestedAt,
+					Status = r.Status,
+					Reason = r.Reason,
+					RefundAmount = r.RefundAmount,
+					ProductSummary = r.ProductSummary
+				})
+				.FirstOrDefaultAsync();
+		}
+
+
+		public async Task<ReturnRequestViewDto?> UpdateStatusAsync(UpdateReturnStatusDto dto)
+		{
+			var entity = await _db.ReturnRequests.FirstOrDefaultAsync(r => r.Id == dto.Id);
+			if (entity == null) return null;
+
+			entity.Status = dto.Status;
+			await _db.SaveChangesAsync();
+
+			return new ReturnRequestViewDto
+			{
+				Id = entity.Id,
+				OrderId = entity.OrderId,
+				OrderNumber = "ORD-" + entity.OrderId,
+				UserId = entity.UserId,
+				RequestedAt = entity.RequestedAt,
+				Status = entity.Status,
+				Reason = entity.Reason,
+				RefundAmount = entity.RefundAmount,
+				ProductSummary = entity.ProductSummary
+			};
+		}
+
+
+		private static ReturnRequestViewDto MapToViewDto(ReturnRequest r, Order? order)
+		{
+			var orderNumber = order != null ? $"ORD-{order.Id}" : $"ORD-{r.OrderId}";
+
+			return new ReturnRequestViewDto
+			{
+				Id = r.Id,
+				OrderId = r.OrderId,
+				OrderNumber = orderNumber,
+				UserId = r.UserId,
+				RequestedAt = r.RequestedAt,
+				Status = r.Status,
+				Reason = r.Reason,
+				RefundAmount = r.RefundAmount,
+				ProductSummary = r.ProductSummary
+				//AdminComment = r.AdminComment
+			};
+		}
+		public async Task<bool> DeleteReturnAsync(int id)
+		{
+			var entity = await _db.ReturnRequests.FindAsync(id);
+
+			if (entity == null)
+				return false;
+
+			// HARD DELETE:
+			_db.ReturnRequests.Remove(entity);			
+			//entity.Status = ReturnStatus.Rejected;
+			await _db.SaveChangesAsync();
+			return true;
+		}
+
 
 	}
 }
