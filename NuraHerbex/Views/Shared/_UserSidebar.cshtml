@@ -21,7 +21,7 @@
                 <img src="~/image/userSidebar/card.png" alt="wishlist" />
                 <span>My Wishlist</span>
             </li>
-            <li class="@(ViewContext.RouteData.Values["action"]?.ToString() == "Consultations" ? "active" : "") sidebar-link" onclick="location.href='@Url.Action("Consultations", "Home")'">
+            <li class="@(ViewContext.RouteData.Values["action"]?.ToString() == "Consultations" ? "active" : "") sidebar-link" onclick="location.href='@Url.Action("MyConsultation", "Home")'">
                 <img src="~/image/userSidebar/gift.png" alt="consultations" />
                 <span>My Consultations</span>
             </li>
@@ -34,10 +34,25 @@
             </li>
         </ul>
     </nav>
-    <button class="logout-btn">
+   @*  <button class="logout-btn">
+        <img src="~/image/userSidebar/logout.png" alt="Logout" />
+        <span>Logout</span>
+    </button> *@
+    <button id="logoutButton" class="logout-btn">
         <img src="~/image/userSidebar/logout.png" alt="Logout" />
         <span>Logout</span>
     </button>
+    <form id="logoutForm" asp-controller="Authentication" asp-action="LogOut"
+          method="post" style="display:none;">
+        @Html.AntiForgeryToken()
+    </form>
+    <script>
+        document.getElementById("logoutButton").addEventListener("click", function () {
+            document.getElementById("logoutForm").submit();
+        });
+    </script>
+
+
 </div>
 <style>
     .user-sidebar {
@@ -171,5 +186,13 @@
         display: flex;
         align-items: center;
     }
-
+    /* ============================
+           Sidebar username wrap
+        ============================= */
+    .user-sidebar,
+    .user-sidebar * {
+        word-break: break-word !important;
+        overflow-wrap: anywhere !important;
+        max-width: 100% !important;
+    }
 </style>

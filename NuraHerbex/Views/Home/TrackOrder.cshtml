@@ -1,7 +1,8 @@
 ﻿@using Domain.ViewModel
+@model TrackOrderViewModel
+
 @{
     ViewData["Title"] = "Track Order";
-
 }
 
 <div class="container">
@@ -9,7 +10,7 @@
         <h1>Track Your Order</h1>
         @if (Model.Order != null)
         {
-            <p class="order-id">Order ID: <span>@("ORD" + Model.Order.Id)</span></p>
+            <p class="order-id">Order ID: <span>@(Model.Order.Id)</span></p>
         }
         else
         {
@@ -17,13 +18,10 @@
         }
     </div>
 
-
     <div class="grid">
         <!-- Main Content -->
         <div>
             <!-- Delivery Status -->
-            @model TrackOrderViewModel
-
             @if (Model.Order != null)
             {
                 var order = Model.Order;
@@ -34,21 +32,25 @@
             <line x1='3' y1='6' x2='21' y2='6'></line>
             <path d='M16 10a4 4 0 0 1-8 0'></path>
             </svg>"),
+
             ("Packed", @"<svg width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2'>
             <path d='M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z'></path>
             <polyline points='3.27 6.96 12 12.01 20.73 6.96'></polyline>
             <line x1='12' y1='22.08' x2='12' y2='12'></line>
             </svg>"),
+
             ("Shipped", @"<svg width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2'>
             <rect x='1' y='3' width='15' height='13'></rect>
             <polygon points='16 8 20 8 23 11 23 16 16 16 16 8'></polygon>
             <circle cx='5.5' cy='18.5' r='2.5'></circle>
             <circle cx='18.5' cy='18.5' r='2.5'></circle>
             </svg>"),
+
             ("Out for Delivery", @"<svg width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2'>
             <path d='M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z'></path>
             <circle cx='12' cy='10' r='3'></circle>
             </svg>"),
+
             ("Delivered", @"<svg width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2'>
             <path d='M22 11.08V12a10 10 0 1 1-5.93-9.14'></path>
             <polyline points='22 4 12 14.01 9 11.01'></polyline>
@@ -74,8 +76,11 @@
                                 <div class="step-content">
                                     <p class="step-label @(isActive ? "active" : "inactive")">@step.Label</p>
                                     <p class="step-date">
-                                        @(i == 0 ? order.OrderDate.ToString("dd MMM, yyyy - hh:mm tt") :
-                                            (i <= currentStepIndex ? order.OrderDate.AddHours(i * 4).ToString("dd MMM, yyyy - hh:mm tt") : $"Expected: {order.OrderDate.AddDays(i - currentStepIndex).ToString("dd MMM, yyyy")}"))
+                                        @(i == 0
+                                            ? order.OrderDate.ToString("dd MMM, yyyy - hh:mm tt")
+                                            : (i <= currentStepIndex
+                                            ? order.OrderDate.AddHours(i * 4).ToString("dd MMM, yyyy - hh:mm tt")
+                                            : $"Expected: {order.OrderDate.AddDays(i - currentStepIndex).ToString("dd MMM, yyyy")}"))
                                     </p>
                                 </div>
                             </div>
@@ -100,8 +105,11 @@
                                         </div>
                                         <p class="step-text @(isActive ? "active" : "inactive")">@step.Label</p>
                                         <p class="step-date-sm">
-                                            @(i == 0 ? order.OrderDate.ToString("dd MMM, yyyy - hh:mm tt") :
-                                                (i <= currentStepIndex ? order.OrderDate.AddHours(i * 4).ToString("dd MMM, yyyy - hh:mm tt") : $"Expected: {order.OrderDate.AddDays(i - currentStepIndex).ToString("dd MMM, yyyy")}"))
+                                            @(i == 0
+                                                ? order.OrderDate.ToString("dd MMM, yyyy - hh:mm tt")
+                                                : (i <= currentStepIndex
+                                                ? order.OrderDate.AddHours(i * 4).ToString("dd MMM, yyyy - hh:mm tt")
+                                                : $"Expected: {order.OrderDate.AddDays(i - currentStepIndex).ToString("dd MMM, yyyy")}"))
                                         </p>
                                     </div>
                                 }
@@ -142,11 +150,10 @@
 
         <!-- Order Details Sidebar -->
         <div>
-
             <div class="card">
                 <h2>Order Details</h2>
 
-                @if (Model.Order != null && Model.OrderDetails.Any())
+                @if (Model.Order != null && Model.OrderDetails != null && Model.OrderDetails.Any())
                 {
                     @foreach (var detail in Model.OrderDetails)
                     {
@@ -154,7 +161,9 @@
 
                         <div class="product-section">
                             <div class="product-image">
-                                <img src="@(product?.ProductImages ?? "~/images/default.png")" alt="@product?.ProductName" style="width:100px;">
+                                <img src="@(product?.ProductImages ?? "~/images/default.png")"
+                                     alt="@product?.ProductName"
+                                     style="width:100px;">
                             </div>
                             <div class="product-info">
                                 <h3 class="product-name">@product?.ProductName</h3>
@@ -180,7 +189,12 @@
                     </div>
 
                     <div class="actions">
-                        <button class="btn btn-outline">Download Invoice</button>
+                        @* <button class="btn btn-outline">Download Invoice</button> *@
+                        <button class="btn btn-outline"
+                                onclick="window.location.href='@Url.Action("Invoice", "Home", new { orderId = Model.Order.Id })'">
+                            Download Invoice
+                        </button>
+
                         <button class="btn btn-outline">Return Order</button>
                         <button class="btn btn-primary">Reorder</button>
                     </div>
@@ -193,6 +207,7 @@
         </div>
     </div>
 </div>
+
 
 <style>
     * {

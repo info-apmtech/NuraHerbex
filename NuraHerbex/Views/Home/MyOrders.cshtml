@@ -858,6 +858,30 @@
 </style>
 
 <style>
+    /* ============================
+       FIXED HEIGHT SCROLLING ORDERS LIST
+       Scrollable but scrollbar hidden
+    ============================= */
+    .orders-list {
+        max-height: calc(110vh - 230px); /* adjust depending on header size */
+        overflow-y: auto;
+        padding-right: 10px;
+        /* Hide scrollbar */
+        scrollbar-width: none; /* Firefox */
+    }
+
+        .orders-list::-webkit-scrollbar {
+            display: none; /* Chrome/Safari */
+        }
+
+    /* ============================
+       Ensure ONLY main page has visible scrollbar
+    ============================= */
+    body {
+        overflow-y: auto !important;
+    }
+
+    
     .rating-stars {
         display: flex;
         align-items: center;

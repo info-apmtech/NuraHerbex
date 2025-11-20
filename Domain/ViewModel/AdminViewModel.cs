@@ -640,6 +640,12 @@ namespace Domain.ViewModel
 	//	public DateTime RequestedAt { get; set; }
 	//	public ReturnStatus Status { get; set; }
 	//}
+    public class OrderConfirmationViewModel
+    {
+        public Order Order { get; set; }
+        public List<OrderDetail> Details { get; set; } = new();
+        public string Email { get; set; }
+    }
 
 }
 

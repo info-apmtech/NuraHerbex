@@ -1,91 +1,4 @@
-﻿@* @{
-    Layout = "~/Views/Shared/_Layout.cshtml";
-}
-<div class="profile-layout">
-    @Html.Partial("_UserSidebar")
-    <div class="profile-main-content">
-        <h2 class="profile-title">My Profile</h2>
-        <p class="profile-subtitle">Manage your personal information and addresses</p>
-
-        <!-- Personal Information Card -->
-        <div class="profile-card">
-            <div class="profile-card-title">Personal Information</div>
-            <form class="profile-form">
-                <div class="form-row">
-                    <label>
-                        Full Name
-                        <input type="text" placeholder="Placeholder" />
-                    </label>
-                </div>
-                <div class="form-row row-inline">
-                    <label>
-                        Phone
-                        <input type="text" placeholder="Placeholder" />
-                    </label>
-                    <label>
-                        Email
-                        <input type="text" placeholder="Placeholder" />
-                    </label>
-                </div>
-                <div class="form-actions">
-                    <button type="submit" class="orange-btn">Save Changes</button>
-                </div>
-            </form>
-        </div>
-
-        <!-- Saved Addresses Card -->
-        <div class="profile-card address-card">
-            <div class="profile-card-title-row">
-                <span class="profile-card-title">Saved Addresses</span>
-                <button class="orange-btn add-new"><span>+</span> Add New</button>
-            </div>
-            <div class="saved-addresses-list">
-                <!-- Address 1 -->
-                <div class="address-block">
-                    <span class="address-badge">Default</span>
-                    <span class="address-name">Home</span>
-                    <div class="address-detail">
-                        123 Main Street, Apt 4B<br />
-                        New York, NY 10001<br />
-                        United States<br />
-                        Phone: +1 (555) 123-4567
-                    </div>
-                    <div class="address-actions">
-                        <button class="icon-btn"><img src="~/image/userSidebar/EditIcon.png" alt="Edit"></button>
-                    </div>
-                </div>
-                <!-- Address 2 -->
-                <div class="address-block">
-                    <span class="address-name">Office</span>
-                    <div class="address-detail">
-                        123 Main Street, Apt 4B<br />
-                        New York, NY 10001<br />
-                        United States<br />
-                        Phone: +1 (555) 123-4567
-                    </div>
-                    <div class="address-actions">
-                        <button class="icon-btn"><img src="~/image/userSidebar/EditIcon.png" alt="Edit"></button>
-                        <button class="icon-btn"><img src="~/image/userSidebar/Deleteicon.png" alt="Delete"></button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Account Security Card -->
-        <div class="profile-card account-card">
-            <div class="profile-card-title">Account Security</div>
-            <div class="security-valuebox-row">
-                <div class="security-row-texts">
-                    <span class="security-label">Password</span>
-                    <span class="security-hint">Last changed 3 months ago</span>
-                </div>
-                <button class="orange-btn security-btn">Change Password</button>
-            </div>
-        </div>
-
-
-    </div>
-</div> *@
+﻿
 @model Domain.ViewModel.UserProfileViewModel
 @using Microsoft.AspNetCore.Mvc.Rendering
 
@@ -482,7 +395,7 @@
         margin-bottom: 6px;
         position: relative;
         box-shadow: none;
-        min-height: 82px;
+        /* min-height: 82px; */
         display: flex;
         flex-direction: column;
         gap: 2px;
@@ -746,6 +659,29 @@
             display: none !important;
         }
  }
+    /* ==========================================
+       FIX: Make the Saved Addresses card scrollable
+       Inside scroll only (no second scrollbar visible)
+    ========================================== */
+
+    .profile-card.address-card {
+        max-height: 450px; /* You can adjust height */
+        overflow: hidden; /* prevent the card itself from scrolling */
+        position: relative;
+    }
+
+    .saved-addresses-list {
+        max-height: 380px; /* height inside the card */
+        overflow-y: auto; /* enable internal scroll */
+        padding-right: 6px; /* avoid text cutting */
+        /* Hide scrollbar (but allow scroll) */
+        scrollbar-width: none; /* Firefox */
+    }
+
+        .saved-addresses-list::-webkit-scrollbar {
+            display: none; /* Chrome/Safari */
+        }
+
 </style>
 
 

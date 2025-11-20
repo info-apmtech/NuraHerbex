@@ -462,4 +462,19 @@
             font-size: 0.9rem;
         }
     }
+    /* ==========================================
+       FIX: Make consultations section scrollable
+    ========================================== */
+
+    #consultation-cards {
+        max-height: 65vh; /* Adjust height as you want */
+        overflow-y: auto; /* Enable scroll */
+        padding-right: 10px; /* Prevent content clipping */
+        /* Hide scrollbar */
+        scrollbar-width: none; /* Firefox */
+    }
+
+        #consultation-cards::-webkit-scrollbar {
+            display: none; /* Chrome/Safari */
+        }
 </style>

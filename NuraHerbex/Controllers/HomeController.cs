@@ -50,62 +50,7 @@ namespace NuraHerbex.Controllers
 
 		}
 		private System.Net.Http.HttpClient AuthorizedClient => _httpClientFactory.CreateAuthorizedClient(_httpContextAccessor);
-		//public async Task<IActionResult> Index()
-		//{
-		//	var blogs = new List<Blog>();
-		//	var ingredients = new List<Ingredient>();
-		//	var products = new List<Product>();
-		//	var feedbacks = new List<FeedBack>();
 
-		//	// Fetch blogs, ingredients, products as before
-		//	var blogResponse = await _httpClient.GetAsync("AdminAPI/blogs");
-		//	if (blogResponse.IsSuccessStatusCode)
-		//		blogs = JsonConvert.DeserializeObject<List<Blog>>(await blogResponse.Content.ReadAsStringAsync()) ?? new List<Blog>();
-
-		//	var ingredientResponse = await _httpClient.GetAsync("AdminAPI/ingredients");
-		//	if (ingredientResponse.IsSuccessStatusCode)
-		//		ingredients = JsonConvert.DeserializeObject<List<Ingredient>>(await ingredientResponse.Content.ReadAsStringAsync()) ?? new List<Ingredient>();
-
-		//	var productsResponse = await _httpClient.GetAsync("AdminAPI/products");
-		//	if (productsResponse.IsSuccessStatusCode)
-		//		products = JsonConvert.DeserializeObject<List<Product>>(await productsResponse.Content.ReadAsStringAsync()) ?? new List<Product>();
-
-		//          var feedbackResponse = await _httpClient.GetAsync("AdminAPI/feedbacks");
-		//          if (feedbackResponse.IsSuccessStatusCode)
-		//              feedbacks = JsonConvert.DeserializeObject<List<FeedBack>>(await feedbackResponse.Content.ReadAsStringAsync()) ?? new List<FeedBack>();
-
-
-
-		//          // Filter home ingredients, featured products, etc.
-		//          var homeIngredients = ingredients.Where(i => i.IsActive && i.ShowHome).OrderByDescending(i => i.CreatedAt).Take(6).ToList();
-		//	var latestBlogs = blogs.OrderByDescending(b => b.CreatedAt).Take(10).ToList();
-		//	var featuredProducts = products.OrderBy(p => p.Id).ToList();
-
-		//	// ? Fetch user's wishlist IDs if logged in
-		//	var userId = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-		//	List<int> wishlistIds = new List<int>();
-		//	if (!string.IsNullOrEmpty(userId))
-		//	{
-		//		var wishlistResponse = await _httpClient.GetAsync($"AdminAPI/wishlist/{userId}");
-		//		if (wishlistResponse.IsSuccessStatusCode)
-		//		{
-		//			var wishlistItems = await wishlistResponse.Content.ReadFromJsonAsync<List<WishlistItem>>();
-		//			wishlistIds = wishlistItems?.Select(x => x.ProductId).ToList() ?? new List<int>();
-		//		}
-		//	}
-
-		//	var vm = new HomeViewModel
-		//	{
-		//		BlogList = latestBlogs,
-		//		Ingredients = homeIngredients,
-		//		PlanList = await GetPlansFromApi(),
-		//		FeaturedProducts = featuredProducts,
-		//		WishlistProductIds = wishlistIds,
-		//              FeedbackList = feedbacks.OrderByDescending(f => f.SubmittedAt).Take(10).ToList()
-		//          };
-
-		//	return View(vm);
-		//}
 		public async Task<IActionResult> Index()
 		{
 			var blogs = new List<Blog>();
@@ -364,22 +309,7 @@ namespace NuraHerbex.Controllers
             }
             return plans;
         }
-        //public async Task<IActionResult> Plan()
-        //{
-        //	var plans = await GetPlansFromApi();
-        //	return View(plans);
-        //}
-        //public async Task<List<PricingPlan>> GetPlansFromApi()
-        //{
-        //	var plans = new List<PricingPlan>();
-        //	var response = await _httpClient.GetAsync("AdminAPI/pricingplans");
-        //	if (response.IsSuccessStatusCode)
-        //	{
-        //		var json = await response.Content.ReadAsStringAsync();
-        //		plans = JsonConvert.DeserializeObject<List<PricingPlan>>(json) ?? new List<PricingPlan>();
-        //	}
-        //	return plans;
-        //}
+
 
         public async Task<IActionResult> Shop(int id = 0)
 		{
@@ -483,56 +413,7 @@ namespace NuraHerbex.Controllers
 				forThis4 = p.ForThis4
 			});
 		}
-        //[HttpGet]
-        //public async Task<IActionResult> Quiz()
-        //{
-        //    var categoriesResponse = await _httpClient.GetAsync("AdminAPI/quizcategories");
-        //    categoriesResponse.EnsureSuccessStatusCode();
-        //    var categoriesJson = await categoriesResponse.Content.ReadAsStringAsync();
-        //    var categories = JsonConvert.DeserializeObject<List<QuizCategory>>(categoriesJson);
-
-        //    return View(categories); // initial load with categories only
-        //}
-
-        //[HttpGet]
-        //public async Task<IActionResult> GetQuestion(int categoryId, int questionIndex = 0, int totalPoints = 0)
-        //{
-        //    // Fetch questions for category
-        //    var questionsResponse = await _httpClient.GetAsync("AdminAPI/quizquestions");
-        //    questionsResponse.EnsureSuccessStatusCode();
-        //    var questionsJson = await questionsResponse.Content.ReadAsStringAsync();
-        //    var allQuestions = JsonConvert.DeserializeObject<List<QuizQuestion>>(questionsJson);
-        //    var questions = allQuestions.Where(q => q.CategoryId == categoryId).ToList();
-
-        //    if (questionIndex >= questions.Count)
-        //    {
-        //        return Json(new
-        //        {
-        //            quizFinished = true,
-        //            totalPoints = totalPoints,
-        //            totalQuestions = questions.Count
-        //        });
-        //    }
-
-        //    var currentQuestion = questions[questionIndex];
-
-        //    // Fetch options for the current question
-        //    var optionsResponse = await _httpClient.GetAsync("AdminAPI/quizoptions");
-        //    optionsResponse.EnsureSuccessStatusCode();
-        //    var optionsJson = await optionsResponse.Content.ReadAsStringAsync();
-        //    var allOptions = JsonConvert.DeserializeObject<List<QuizOption>>(optionsJson);
-        //    var options = allOptions.Where(o => o.QuestionId == currentQuestion.Id).ToList();
-
-        //    return Json(new
-        //    {
-        //        quizFinished = false,
-        //        currentQuestionIndex = questionIndex,
-        //        totalPoints,
-        //        currentQuestion = currentQuestion,
-        //        options
-        //    });
-        //}
-
+       
         [HttpGet]
         public async Task<IActionResult> Quiz()
         {
@@ -540,7 +421,7 @@ namespace NuraHerbex.Controllers
             categoriesResponse.EnsureSuccessStatusCode();
             var categoriesJson = await categoriesResponse.Content.ReadAsStringAsync();
             var categories = JsonConvert.DeserializeObject<List<QuizCategory>>(categoriesJson);
-            return View(categories); // initial load with categories only
+            return View(categories);
         }
 
         [HttpGet]
@@ -755,18 +636,54 @@ namespace NuraHerbex.Controllers
 			}
 			return View(vm);
 		}
+        [HttpGet]
+        public async Task<IActionResult> Confirmation(int orderId)
+        {
+            var userId = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "";
+
+            var resp = await _httpClient.GetAsync($"AdminAPI/orders/full/{orderId}");
+
+            if (!resp.IsSuccessStatusCode)
+                return NotFound("Order not found");
+
+            var json = await resp.Content.ReadAsStringAsync();
+
+            var summary = JsonSerializer.Deserialize<OrderSummaryViewModel>(json, new JsonSerializerOptions
+            {
+                Converters = { new JsonStringEnumConverter() }
+            });
+
+            // --- Ensure order belongs to logged-in user ---
+            if (summary == null || summary.Order.UserId != userId)
+                return Unauthorized("Order does not belong to this user");
+
+            // --- Fetch user email ---
+            var userResp = await _httpClient.GetAsync($"AdminAPI/user/{userId}");
+            var user = await userResp.Content.ReadFromJsonAsync<RegisterUser>();
+
+            var vm = new OrderConfirmationViewModel
+            {
+                Order = summary.Order,
+                Details = summary.Details,
+                Email = user?.Email ?? "--"
+            };
+
+            return View(vm);
+        }
 
 
-		public IActionResult Privacy()
+        //public IActionResult Confirmation()
+        //{
+        //    return View();
+        //}
+        public IActionResult Privacy()
 		{
 			return View();
 		}
-        
         public async Task<IActionResult> TrackOrder(int? orderId)
         {
             if (!orderId.HasValue)
             {
-                // No orderId supplied, redirect to MyOrders or show message
                 TempData["ErrorMessage"] = "Please select an order to track.";
                 return RedirectToAction("MyOrders");
             }
@@ -778,36 +695,37 @@ namespace NuraHerbex.Controllers
                 Converters = { new JsonStringEnumConverter() }
             };
 
-            var orderResponse = await client.GetAsync($"AdminAPI/orders/{orderId.Value}");
+            // ✅ Fetch order + details (same logic as AdminOrderDetails)
+            var orderResponse = await client.GetAsync($"AdminAPI/orders/full/{orderId.Value}");
             if (!orderResponse.IsSuccessStatusCode)
             {
                 TempData["ErrorMessage"] = "Order not found.";
                 return RedirectToAction("MyOrders");
             }
 
-            var order = await orderResponse.Content.ReadFromJsonAsync<Order>(jsonOptions);
-
-            var orderDetails = new List<OrderDetail>();
-            var products = new List<Product>();
-
-            if (order != null)
+            var orderSummary = await orderResponse.Content.ReadFromJsonAsync<OrderSummaryViewModel>(jsonOptions);
+            if (orderSummary == null || orderSummary.Order == null)
             {
-                var detailsResponse = await client.GetAsync($"AdminAPI/orderdetails?orderId={order.Id}");
-                if (detailsResponse.IsSuccessStatusCode)
-                {
-                    orderDetails = await detailsResponse.Content.ReadFromJsonAsync<List<OrderDetail>>(jsonOptions) ?? new List<OrderDetail>();
+                TempData["ErrorMessage"] = "Order not found.";
+                return RedirectToAction("MyOrders");
+            }
 
-                    foreach (var detail in orderDetails)
+            var order = orderSummary.Order;
+            var orderDetails = orderSummary.Details ?? new List<OrderDetail>();
+
+            // ✅ Fetch product info for each detail
+            var products = new List<Product>();
+            foreach (var detail in orderDetails)
+            {
+                if (detail.ProductId.HasValue)
+                {
+                    var prodResponse = await client.GetAsync($"AdminAPI/product/{detail.ProductId.Value}");
+                    if (prodResponse.IsSuccessStatusCode)
                     {
-                        if (detail.ProductId.HasValue)
+                        var product = await prodResponse.Content.ReadFromJsonAsync<Product>(jsonOptions);
+                        if (product != null && !products.Any(p => p.Id == product.Id))
                         {
-                            var prodResponse = await client.GetAsync($"AdminAPI/product/{detail.ProductId.Value}");
-                            if (prodResponse.IsSuccessStatusCode)
-                            {
-                                var product = await prodResponse.Content.ReadFromJsonAsync<Product>(jsonOptions);
-                                if (product != null)
-                                    products.Add(product);
-                            }
+                            products.Add(product);
                         }
                     }
                 }
@@ -816,14 +734,76 @@ namespace NuraHerbex.Controllers
             var model = new TrackOrderViewModel
             {
                 Order = order,
+                UserRole = User.FindFirstValue(ClaimTypes.Role) ?? "User",
                 OrderDetails = orderDetails,
-                Products = products,
-                UserRole = User.FindFirstValue(ClaimTypes.Role) ?? "User"
+                Products = products
             };
 
             return View(model);
         }
+        //public async Task<IActionResult> TrackOrder(int? orderId)
+        //{
+        //    if (!orderId.HasValue)
+        //    {
+        //        TempData["ErrorMessage"] = "Please select an order to track.";
+        //        return RedirectToAction("MyOrders");
+        //    }
 
+        //    var client = _httpClient;
+        //    var jsonOptions = new JsonSerializerOptions
+        //    {
+        //        PropertyNameCaseInsensitive = true,
+        //        Converters = { new JsonStringEnumConverter() }
+        //    };
+
+        //    // Fetch the order
+        //    var orderResponse = await client.GetAsync($"AdminAPI/orders/{orderId.Value}");
+        //    if (!orderResponse.IsSuccessStatusCode)
+        //    {
+        //        TempData["ErrorMessage"] = "Order not found.";
+        //        return RedirectToAction("MyOrders");
+        //    }
+
+        //    var order = await orderResponse.Content.ReadFromJsonAsync<Order>(jsonOptions);
+
+        //    if (order == null)
+        //    {
+        //        TempData["ErrorMessage"] = "Order not found.";
+        //        return RedirectToAction("MyOrders");
+        //    }
+
+        //    // Fetch order details
+        //    var detailsResponse = await client.GetAsync($"AdminAPI/orderdetails?orderId={order.Id}");
+        //    var orderDetails = detailsResponse.IsSuccessStatusCode
+        //        ? await detailsResponse.Content.ReadFromJsonAsync<List<OrderDetail>>(jsonOptions) ?? new List<OrderDetail>()
+        //        : new List<OrderDetail>();
+
+        //    // Fetch product info
+        //    var products = new List<Product>();
+        //    foreach (var detail in orderDetails)
+        //    {
+        //        if (detail.ProductId.HasValue)
+        //        {
+        //            var prodResponse = await client.GetAsync($"AdminAPI/product/{detail.ProductId.Value}");
+        //            if (prodResponse.IsSuccessStatusCode)
+        //            {
+        //                var product = await prodResponse.Content.ReadFromJsonAsync<Product>(jsonOptions);
+        //                if (product != null)
+        //                    products.Add(product);
+        //            }
+        //        }
+        //    }
+
+        //    var model = new TrackOrderViewModel
+        //    {
+        //        Order = order,
+        //        UserRole = User.FindFirstValue(ClaimTypes.Role) ?? "User",
+        //        OrderDetails = orderDetails,
+        //        Products = products
+        //    };
+
+        //    return View(model);
+        //}
         public async Task<IActionResult> MyOrders()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -1870,9 +1850,10 @@ namespace NuraHerbex.Controllers
 
 			return View("OrderSummary", addr);
 		}
+
 		[HttpPost]
 		[ValidateAntiForgeryToken]
-		public async Task<IActionResult> ProceedToPayment([FromForm] OrderSummaryViewModel input)
+		public async Task<IActionResult> ProceedToPaymentPost([FromForm] OrderSummaryViewModel input)
 		{
 			var userId = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "";
 			if (string.IsNullOrEmpty(userId))
@@ -1888,8 +1869,16 @@ namespace NuraHerbex.Controllers
 			// -------------------------------------------------------
 			if (input.UseCustomAddress)
 			{
-				//  Keep your original mapping so address API keeps working
-				var custom = new AddressDetail
+                if (string.IsNullOrWhiteSpace(input.StreetAddress) ||
+       string.IsNullOrWhiteSpace(input.City) ||
+       string.IsNullOrWhiteSpace(input.ZipCode) ||
+       string.IsNullOrWhiteSpace(input.Phone))
+                {
+                    ModelState.AddModelError("", "Please fill all required address fields for custom address.");
+                    return await OrderSummary(input.SelectedAddressId);
+                }
+                //  Keep your original mapping so address API keeps working
+                var custom = new AddressDetail
 				{
 					UserId = userId,
 					Name = $"{input.FirstName} {input.LastName}".Trim(),
@@ -1939,48 +1928,69 @@ namespace NuraHerbex.Controllers
 					return BadRequest("Address not found.");
 			}
 
-			// -------------------------------------------------------
-			// SHIPPING CALCULATION
-			// -------------------------------------------------------
-			decimal subtotal = items.Sum(i => i.LineTotal);
+            // -------------------------------------------------------
+            // SHIPPING CALCULATION
+            // -------------------------------------------------------
+            decimal subtotal = items.Sum(i => i.LineTotal);
 
-			Pincode? pin = null;
-			if (!string.IsNullOrWhiteSpace(address.Pincode))
-				pin = await _httpClient.GetFromJsonAsync<Pincode>($"AdminAPI/pincodes/{address.Pincode}");
-			decimal shipping = input.DeliveryOption == "express" ? (pin?.ExpressDeliveryAmount ?? 0m) : (pin?.StandardDeliveryAmount ?? 0m);
-			decimal tax = 0m;
-			decimal discount = 0m;
-			decimal total = subtotal + shipping;
+            Pincode? pin = null;
+            if (!string.IsNullOrWhiteSpace(address.Pincode))
+            {
+                var pinResponse = await _httpClient.GetAsync($"AdminAPI/pincodes/{address.Pincode}");
 
-			// -------------------------------------------------------
-			// BUILD ORDER PAYLOAD
-			// -------------------------------------------------------
-			var dto = new CreateOrderDto
+                if (pinResponse.IsSuccessStatusCode)
+                {
+                    // 200 OK → we have config for this pincode
+                    pin = await pinResponse.Content.ReadFromJsonAsync<Pincode>();
+                }
+                else
+                {
+                    // 404 or 400 etc → no pincode config, just treat as "no special shipping"
+                    pin = null;
+                    // Optionally log:
+                    // _logger.LogWarning("No pincode config for {Pin}. Status {StatusCode}", address.Pincode, pinResponse.StatusCode);
+                }
+            }
+
+            // if pin is null, both amounts default to 0
+            decimal shipping = input.DeliveryOption == "express"
+                ? (pin?.ExpressDeliveryAmount ?? 0m)
+                : (pin?.StandardDeliveryAmount ?? 0m);
+
+            decimal tax = 0m;
+            decimal discount = 0m;
+            decimal total = subtotal + shipping;
+
+
+            // -------------------------------------------------------
+            // BUILD ORDER PAYLOAD
+            // -------------------------------------------------------
+            var dto = new CreateOrderDto
 			{
-				UserId        = userId,
-				AddressId     = address.Id,
-				DoorNo        = address.DoorNo,
-				PhoneNo       = address.PhoneNumber,
-				Address       = string.Join(", ", new[]
+				UserId = userId,
+				AddressId = address.Id,
+				DoorNo = address.DoorNo,
+				PhoneNo = address.PhoneNumber,
+				Address = string.Join(", ", new[]
 				{
-		address.DoorNo,
-		address.Address,
-		address.Location
-	}.Where(x => !string.IsNullOrWhiteSpace(x))),
-				State         = address.State,
-				PinCode       = address.Pincode,
-				Country       = address.Country,
-				OrderDate     = DateTime.Now,
-				Status        = OrderStatus.OrderPlaced,
-				Subtotal      = subtotal,
-				Tax           = tax,
-				Shipping      = shipping,
+			address.DoorNo,
+			address.Address,
+			address.Location
+		}.Where(x => !string.IsNullOrWhiteSpace(x))),
+				State = address.State,
+				PinCode = address.Pincode,
+				Country = address.Country,
+				OrderDate = DateTime.Now,
+				Status = OrderStatus.OrderPlaced,
+				Subtotal = subtotal,
+				Tax = tax,
+				Shipping = shipping,
 				TotalDiscount = discount,
-				Total         = total,
+				Total = total,
 				Details = items.Select(i => new CreateOrderDetailDto
 				{
 					ProductId = i.ProductId,
-					Quantity  = i.Quantity,
+					Quantity = i.Quantity,
 					UnitPrice = i.UnitPrice
 				}).ToList()
 			};
@@ -2001,7 +2011,7 @@ namespace NuraHerbex.Controllers
 			var result = await response.Content.ReadFromJsonAsync<Dictionary<string, int>>();
 			var orderId = result?["id"] ?? 0;
 
-			return RedirectToAction("invoice", "Home", new { orderId });
+			return RedirectToAction("Confirmation", "Home", new { orderId });
 		}
 
 
