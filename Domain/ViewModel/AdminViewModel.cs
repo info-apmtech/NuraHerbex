@@ -646,6 +646,34 @@ namespace Domain.ViewModel
         public List<OrderDetail> Details { get; set; } = new();
         public string Email { get; set; }
     }
+    public class SubscriptionPaymentViewModel
+    {
+        public int PlanId { get; set; }
+        public decimal Amount { get; set; }
+
+        public bool HasPaid { get; set; }
+
+        public string RazorpayPaymentId { get; set; }
+        public string RazorpayOrderId { get; set; }
+        public string RazorpaySignature { get; set; }
+
+        public string ContactNo { get; set; }
+        public string EmailAddress { get; set; }
+        public string BankRRn { get; set; }
+        public string PaymentMethod { get; set; }
+        public string PaymentDetails { get; set; }
+        public string PaymentError { get; set; }
+    }
+
+    public class SubscriptionConfirmationViewModel
+    {
+        public bool IsSuccess { get; set; }
+        public string Message { get; set; }
+
+        public decimal Amount { get; set; }
+        public string PaymentMethod { get; set; }
+        public string Email { get; set; }
+    }
 
 }
 

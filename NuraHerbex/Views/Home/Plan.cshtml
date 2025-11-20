@@ -38,7 +38,145 @@
 
 <!-- Pricing Plans Section -->
 @Html.Partial("_PlanPartial",Model)
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
+<script>
+    // Expose globally so inline onsubmit can find it
+    window.razorpaySubscriptionPayment = function (form) {
+        var amountInput = form.querySelector('input[name="Amount"]');
+        var emailInput = form.querySelector('input[name="EmailAddress"]');
+        var contactInput = form.querySelector('input[name="ContactNo"]');
+
+        var paymentAmount = parseFloat(amountInput?.value || "0") || 0;
+        var email = emailInput ? emailInput.value : "";
+        var phoneNumber = contactInput ? contactInput.value : "";
+
+        if (!paymentAmount || paymentAmount <= 0) {
+            alert("Invalid plan amount.");
+            return;
+        }
+
+        var ownerName = email || "Customer";
+        var address = "";
+        var domain = "NURA";
+
+        fetch('https://payment.tracole.com/payment/create-order', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                amount: paymentAmount,
+                domainName: domain
+            })
+        })
+            .then(async response => {
+                const raw = await response.text();
+                if (!response.ok) {
+                    throw new Error("HTTP " + response.status + ": " + raw);
+                }
+                return raw ? JSON.parse(raw) : null;
+            })
+            .then(order => {
+                if (!(order && order.id)) {
+                    alert("Order response missing id from payment service.");
+                    return;
+                }
+
+                var options = {
+                    key: "rzp_live_UBscLASQP7fAT4",
+                    amount: paymentAmount * 100,
+                    currency: "INR",
+                    name: "Tracole Technologies",
+                    description: "Subscription Payment",
+                    image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSif0XXHotoAg5YT0ltoVrNIfqwKrb5KLWwOo0ITuphqh7qrwnEdVe-aecCnV6Ai8l0awI&usqp=CAU",
+                    order_id: order.id,
+
+                    handler: function (response) {
+                        var paymentData = {
+                            paymentId: response.razorpay_payment_id,
+                            orderId: response.razorpay_order_id,
+                            signature: response.razorpay_signature,
+                            domainName: domain,
+                            amount: paymentAmount
+                        };
+
+                        fetch('https://payment.tracole.com/payment/verify-payment', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(paymentData)
+                        })
+                            .then(res => res.json())
+                            .then(verificationResult => {
+                                console.log('verify-payment result:', verificationResult);
+
+                                if (verificationResult.message === "Payment verified successfully") {
+                                    // SUCCESS: mark HasPaid true, fill info, submit
+                                    form.querySelector('input[name="HasPaid"]').value = "true";
+                                    form.querySelector('input[name="RazorpayPaymentId"]').value = paymentData.paymentId;
+                                    form.querySelector('input[name="RazorpayOrderId"]').value = paymentData.orderId;
+                                    form.querySelector('input[name="RazorpaySignature"]').value = paymentData.signature;
+
+                                    // Fill other fields IF available in response - adapt names as per your API
+                                    var method =
+                                        verificationResult.method ||
+                                        (verificationResult.payment && verificationResult.payment.method) ||
+                                        "UPI";
+                                    var bankRrn =
+                                        verificationResult.rrn ||
+                                        (verificationResult.payment && verificationResult.payment.acquirer_data && verificationResult.payment.acquirer_data.rrn) ||
+                                        "";
+                                    var details =
+                                        (verificationResult.payment && verificationResult.payment.acquirer_data &&
+                                          (verificationResult.payment.acquirer_data.bank_account + ", " +
+                                           verificationResult.payment.acquirer_data.vpa)) || "";
+
+                                    form.querySelector('input[name="PaymentMethod"]').value = method;
+                                    form.querySelector('input[name="BankRRn"]').value = bankRrn;
+                                    form.querySelector('input[name="PaymentDetails"]').value = details;
+
+                                    // if email/phone from gateway exist, you can also overwrite
+                                    form.submit();
+                                } else {
+                                    // FAILURE: HasPaid=false, set PaymentError, submit (no DB save later)
+                                    form.querySelector('input[name="HasPaid"]').value = "false";
+                                    var errInput = form.querySelector('input[name="PaymentError"]');
+                                    if (errInput) {
+                                        errInput.value = verificationResult.message || "Payment failed or cancelled.";
+                                    }
+                                    form.submit();
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Error verifying subscription payment:', error);
+                                form.querySelector('input[name="HasPaid"]').value = "false";
+                                var errInput = form.querySelector('input[name="PaymentError"]');
+                                if (errInput) {
+                                    errInput.value = "Error during payment verification.";
+                                }
+                                form.submit();
+                            });
+                    },
+                    prefill: {
+                        name: ownerName,
+                        email: email,
+                        contact: phoneNumber
+                    },
+                    notes: {
+                        address: address
+                    },
+                    theme: {
+                        color: "#F37254"
+                    }
+                };
+
+                var rzp = new Razorpay(options);
+                rzp.open();
+            })
+            .catch(error => {
+                console.error('Error creating subscription payment order:', error);
+                // You can show an alert or toastr here if you want
+            });
+    };
+</script>
 <!-- Why Subscribe Section -->
 <section class="why-subscribe-section">
     <div class="why-subscribe-container">
