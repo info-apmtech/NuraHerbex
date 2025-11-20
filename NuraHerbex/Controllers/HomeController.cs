@@ -880,8 +880,12 @@ namespace NuraHerbex.Controllers
 
             // Build dictionary keyed by OrderID
             var feedbackByOrder = userFeedbacks.ToDictionary(f => f.OrderID, f => f);
+			//  Fetch return requests for this user using AuthorizedClient
+			var returnUrl = $"AdminAPI/ReturnRequest/my?userId={Uri.EscapeDataString(userId)}";
 
-            var model = new OrderListViewModel
+			var returnRequests = await AuthorizedClient.GetFromJsonAsync<List<ReturnRequestViewDto>>(returnUrl, jsonOptions)?? new List<ReturnRequestViewDto>();
+			var returnedOrderIds = returnRequests.Select(r => r.OrderId).Distinct().ToList();
+			var model = new OrderListViewModel
             {
                 UserRole = "User",
                 Orders = orders
@@ -891,8 +895,8 @@ namespace NuraHerbex.Controllers
             ViewBag.Products = products;
             ViewBag.UserId = userId;
             ViewBag.FeedbackByOrder = feedbackByOrder;
-
-            return View(model);
+			ViewBag.ReturnedOrderIds = returnedOrderIds;  
+			return View(model);
         }
 
         [HttpPost]

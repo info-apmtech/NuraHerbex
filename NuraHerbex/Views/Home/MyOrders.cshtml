@@ -38,6 +38,7 @@
             _ => status.ToString()
         };
     }
+    var returnedOrderIds = ViewBag.ReturnedOrderIds as List<int> ?? new List<int>();
 }
 
 <div class="orders-layout">
@@ -105,20 +106,26 @@
                             @switch (order.Status)
                             {
                                 case OrderStatus.Delivered:
-                                    // <button class="orders-ghost-btn">
-                                    //     <img class="orders-btn-icon" src="~/image/userSidebar/Vector.png" alt="Return" />Return Item
-                                    // </button>
-                                    <button type="button"
-                                            class="orders-ghost-btn open-return"
-                                            data-order-id="@order.Id"
-                                            data-order-number="ORD-@order.Id">
-                                        <img class="orders-btn-icon" src="~/image/userSidebar/Vector.png" alt="Return" />
-                                        Return Item
-                                    </button>
-
-
-
-
+                                    var isReturned = returnedOrderIds.Contains(order.Id);
+                                    if (!isReturned)
+                                    {
+                                        <button type="button"
+                                                class="orders-ghost-btn open-return"
+                                                data-order-id="@order.Id"
+                                                data-order-number="ORD-@order.Id">
+                                            <img class="orders-btn-icon" src="~/image/userSidebar/Vector.png" alt="Return" />
+                                            Return Item
+                                        </button>
+                                    }
+                                    else
+                                    {
+                                        <button type="button"
+                                                class="orders-ghost-btn"
+                                                disabled>
+                                            <img class="orders-btn-icon" src="~/image/userSidebar/Vector.png" alt="Return" />
+                                            Return Requested
+                                        </button>
+                                    }
                                     <button class="orders-buyagain">Buy Again</button>
                                     <button class="orders-ghost-btn open-feedback"
                                             data-order-id="@order.Id"
