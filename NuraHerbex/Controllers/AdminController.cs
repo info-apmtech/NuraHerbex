@@ -1,4 +1,5 @@
-﻿using Domain.Extensions;
+﻿using AspNetCoreHero.ToastNotification.Abstractions;
+using Domain.Extensions;
 using Domain.Implementation;
 using Domain.Interface;
 using Domain.Models;
@@ -7,6 +8,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
+using ServiceStack.Messaging;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Mime;
@@ -24,15 +26,16 @@ namespace NuraHerbex.Controllers
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IWebHostEnvironment _environment;
-
-        //private readonly ITokenService _tokenService;
-        public AdminController(IHttpClientFactory httpClientFactory, IHttpContextAccessor httpContextAccessor, IWebHostEnvironment environment/*, ITokenService tokenService*/)
+		//private readonly ITokenService _tokenService;
+		private readonly INotyfService _notyf;
+		public AdminController(IHttpClientFactory httpClientFactory, IHttpContextAccessor httpContextAccessor, IWebHostEnvironment environment,INotyfService notyf/*, ITokenService tokenService*/)
         {
             _httpClientFactory = httpClientFactory;
             _httpContextAccessor = httpContextAccessor;
             _environment = environment;
-            //_tokenService = tokenService;
-        }
+			//_tokenService = tokenService;
+			_notyf = notyf;
+		}
         private System.Net.Http.HttpClient AuthorizedClient => _httpClientFactory.CreateAuthorizedClient(_httpContextAccessor);
         //private string GetUserId() => _httpContextAccessor.GetUserId(_tokenService);
         [HttpGet]
@@ -73,15 +76,9 @@ namespace NuraHerbex.Controllers
         public async Task<IActionResult> AdminBlog(int id = 0)
         {
             var categoryResp = await AuthorizedClient.GetAsync("AdminAPI/blogcategories");
-            var categories = categoryResp.IsSuccessStatusCode
-                ? JsonConvert.DeserializeObject<List<BlogCategory>>(await categoryResp.Content.ReadAsStringAsync()) ?? new List<BlogCategory>()
-                : new List<BlogCategory>();
-
+            var categories = categoryResp.IsSuccessStatusCode? JsonConvert.DeserializeObject<List<BlogCategory>>(await categoryResp.Content.ReadAsStringAsync()) ?? new List<BlogCategory>(): new List<BlogCategory>();
             var blogResp = await AuthorizedClient.GetAsync("AdminAPI/blogs");
-            var blogs = blogResp.IsSuccessStatusCode
-                ? JsonConvert.DeserializeObject<List<Blog>>(await blogResp.Content.ReadAsStringAsync()) ?? new List<Blog>()
-                : new List<Blog>();
-
+            var blogs = blogResp.IsSuccessStatusCode? JsonConvert.DeserializeObject<List<Blog>>(await blogResp.Content.ReadAsStringAsync()) ?? new List<Blog>(): new List<Blog>();
             var vm = new BlogViewModel
             {
                 Categories = categories,
@@ -154,12 +151,9 @@ namespace NuraHerbex.Controllers
             if (!ModelState.IsValid)
             {
                 var categoryResponse = await AuthorizedClient.GetAsync("AdminAPI/blogcategories");
-                model.Categories = categoryResponse.IsSuccessStatusCode
-                    ? JsonConvert.DeserializeObject<List<BlogCategory>>(await categoryResponse.Content.ReadAsStringAsync())
-                    : new List<BlogCategory>();
-
-                TempData["Error"] = string.Join("; ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
-                return View(model);
+                model.Categories = categoryResponse.IsSuccessStatusCode? JsonConvert.DeserializeObject<List<BlogCategory>>(await categoryResponse.Content.ReadAsStringAsync()): new List<BlogCategory>();
+				_notyf.Error(string.Join("; ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage)), 5);
+				return View(model);
             }
 
             // Save
@@ -169,16 +163,11 @@ namespace NuraHerbex.Controllers
 
             if (response.IsSuccessStatusCode)
             {
-                TempData["Success"] = model.NewBlog.Id != 0
-                    ? "Blog updated successfully!"
-                    : "Blog added successfully!";
-
-                return RedirectToAction("AdminBlog", "Admin", new { id = 0 });
+				_notyf.Success(model.NewBlog.Id != 0 ? "Blog updated successfully!": "Blog added successfully!",5);
+				return RedirectToAction("AdminBlog", "Admin", new { id = 0 });
             }
-
             var errorMsg = await response.Content.ReadAsStringAsync();
-            TempData["Error"] = $"Error saving blog: {errorMsg}";
-
+			_notyf.Error($"Error saving blog: {errorMsg}", 5);
             return View(model);
         }
 
@@ -189,14 +178,12 @@ namespace NuraHerbex.Controllers
         {
             var response = await AuthorizedClient.DeleteAsync($"AdminAPI/blog/{id}");
             if (response.IsSuccessStatusCode)
-            {
-                TempData["Success"] = "Blog deleted successfully!";
-            }
+				_notyf.Success("Blog deleted successfully!", 5);
             else
             {
                 var error = await response.Content.ReadAsStringAsync();
-                TempData["Error"] = $"Delete failed: {error}";
-            }
+                _notyf.Error($"Delete failed: {error}", 5);
+			}
             return RedirectToAction(nameof(AdminBlog));
         }
 
@@ -205,10 +192,7 @@ namespace NuraHerbex.Controllers
         public async Task<IActionResult> AdminBlogCategory(int id = 0)
         {
             var response = await AuthorizedClient.GetAsync("AdminAPI/blogcategories");
-            var categories = response.IsSuccessStatusCode
-                ? JsonConvert.DeserializeObject<List<BlogCategory>>(await response.Content.ReadAsStringAsync()) ?? new List<BlogCategory>()
-                : new List<BlogCategory>();
-
+            var categories = response.IsSuccessStatusCode? JsonConvert.DeserializeObject<List<BlogCategory>>(await response.Content.ReadAsStringAsync()) ?? new List<BlogCategory>(): new List<BlogCategory>();
             var model = new BlogCategoryViewModel
             {
                 CategoryList = categories,
@@ -234,22 +218,20 @@ namespace NuraHerbex.Controllers
         {
             if (!ModelState.IsValid)
             {
-                TempData["Error"] = "Validation failed";
-                return View(model);
+                _notyf.Error("Validation failed", 5);
+				return View(model);
             }
-
             var response = await AuthorizedClient.PostAsJsonAsync("AdminAPI/blogcategory", model.NewCategory);
-
             if (response.IsSuccessStatusCode)
             {
-                TempData["Success"] = model.NewCategory.Id > 0 ? "Category updated successfully" : "Category added successfully";
-                return RedirectToAction(nameof(AdminBlogCategory), new { id = 0 });
+                _notyf.Success(model.NewCategory.Id > 0 ? "Category updated successfully" : "Category added successfully", 5);
+				return RedirectToAction(nameof(AdminBlogCategory), new { id = 0 });
             }
             else
             {
                 var error = await response.Content.ReadAsStringAsync();
-                TempData["Error"] = $"Error: {error}";
-                return View(model);
+                _notyf.Error($"Error: {error}", 5);
+				return View(model);
             }
         }
 
@@ -259,14 +241,12 @@ namespace NuraHerbex.Controllers
         {
             var response = await AuthorizedClient.DeleteAsync($"AdminAPI/blogcategory/{id}");
             if (response.IsSuccessStatusCode)
-            {
-                TempData["Success"] = "Category deleted successfully!";
-            }
+                _notyf.Success("Category deleted successfully!", 5);
             else
             {
                 var error = await response.Content.ReadAsStringAsync();
-                TempData["Error"] = $"Delete failed: {error}";
-            }
+                _notyf.Error($"Delete failed: {error}", 5);
+			}
             return RedirectToAction(nameof(AdminBlogCategory));
         }
 
@@ -275,10 +255,7 @@ namespace NuraHerbex.Controllers
         public async Task<IActionResult> AdminIngredient(int id = 0)
         {
             var response = await AuthorizedClient.GetAsync("AdminAPI/ingredients");
-            var ingredients = response.IsSuccessStatusCode
-                ? JsonConvert.DeserializeObject<List<Ingredient>>(await response.Content.ReadAsStringAsync())
-                : new List<Ingredient>();
-
+            var ingredients = response.IsSuccessStatusCode? JsonConvert.DeserializeObject<List<Ingredient>>(await response.Content.ReadAsStringAsync()): new List<Ingredient>();
             var vm = new IngredientViewModel
             {
                 IngredientList = ingredients,
@@ -286,10 +263,7 @@ namespace NuraHerbex.Controllers
             };
 
             var categoryResponse = await AuthorizedClient.GetAsync("AdminAPI/ingredientcategories");
-            vm.IngredientCategories = categoryResponse.IsSuccessStatusCode
-                ? JsonConvert.DeserializeObject<List<IngredientCategory>>(await categoryResponse.Content.ReadAsStringAsync())
-                : new List<IngredientCategory>();
-
+            vm.IngredientCategories = categoryResponse.IsSuccessStatusCode? JsonConvert.DeserializeObject<List<IngredientCategory>>(await categoryResponse.Content.ReadAsStringAsync()): new List<IngredientCategory>();
             if (id > 0)
             {
                 var ingResponse = await AuthorizedClient.GetAsync($"AdminAPI/ingredient/{id}");
@@ -300,7 +274,6 @@ namespace NuraHerbex.Controllers
                         vm.NewIngredient = ingredient;
                 }
             }
-
             return View(vm);
         }
 
@@ -332,20 +305,15 @@ namespace NuraHerbex.Controllers
 
             if (response.IsSuccessStatusCode)
             {
-                TempData["Success"] = model.NewIngredient.Id != 0
-                    ? "Ingredient updated successfully!"
-                    : "Ingredient added successfully!";
-                return RedirectToAction("AdminIngredient", "Admin", new { id = 0 });
+                _notyf.Success(model.NewIngredient.Id != 0? "Ingredient updated successfully!": "Ingredient added successfully!", 5);
+				return RedirectToAction("AdminIngredient", "Admin", new { id = 0 });
             }
 
             var errorMsg = await response.Content.ReadAsStringAsync();
             ModelState.AddModelError(string.Empty, errorMsg);
 
             var ingredientResponse = await AuthorizedClient.GetAsync("AdminAPI/ingredients");
-            model.IngredientList = ingredientResponse.IsSuccessStatusCode
-                ? JsonConvert.DeserializeObject<List<Ingredient>>(await ingredientResponse.Content.ReadAsStringAsync())
-                : new List<Ingredient>();
-
+            model.IngredientList = ingredientResponse.IsSuccessStatusCode? JsonConvert.DeserializeObject<List<Ingredient>>(await ingredientResponse.Content.ReadAsStringAsync()): new List<Ingredient>();
             return View(model);
         }
 
@@ -355,11 +323,11 @@ namespace NuraHerbex.Controllers
         {
             var response = await AuthorizedClient.DeleteAsync($"AdminAPI/ingredient/{id}");
             if (response.IsSuccessStatusCode)
-                TempData["Success"] = "Ingredient deleted successfully!";
-            else
-                TempData["Error"] = $"Delete failed: {await response.Content.ReadAsStringAsync()}";
+            _notyf.Success("Ingredient deleted successfully!", 5);
+			else
+            _notyf.Error($"Delete failed: {await response.Content.ReadAsStringAsync()}", 5);
 
-            return RedirectToAction(nameof(AdminIngredient));
+			return RedirectToAction(nameof(AdminIngredient));
         }
 
         //Ingredient Category
@@ -367,10 +335,7 @@ namespace NuraHerbex.Controllers
         public async Task<IActionResult> AdminIngredientCategory(int id = 0)
         {
             var response = await AuthorizedClient.GetAsync("AdminAPI/ingredientcategories");
-            var categories = response.IsSuccessStatusCode
-                ? JsonConvert.DeserializeObject<List<IngredientCategory>>(await response.Content.ReadAsStringAsync()) ?? new List<IngredientCategory>()
-                : new List<IngredientCategory>();
-
+            var categories = response.IsSuccessStatusCode? JsonConvert.DeserializeObject<List<IngredientCategory>>(await response.Content.ReadAsStringAsync()) ?? new List<IngredientCategory>() : new List<IngredientCategory>();
             var vm = new IngredientCategoryViewModel
             {
                 CategoryList = categories,
@@ -397,21 +362,19 @@ namespace NuraHerbex.Controllers
         {
             if (!ModelState.IsValid)
             {
-                TempData["Error"] = "Validation failed";
-                return View(model);
+                _notyf.Error("Validation failed", 5);
+				return View(model);
             }
-
             var response = await AuthorizedClient.PostAsJsonAsync("AdminAPI/ingredientcategory", model.NewCategory);
-
             if (response.IsSuccessStatusCode)
             {
-                TempData["Success"] = model.NewCategory.Id > 0 ? "Category updated successfully" : "Category added successfully";
-                return RedirectToAction(nameof(AdminIngredientCategory), new { id = 0 });
+                _notyf.Success(model.NewCategory.Id > 0 ? "Category updated successfully" : "Category added successfully", 5);
+				return RedirectToAction(nameof(AdminIngredientCategory), new { id = 0 });
             }
 
             var error = await response.Content.ReadAsStringAsync();
-            TempData["Error"] = $"Error: {error}";
-            return View(model);
+            _notyf.Error($"Error: {error}", 5);
+			return View(model);
         }
 
         [HttpPost]
@@ -420,20 +383,16 @@ namespace NuraHerbex.Controllers
         {
             var response = await AuthorizedClient.DeleteAsync($"AdminAPI/ingredientcategory/{id}");
             if (response.IsSuccessStatusCode)
-                TempData["Success"] = "Category deleted successfully!";
-            else
-                TempData["Error"] = $"Delete failed: {await response.Content.ReadAsStringAsync()}";
-
-            return RedirectToAction(nameof(AdminIngredientCategory));
+            _notyf.Success("Category deleted successfully!", 5);
+			else
+            _notyf.Error($"Delete failed: {await response.Content.ReadAsStringAsync()}", 5);
+			return RedirectToAction(nameof(AdminIngredientCategory));
         }
         [HttpGet]
         public async Task<IActionResult> AdminGSTEntry(int id = 0)
         {
             var response = await AuthorizedClient.GetAsync("AdminAPI/gstentries");
-            var gstList = response.IsSuccessStatusCode
-                ? JsonConvert.DeserializeObject<List<GST>>(await response.Content.ReadAsStringAsync()) ?? new List<GST>()
-                : new List<GST>();
-
+            var gstList = response.IsSuccessStatusCode? JsonConvert.DeserializeObject<List<GST>>(await response.Content.ReadAsStringAsync()) ?? new List<GST>(): new List<GST>();
             var vm = new GSTViewModel
             {
                 GSTList = gstList,
@@ -461,21 +420,21 @@ namespace NuraHerbex.Controllers
             if (!ModelState.IsValid)
             {
                 var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
-                TempData["Error"] = "Validation failed: " + string.Join("; ", errors);
-                return View(model);
+                _notyf.Error("Validation failed: " + string.Join("; ", errors), 5);
+				return View(model);
             }
 
             var response = await AuthorizedClient.PostAsJsonAsync("AdminAPI/gstentry", model.NewGST);
 
             if (response.IsSuccessStatusCode)
             {
-                TempData["Success"] = model.NewGST.Id > 0 ? "GST entry updated successfully" : "GST entry added successfully";
-                return RedirectToAction(nameof(AdminGSTEntry), new { id = 0 });
+                _notyf.Success(model.NewGST.Id > 0 ? "GST entry updated successfully" : "GST entry added successfully", 5);
+				return RedirectToAction(nameof(AdminGSTEntry), new { id = 0 });
             }
 
             var error = await response.Content.ReadAsStringAsync();
-            TempData["Error"] = $"Error: {error}";
-            return View(model);
+            _notyf.Error($"Error: {error}", 5);
+			return View(model);
         }
 
         [HttpPost]
@@ -484,22 +443,18 @@ namespace NuraHerbex.Controllers
         {
             var response = await AuthorizedClient.DeleteAsync($"AdminAPI/gstentry/{id}");
             if (response.IsSuccessStatusCode)
-                TempData["Success"] = "GST entry deleted successfully!";
-            else
-                TempData["Error"] = $"Delete failed: {await response.Content.ReadAsStringAsync()}";
-
-            return RedirectToAction(nameof(AdminGSTEntry));
+            _notyf.Success("GST entry deleted successfully!", 5);
+			else
+            _notyf.Error($"Delete failed: {await response.Content.ReadAsStringAsync()}", 5);
+			return RedirectToAction(nameof(AdminGSTEntry));
         }
-
         //Plans
 
         [HttpGet]
         public async Task<IActionResult> AdminPricingPlan(int id = 0)
         {
             var response = await AuthorizedClient.GetAsync("AdminAPI/pricingplans");
-            var planList = response.IsSuccessStatusCode
-                ? JsonConvert.DeserializeObject<List<PricingPlan>>(await response.Content.ReadAsStringAsync()) ?? new List<PricingPlan>()
-                : new List<PricingPlan>();
+            var planList = response.IsSuccessStatusCode? JsonConvert.DeserializeObject<List<PricingPlan>>(await response.Content.ReadAsStringAsync()) ?? new List<PricingPlan>(): new List<PricingPlan>();
 
             var vm = new PricingPlanViewModel
             {
@@ -528,21 +483,20 @@ namespace NuraHerbex.Controllers
             if (!ModelState.IsValid)
             {
                 var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
-                TempData["Error"] = "Validation failed: " + string.Join("; ", errors);
-                return View(model);
+                _notyf.Error("Validation failed :" + string.Join("; ", errors), 5);
+				return View(model);
             }
 
             var response = await AuthorizedClient.PostAsJsonAsync("AdminAPI/pricingplan", model.NewPlan);
 
             if (response.IsSuccessStatusCode)
             {
-                TempData["Success"] = model.NewPlan.Id > 0 ? "Pricing plan updated successfully" : "Pricing plan added successfully";
-                return RedirectToAction(nameof(AdminPricingPlan), new { id = 0 });
+                _notyf.Success(model.NewPlan.Id > 0 ? "Pricing plan updated successfully" : "Pricing plan added successfully", 5);
+				return RedirectToAction(nameof(AdminPricingPlan), new { id = 0 });
             }
-
             var error = await response.Content.ReadAsStringAsync();
-            TempData["Error"] = $"Error: {error}";
-            return View(model);
+            _notyf.Error($"Error: {error}", 5);
+			return View(model);
         }
 
         [HttpPost]
@@ -551,11 +505,10 @@ namespace NuraHerbex.Controllers
         {
             var response = await AuthorizedClient.DeleteAsync($"AdminAPI/pricingplan/{id}");
             if (response.IsSuccessStatusCode)
-                TempData["Success"] = "Pricing plan deleted successfully!";
-            else
-                TempData["Error"] = $"Delete failed: {await response.Content.ReadAsStringAsync()}";
-
-            return RedirectToAction(nameof(AdminPricingPlan));
+            _notyf.Success("Pricing plan deleted successfully!", 5);
+			else
+            _notyf.Error($"Delete failed: {await response.Content.ReadAsStringAsync()}", 5);
+			return RedirectToAction(nameof(AdminPricingPlan));
         }
 
         public async Task<IActionResult> DoctorConsultation()
@@ -585,36 +538,23 @@ namespace NuraHerbex.Controllers
 
             // Get all doctors
             var doctorResponse = await client.GetAsync("AdminAPI/users/doctor");
-            var doctors = doctorResponse.IsSuccessStatusCode
-                ? await doctorResponse.Content.ReadFromJsonAsync<List<RegisterUser>>(jsonOptions)
-                : new List<RegisterUser>();
-
+            var doctors = doctorResponse.IsSuccessStatusCode ? await doctorResponse.Content.ReadFromJsonAsync<List<RegisterUser>>(jsonOptions): new List<RegisterUser>();
             // Get consultations depending on role
             HttpResponseMessage consultationResponse;
 
             if (userRole == UserRole.Admin)
-            {
                 consultationResponse = await client.GetAsync("AdminAPI/consultationbooking/all");
-            }
             else if (userRole == UserRole.Doctor)
-            {
                 consultationResponse = await client.GetAsync($"AdminAPI/consultationbooking/{userId}");
-            }
             else
-            {
                 consultationResponse = await client.GetAsync($"AdminAPI/consultationbooking/user/{userId}");
-            }
 
-            var consultations = consultationResponse.IsSuccessStatusCode
-                ? await consultationResponse.Content.ReadFromJsonAsync<List<ConsultationBooking>>(jsonOptions)
-                : new List<ConsultationBooking>();
-
+            var consultations = consultationResponse.IsSuccessStatusCode ? await consultationResponse.Content.ReadFromJsonAsync<List<ConsultationBooking>>(jsonOptions): new List<ConsultationBooking>();
             // Map consultations
             var consultationWithDoctors = consultations.Select(c => new ConsultationWithAssignedDoctorViewModel
             {
                 Consultation = c,
-                Doctor = doctors.FirstOrDefault(d =>
-                    d.Id.Trim().Equals(c.PreferredDoctorId?.Trim(), StringComparison.OrdinalIgnoreCase))
+                Doctor = doctors.FirstOrDefault(d =>d.Id.Trim().Equals(c.PreferredDoctorId?.Trim(), StringComparison.OrdinalIgnoreCase))
             }).ToList();
 
             var model = new ConsultationListViewModel
@@ -632,8 +572,8 @@ namespace NuraHerbex.Controllers
         {
             if (string.IsNullOrWhiteSpace(meetingLink))
             {
-                TempData["Error"] = "Meeting link is required.";
-                return RedirectToAction("DoctorConsultation");
+                _notyf.Error("Meeting link is required.", 5);
+				return RedirectToAction("DoctorConsultation");
             }
 
             var updateModel = new ConsultationStatusUpdateModel
@@ -642,15 +582,12 @@ namespace NuraHerbex.Controllers
                 MeetingLink = meetingLink
             };
 
-            var response = await AuthorizedClient.PostAsJsonAsync(
-                $"AdminAPI/consultationbooking/{consultationId}/status",
-                updateModel
-            );
+            var response = await AuthorizedClient.PostAsJsonAsync( $"AdminAPI/consultationbooking/{consultationId}/status",updateModel);
 
             if (!response.IsSuccessStatusCode)
-                TempData["Error"] = "Failed to update consultation.";
+            _notyf.Error("Failed to update consultation.", 5);
 
-            return RedirectToAction("DoctorConsultation");
+			return RedirectToAction("DoctorConsultation");
         }
 
         [HttpPost]
@@ -663,15 +600,12 @@ namespace NuraHerbex.Controllers
                 MeetingLink = null
             };
 
-            var response = await AuthorizedClient.PostAsJsonAsync(
-                $"AdminAPI/consultationbooking/{consultationId}/status",
-                updateModel
-            );
+            var response = await AuthorizedClient.PostAsJsonAsync($"AdminAPI/consultationbooking/{consultationId}/status",updateModel);
 
             if (!response.IsSuccessStatusCode)
-                TempData["Error"] = "Failed to reject consultation.";
+            _notyf.Error("Failed to reject consultation.", 5);
 
-            return RedirectToAction("DoctorConsultation");
+			return RedirectToAction("DoctorConsultation");
         }
 
 
@@ -688,9 +622,7 @@ namespace NuraHerbex.Controllers
                 model.UserList = JsonConvert.DeserializeObject<List<RegisterUser>>(jsonData);
             }
             else
-            {
                 model.UserList = new List<RegisterUser>();
-            }
 
             if (!string.IsNullOrEmpty(id)) 
             {
@@ -713,13 +645,11 @@ namespace NuraHerbex.Controllers
 			//  NEW user (Add): Id is empty → generate a string Id
 			var isNew = string.IsNullOrWhiteSpace(model.RegisteredUser.Id);
 			if (isNew)
-			{
-				model.RegisteredUser.Id = Guid.NewGuid().ToString();  // string id
-			}
+				model.RegisteredUser.Id = Guid.NewGuid().ToString();  
 			var response = await AuthorizedClient.PostAsJsonAsync("AdminAPI/register", model.RegisteredUser);
             if (response.IsSuccessStatusCode)
             {
-                TempData["Success"] = "User Registered Successfully!";
+                _notyf.Success("User Registered Successfully!", 5);
 				if (User.Identity.IsAuthenticated) 
 					//return RedirectToAction("UserCreation", new { role = model.RegisteredUser.Role });
 				return RedirectToAction(nameof(UserCreation));
@@ -737,18 +667,12 @@ namespace NuraHerbex.Controllers
             var response = await AuthorizedClient.DeleteAsync($"AdminAPI/delete/{id}");
             if (response.IsSuccessStatusCode)
             {
-                TempData["Success"] = "User deleted successfully!";
-                return RedirectToAction(nameof(UserCreation));
+                _notyf.Success("User deleted successfully!", 5);
+				return RedirectToAction(nameof(UserCreation));
             }
 
-            TempData["Error"] = "Failed to delete user.";
-            return RedirectToAction(nameof(UserCreation));
-        }
-
-        private async Task LoadDropdownsAsync(RegisterUserViewModel model, UserRole role)
-        {
-            // Example: load countries/states/specialties
-            await Task.CompletedTask;
+            _notyf.Error("Failed to delete user.", 5);
+			return RedirectToAction(nameof(UserCreation));
         }
 
         //public async Task<IActionResult> Product(int id = 0)
@@ -789,13 +713,9 @@ namespace NuraHerbex.Controllers
                 vm.ProductList = JsonConvert.DeserializeObject<List<Product>>(json) ?? new List<Product>();
             }
             else
-            {
                 vm.ProductList = new List<Product>();
-            }
             var response = await AuthorizedClient.GetAsync("AdminAPI/gstentries");
-            var gstList = response.IsSuccessStatusCode
-                ? JsonConvert.DeserializeObject<List<GST>>(await response.Content.ReadAsStringAsync()) ?? new List<GST>()
-                : new List<GST>();
+            var gstList = response.IsSuccessStatusCode? JsonConvert.DeserializeObject<List<GST>>(await response.Content.ReadAsStringAsync()) ?? new List<GST>() : new List<GST>();
             vm.GSTDetails = gstList;
 
             if (id > 0)
@@ -855,25 +775,17 @@ namespace NuraHerbex.Controllers
 
             if (response.IsSuccessStatusCode)
             {
-                TempData["Success"] = model.NewProduct.Id != 0
-                    ? "Product updated successfully!"
-                    : "Product added successfully!";
-                return RedirectToAction(nameof(Product), new { id = 0 });
+                _notyf.Success(model.NewProduct.Id != 0 ? "Product updated successfully!" : "Product added successfully!", 5);
+				return RedirectToAction(nameof(Product), new { id = 0 });
             }
-
             var errorMsg = await response.Content.ReadAsStringAsync();
             ModelState.AddModelError(string.Empty, errorMsg);
 
             // Refill list on error
             var productResponse = await AuthorizedClient.GetAsync("AdminAPI/products");
-            model.ProductList = productResponse.IsSuccessStatusCode
-                ? JsonConvert.DeserializeObject<List<Product>>(await productResponse.Content.ReadAsStringAsync())
-                : new List<Product>();
+            model.ProductList = productResponse.IsSuccessStatusCode ? JsonConvert.DeserializeObject<List<Product>>(await productResponse.Content.ReadAsStringAsync()): new List<Product>();
             var gstResponse = await AuthorizedClient.GetAsync("AdminAPI/gstentries");
-            model.GSTDetails = gstResponse.IsSuccessStatusCode
-                ? JsonConvert.DeserializeObject<List<GST>>(await gstResponse.Content.ReadAsStringAsync())
-                : new List<GST>();
-
+            model.GSTDetails = gstResponse.IsSuccessStatusCode? JsonConvert.DeserializeObject<List<GST>>(await gstResponse.Content.ReadAsStringAsync()) : new List<GST>();
             return View(model);
         }
 
@@ -883,20 +795,18 @@ namespace NuraHerbex.Controllers
         {
             var response = await AuthorizedClient.DeleteAsync($"AdminAPI/product/{id}");
             if (response.IsSuccessStatusCode)
-                TempData["Success"] = "Product deleted successfully!";
-            else
-                TempData["Error"] = $"Delete failed: {await response.Content.ReadAsStringAsync()}";
+            _notyf.Success("Product deleted successfully!", 5);
+			else
+            _notyf.Error($"Delete failed: {await response.Content.ReadAsStringAsync()}", 5);
 
-            return RedirectToAction(nameof(Product));
+			return RedirectToAction(nameof(Product));
         }
 
         [HttpGet]
         public async Task<IActionResult> SubscribeDetail(int id = 0)
         {
             var response = await AuthorizedClient.GetAsync("/api/AdminAPI/subscriptions");
-            var list = response.IsSuccessStatusCode
-                ? JsonConvert.DeserializeObject<List<NewsletterSubscription>>(await response.Content.ReadAsStringAsync())
-                : new List<NewsletterSubscription>();
+            var list = response.IsSuccessStatusCode ? JsonConvert.DeserializeObject<List<NewsletterSubscription>>(await response.Content.ReadAsStringAsync()): new List<NewsletterSubscription>();
 
             var vm = new SubscriptionViewModel
             {
@@ -911,9 +821,7 @@ namespace NuraHerbex.Controllers
         public async Task<IActionResult> AdminDoctorSpeciality(int id = 0)
         {
             var response = await AuthorizedClient.GetAsync("AdminAPI/doctorspecialities");
-            var specialities = response.IsSuccessStatusCode
-                ? JsonConvert.DeserializeObject<List<DoctorSpeciality>>(await response.Content.ReadAsStringAsync()) ?? new List<DoctorSpeciality>()
-                : new List<DoctorSpeciality>();
+            var specialities = response.IsSuccessStatusCode? JsonConvert.DeserializeObject<List<DoctorSpeciality>>(await response.Content.ReadAsStringAsync()) ?? new List<DoctorSpeciality>() : new List<DoctorSpeciality>();
 
             var vm = new DoctorSpecialityViewModel
             {
@@ -941,21 +849,21 @@ namespace NuraHerbex.Controllers
         {
             if (!ModelState.IsValid)
             {
-                TempData["Error"] = "Validation failed";
-                return View(model);
+                _notyf.Error("Validation failed", 5);
+				return View(model);
             }
 
             var response = await AuthorizedClient.PostAsJsonAsync("AdminAPI/doctorspeciality", model.NewSpeciality);
 
             if (response.IsSuccessStatusCode)
             {
-                TempData["Success"] = model.NewSpeciality.Id > 0 ? "Speciality updated successfully" : "Speciality added successfully";
-                return RedirectToAction(nameof(AdminDoctorSpeciality), new { id = 0 });
+                _notyf.Success(model.NewSpeciality.Id > 0 ? "Speciality updated successfully" : "Speciality added successfully", 5);
+				return RedirectToAction(nameof(AdminDoctorSpeciality), new { id = 0 });
             }
 
             var error = await response.Content.ReadAsStringAsync();
-            TempData["Error"] = $"Error: {error}";
-            return View(model);
+            _notyf.Error($"Error: {error}", 5);
+			return View(model);
         }
 
         [HttpPost]
@@ -964,11 +872,11 @@ namespace NuraHerbex.Controllers
         {
             var response = await AuthorizedClient.DeleteAsync($"AdminAPI/doctorspeciality/{id}");
             if (response.IsSuccessStatusCode)
-                TempData["Success"] = "Speciality deleted successfully!";
-            else
-                TempData["Error"] = $"Delete failed: {await response.Content.ReadAsStringAsync()}";
+            _notyf.Success("Speciality deleted successfully!", 5);
+			else
+            _notyf.Error($"Delete failed: {await response.Content.ReadAsStringAsync()}", 5);
 
-            return RedirectToAction(nameof(AdminDoctorSpeciality));
+			return RedirectToAction(nameof(AdminDoctorSpeciality));
         }
 
         //DoctorDetails
@@ -977,24 +885,14 @@ namespace NuraHerbex.Controllers
         {
             // Get doctors (only where Role == Doctor)
             var doctorsResp = await AuthorizedClient.GetAsync("AdminAPI/users"); // adjust endpoint to get all users
-            var users = doctorsResp.IsSuccessStatusCode
-                ? JsonConvert.DeserializeObject<List<RegisterUser>>(await doctorsResp.Content.ReadAsStringAsync()) ?? new List<RegisterUser>()
-                : new List<RegisterUser>();
-
+            var users = doctorsResp.IsSuccessStatusCode? JsonConvert.DeserializeObject<List<RegisterUser>>(await doctorsResp.Content.ReadAsStringAsync()) ?? new List<RegisterUser>() : new List<RegisterUser>();
             var doctors = users.Where(u => u.Role == UserRole.Doctor).ToList();
-
             // Get specialities
             var specResp = await AuthorizedClient.GetAsync("AdminAPI/doctorspecialities");
-            var specialities = specResp.IsSuccessStatusCode
-                ? JsonConvert.DeserializeObject<List<DoctorSpeciality>>(await specResp.Content.ReadAsStringAsync()) ?? new List<DoctorSpeciality>()
-                : new List<DoctorSpeciality>();
-
+            var specialities = specResp.IsSuccessStatusCode ? JsonConvert.DeserializeObject<List<DoctorSpeciality>>(await specResp.Content.ReadAsStringAsync()) ?? new List<DoctorSpeciality>() : new List<DoctorSpeciality>();
             // Get doctor details
             var detailsResp = await AuthorizedClient.GetAsync("AdminAPI/doctordetails");
-            var details = detailsResp.IsSuccessStatusCode
-                ? JsonConvert.DeserializeObject<List<DoctorDetail>>(await detailsResp.Content.ReadAsStringAsync()) ?? new List<DoctorDetail>()
-                : new List<DoctorDetail>();
-
+            var details = detailsResp.IsSuccessStatusCode ? JsonConvert.DeserializeObject<List<DoctorDetail>>(await detailsResp.Content.ReadAsStringAsync()) ?? new List<DoctorDetail>(): new List<DoctorDetail>();
             var vm = new DoctorDetailViewModel
             {
                 DoctorDetailList = details ?? new List<DoctorDetail>(),
@@ -1028,8 +926,8 @@ namespace NuraHerbex.Controllers
         {
             if (!ModelState.IsValid)
             {
-                TempData["Error"] = "Validation failed";
-                return View(model);
+                _notyf.Error("Validation failed", 5);
+				return View(model);
             }
 
             // Handle file upload
@@ -1056,14 +954,12 @@ namespace NuraHerbex.Controllers
 
             if (response.IsSuccessStatusCode)
             {
-                TempData["Success"] = model.DoctorDetail.Id > 0
-                    ? "Doctor detail updated successfully"
-                    : "Doctor detail added successfully";
-                return RedirectToAction(nameof(AdminDoctorDetail), new { id = 0 });
+                _notyf.Success(model.DoctorDetail.Id > 0 ? "Doctor detail updated successfully" : "Doctor detail added successfully", 5);
+				return RedirectToAction(nameof(AdminDoctorDetail), new { id = 0 });
             }
 
-            TempData["Error"] = "Error while saving doctor detail";
-            return View(model);
+            _notyf.Error("Error while saving doctor detail", 5);
+			return View(model);
         }
 
 
@@ -1073,11 +969,11 @@ namespace NuraHerbex.Controllers
         {
             var response = await AuthorizedClient.DeleteAsync($"AdminAPI/doctordetail/{id}");
             if (response.IsSuccessStatusCode)
-                TempData["Success"] = "Doctor detail deleted successfully!";
-            else
-                TempData["Error"] = $"Delete failed: {await response.Content.ReadAsStringAsync()}";
+            _notyf.Success("Doctor detail deleted successfully!", 5);
+			else
+            _notyf.Error($"Delete failed: {await response.Content.ReadAsStringAsync()}", 5);
 
-            return RedirectToAction(nameof(AdminDoctorDetail));
+			return RedirectToAction(nameof(AdminDoctorDetail));
         }
 
         //Pincode
@@ -1086,9 +982,7 @@ namespace NuraHerbex.Controllers
         public async Task<IActionResult> AdminPincode(int id = 0)
         {
             var response = await AuthorizedClient.GetAsync("AdminAPI/pincodes");
-            var pincodes = response.IsSuccessStatusCode
-                ? JsonConvert.DeserializeObject<List<Pincode>>(await response.Content.ReadAsStringAsync()) ?? new List<Pincode>()
-                : new List<Pincode>();
+            var pincodes = response.IsSuccessStatusCode? JsonConvert.DeserializeObject<List<Pincode>>(await response.Content.ReadAsStringAsync()) ?? new List<Pincode>() : new List<Pincode>();
 
             var vm = new PincodeViewModel
             {
@@ -1116,21 +1010,21 @@ namespace NuraHerbex.Controllers
         {
             if (!ModelState.IsValid)
             {
-                TempData["Error"] = "Validation failed";
-                return View(model);
+                _notyf.Error("Validation failed", 5);
+				return View(model);
             }
 
             var response = await AuthorizedClient.PostAsJsonAsync("AdminAPI/pincode", model.NewPincode);
 
             if (response.IsSuccessStatusCode)
             {
-                TempData["Success"] = model.NewPincode.Id > 0 ? "Pincode updated successfully" : "Pincode added successfully";
-                return RedirectToAction(nameof(AdminPincode), new { id = 0 });
+                _notyf.Success(model.NewPincode.Id > 0 ? "Pincode updated successfully" : "Pincode added successfully", 5);
+				return RedirectToAction(nameof(AdminPincode), new { id = 0 });
             }
 
             var error = await response.Content.ReadAsStringAsync();
-            TempData["Error"] = $"Error: {error}";
-            return View(model);
+            _notyf.Error($"Error: {error}", 5);
+			return View(model);
         }
 
         [HttpPost]
@@ -1139,11 +1033,11 @@ namespace NuraHerbex.Controllers
         {
             var response = await AuthorizedClient.DeleteAsync($"AdminAPI/pincode/{id}");
             if (response.IsSuccessStatusCode)
-                TempData["Success"] = "Pincode deleted successfully!";
-            else
-                TempData["Error"] = $"Delete failed: {await response.Content.ReadAsStringAsync()}";
+            _notyf.Success("Pincode deleted successfully!", 5);
+			else
+            _notyf.Error($"Delete failed: {await response.Content.ReadAsStringAsync()}", 5);
 
-            return RedirectToAction(nameof(AdminPincode));
+			return RedirectToAction(nameof(AdminPincode));
         }
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -1171,10 +1065,7 @@ namespace NuraHerbex.Controllers
 
             var response = await AuthorizedClient.GetAsync("/api/AdminAPI/paymentlist", ct);
 
-            var list = response.IsSuccessStatusCode
-                ? JsonConvert.DeserializeObject<List<PaymentGatewayDetails>>(await response.Content.ReadAsStringAsync(ct))
-                : new List<PaymentGatewayDetails>();
-
+            var list = response.IsSuccessStatusCode ? JsonConvert.DeserializeObject<List<PaymentGatewayDetails>>(await response.Content.ReadAsStringAsync(ct)): new List<PaymentGatewayDetails>();
             var vm = new PaymentGatewayViewModel
             {
                 PaymentGatewayList = list
@@ -1199,9 +1090,7 @@ namespace NuraHerbex.Controllers
             var orders = await response.Content.ReadFromJsonAsync<List<Order>>(jsonOptions) ?? new List<Order>();
 
             var userResponse = await client.GetAsync("AdminAPI/users");
-            var users = userResponse.IsSuccessStatusCode
-                ? await userResponse.Content.ReadFromJsonAsync<List<RegisterUser>>(jsonOptions)
-                : new List<RegisterUser>();
+            var users = userResponse.IsSuccessStatusCode ? await userResponse.Content.ReadFromJsonAsync<List<RegisterUser>>(jsonOptions): new List<RegisterUser>();
 
             foreach (var order in orders)
             {
@@ -1211,9 +1100,7 @@ namespace NuraHerbex.Controllers
                     order.UserId = user?.FullName ?? "Unknown User";
                 }
                 else
-                {
                     order.UserId = "Unknown User";
-                }
             }
 
             var vm = new OrderListViewModel
@@ -1226,12 +1113,7 @@ namespace NuraHerbex.Controllers
         }
 
         // Filtered Report
-        public async Task<IActionResult> AdminOrderReport(
-            string? orderIdFilter,
-            DateTime? startDate,
-            DateTime? endDate,
-            string? statusFilter,
-            string? userNameFilter)
+        public async Task<IActionResult> AdminOrderReport(string? orderIdFilter,DateTime? startDate,DateTime? endDate,string? statusFilter,string? userNameFilter)
         {
             var jsonOptions = new JsonSerializerOptions
             {
@@ -1250,22 +1132,15 @@ namespace NuraHerbex.Controllers
 
             // Fetch users
             var userResponse = await client.GetAsync("AdminAPI/users");
-            var users = userResponse.IsSuccessStatusCode
-                ? await userResponse.Content.ReadFromJsonAsync<List<RegisterUser>>(jsonOptions)
-                : new List<RegisterUser>();
+            var users = userResponse.IsSuccessStatusCode ? await userResponse.Content.ReadFromJsonAsync<List<RegisterUser>>(jsonOptions): new List<RegisterUser>();
 
             // Build UserId -> FullName map
-            var userMap = users
-                .Where(u => !string.IsNullOrEmpty(u.Id))
-                .ToDictionary(u => u.Id.Trim(), u => u.FullName ?? "Unknown User", StringComparer.OrdinalIgnoreCase);
+            var userMap = users.Where(u => !string.IsNullOrEmpty(u.Id)).ToDictionary(u => u.Id.Trim(), u => u.FullName ?? "Unknown User", StringComparer.OrdinalIgnoreCase);
 
             // Map orders to include UserName for filtering
             var ordersWithUserName = orders.Select(o =>
             {
-                var userName = !string.IsNullOrEmpty(o.UserId) && userMap.ContainsKey(o.UserId.Trim())
-                    ? userMap[o.UserId.Trim()]
-                    : "Unknown User";
-
+                var userName = !string.IsNullOrEmpty(o.UserId) && userMap.ContainsKey(o.UserId.Trim()) ? userMap[o.UserId.Trim()]: "Unknown User";
                 return new
                 {
                     Order = o,
@@ -1273,24 +1148,12 @@ namespace NuraHerbex.Controllers
                 };
             }).ToList();
 
-            bool filtersApplied =
-                !string.IsNullOrEmpty(orderIdFilter) ||
-                startDate.HasValue ||
-                endDate.HasValue ||
-                !string.IsNullOrEmpty(statusFilter) ||
-                !string.IsNullOrEmpty(userNameFilter);
-
+            bool filtersApplied =!string.IsNullOrEmpty(orderIdFilter) ||startDate.HasValue ||endDate.HasValue ||!string.IsNullOrEmpty(statusFilter) ||!string.IsNullOrEmpty(userNameFilter);
             // DEFAULT: last 7 days excluding Delivered and Cancelled
             if (!filtersApplied)
             {
                 DateTime lastWeek = DateTime.UtcNow.AddDays(-7);
-
-                ordersWithUserName = ordersWithUserName
-                    .Where(x => x.Order.OrderDate >= lastWeek &&
-                                x.Order.Status != OrderStatus.Delivered &&
-                                x.Order.Status != OrderStatus.Cancelled)
-                    .OrderByDescending(x => x.Order.OrderDate)
-                    .ToList();
+                ordersWithUserName = ordersWithUserName.Where(x => x.Order.OrderDate >= lastWeek && x.Order.Status != OrderStatus.Delivered &&x.Order.Status != OrderStatus.Cancelled) .OrderByDescending(x => x.Order.OrderDate).ToList();
             }
             else
             {
@@ -1300,21 +1163,17 @@ namespace NuraHerbex.Controllers
 
                 // Username filter
                 if (!string.IsNullOrEmpty(userNameFilter))
-                    ordersWithUserName = ordersWithUserName
-                        .Where(x => x.UserName.Contains(userNameFilter.Trim(), StringComparison.OrdinalIgnoreCase))
-                        .ToList();
-
-                // Date filters
-                if (startDate.HasValue)
+                    ordersWithUserName = ordersWithUserName.Where(x => x.UserName.Contains(userNameFilter.Trim(), StringComparison.OrdinalIgnoreCase)).ToList();
+				// Date filters
+				if (startDate.HasValue)
                     ordersWithUserName = ordersWithUserName.Where(x => x.Order.OrderDate.Date >= startDate.Value.Date).ToList();
 
                 if (endDate.HasValue)
                     ordersWithUserName = ordersWithUserName.Where(x => x.Order.OrderDate.Date <= endDate.Value.Date).ToList();
 
                 // Status filter
-                if (!string.IsNullOrEmpty(statusFilter) &&
-                    Enum.TryParse<OrderStatus>(statusFilter, out var statusEnum))
-                    ordersWithUserName = ordersWithUserName.Where(x => x.Order.Status == statusEnum).ToList();
+                if (!string.IsNullOrEmpty(statusFilter) && Enum.TryParse<OrderStatus>(statusFilter, out var statusEnum))
+					ordersWithUserName = ordersWithUserName.Where(x => x.Order.Status == statusEnum).ToList();
             }
 
             // Persist filter values

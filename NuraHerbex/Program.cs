@@ -90,7 +90,7 @@ builder.Services.AddOptions<EmailSettings>()
 
 builder.Services.AddSingleton(sp =>
     sp.GetRequiredService<IOptions<EmailSettings>>().Value);
-builder.Services.AddNotyf(config => { config.DurationInSeconds = 10; config.IsDismissable = true; config.Position = NotyfPosition.TopRight; });
+builder.Services.AddNotyf(config => { config.DurationInSeconds = 5; config.IsDismissable = true; config.Position = NotyfPosition.TopRight; });
 builder.Services.AddCors(options =>
 {
 	options.AddPolicy("AllowAll", policy =>
