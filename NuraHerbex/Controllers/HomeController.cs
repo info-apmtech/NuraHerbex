@@ -310,33 +310,157 @@ namespace NuraHerbex.Controllers
             return plans;
         }
 
+
         [HttpPost]
-        public async Task<IActionResult> PlanSubscribe(int planId)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> PlanSubscribe(SubscriptionPaymentViewModel model)
         {
             var userId = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized();
 
+            var emailAddress = !string.IsNullOrWhiteSpace(model.EmailAddress)
+                ? model.EmailAddress
+                : User?.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value ?? "";
+
+            var paymentMethod = !string.IsNullOrWhiteSpace(model.PaymentMethod)
+                ? model.PaymentMethod
+                : "UPI";
+
+            // ✅ CASE 1: PAYMENT FAILED / CANCELLED → DO NOT SAVE ANYTHING
+            if (!model.HasPaid || string.IsNullOrEmpty(model.RazorpayPaymentId))
+            {
+                return RedirectToAction("SubscriptionConfirmation", new
+                {
+                    isSuccess = false,
+                    message = string.IsNullOrWhiteSpace(model.PaymentError)
+                        ? "Payment was cancelled or failed."
+                        : model.PaymentError,
+                    amount = model.Amount,
+                    paymentMethod = paymentMethod,
+                    email = emailAddress
+                });
+            }
+
+            // ✅ CASE 2: PAYMENT SUCCESS → SAVE PAYMENT + SUBSCRIPTION, THEN CONFIRMATION
+
+            var contactNo = !string.IsNullOrWhiteSpace(model.ContactNo)
+                ? model.ContactNo
+                : User?.FindFirst("phone_number")?.Value ?? "";
+
+            var paymentDetails = !string.IsNullOrWhiteSpace(model.PaymentDetails)
+                ? model.PaymentDetails
+                : $"Subscription for PlanId: {model.PlanId}";
+
+            var payment = new PaymentGatewayDetails
+            {
+                PaymentId = model.RazorpayPaymentId,
+                BankRRn = model.BankRRn ?? "",
+                OrderId = model.RazorpayOrderId,
+                PaymentMethod = paymentMethod,
+                PaymentDetails = paymentDetails,
+                TotalAmount = model.Amount,
+                ContactNo = contactNo,
+                EmailAddress = emailAddress
+            };
+
+            var paymentResponse = await AuthorizedClient.PostAsJsonAsync("AdminAPI/PaymentDetails", payment);
+
+            if (!paymentResponse.IsSuccessStatusCode)
+            {
+                var body = await paymentResponse.Content.ReadAsStringAsync();
+                // log body if needed
+
+                return RedirectToAction("SubscriptionConfirmation", new
+                {
+                    isSuccess = false,
+                    message = "Payment succeeded but saving payment details failed.",
+                    amount = model.Amount,
+                    paymentMethod = paymentMethod,
+                    email = emailAddress
+                });
+            }
+
             var subscription = new Subscription
             {
                 UserId = userId,
-                PlanId = planId,
+                PlanId = model.PlanId,
                 UpdatedAt = DateTime.UtcNow
             };
 
-            var response = await AuthorizedClient.PostAsJsonAsync("AdminAPI/subscription", subscription);
+            var subscriptionResponse = await AuthorizedClient.PostAsJsonAsync("AdminAPI/subscription", subscription);
 
-            if (response.IsSuccessStatusCode)
+            if (subscriptionResponse.IsSuccessStatusCode)
             {
-                TempData["Success"] = "Subscription successful!";
-                return RedirectToAction("Plan");
+                return RedirectToAction("SubscriptionConfirmation", new
+                {
+                    isSuccess = true,
+                    message = "Your subscription has been activated successfully.",
+                    amount = model.Amount,
+                    paymentMethod = paymentMethod,
+                    email = emailAddress
+                });
             }
 
-            TempData["Error"] = "Unable to subscribe. Try again.";
-            return RedirectToAction("Plan");
+            return RedirectToAction("SubscriptionConfirmation", new
+            {
+                isSuccess = false,
+                message = "Payment succeeded but subscription could not be saved. Please contact support.",
+                amount = model.Amount,
+                paymentMethod = paymentMethod,
+                email = emailAddress
+            });
         }
 
-       
+
+        [HttpGet]
+        public IActionResult SubscriptionConfirmation(
+    bool isSuccess,
+    string message,
+    decimal amount,
+    string paymentMethod,
+    string email)
+        {
+            var vm = new SubscriptionConfirmationViewModel
+            {
+                IsSuccess = isSuccess,
+                Message = message,
+                Amount = amount,
+                PaymentMethod = paymentMethod,
+                Email = email
+            };
+
+            return View(vm); // Views/Home/SubscriptionConfirmation.cshtml
+        }
+
+
+        //[HttpPost]
+        //public async Task<IActionResult> PlanSubscribe(int planId)
+        //{
+        //    var userId = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        //    if (string.IsNullOrEmpty(userId))
+        //        return Unauthorized();
+
+        //    var subscription = new Subscription
+        //    {
+        //        UserId = userId,
+        //        PlanId = planId,
+        //        UpdatedAt = DateTime.UtcNow
+        //    };
+
+        //    var response = await AuthorizedClient.PostAsJsonAsync("AdminAPI/subscription", subscription);
+
+        //    if (response.IsSuccessStatusCode)
+        //    {
+        //        TempData["Success"] = "Subscription successful!";
+        //        return RedirectToAction("Plan");
+        //    }
+
+        //    TempData["Error"] = "Unable to subscribe. Try again.";
+        //    return RedirectToAction("Plan");
+        //}
+
+
 
         public async Task<IActionResult> Shop(int id = 0)
 		{

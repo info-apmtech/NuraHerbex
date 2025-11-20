@@ -1,6 +1,9 @@
 ﻿@using Domain.Models
 @model List<PricingPlan>
-
+@{
+    var userEmail = User?.Identity?.Name ?? ""; // or from your user profile
+    var userPhone = ""; // fill from profile if available
+}
 @{
     bool isSinglePlan = Model.Count == 1;
     string gridClass = isSinglePlan ? "pricing-plans-grid single-plan-center" : "pricing-plans-grid";
@@ -48,11 +51,29 @@
                         }
                     </ul>
 
-                    
-                    <form method="post" action="@Url.Action("PlanSubscribe", "Home")">
-                        <input type="hidden" name="planId" value="@plan.Id" />
+                    <form asp-action="PlanSubscribe" asp-controller="Home" method="post"
+                          onsubmit="event.preventDefault(); razorpaySubscriptionPayment(this);">
+                        @Html.AntiForgeryToken()
+
+                        <input type="hidden" name="PlanId" value="@plan.Id" />
+                        <input type="hidden" name="Amount" value="@plan.PriceAmount" />
+                        <input type="hidden" name="ContactNo" value="@userPhone" />
+                        <input type="hidden" name="EmailAddress" value="@userEmail" />
+
+                        <input type="hidden" name="HasPaid" value="false" />
+                        <input type="hidden" name="RazorpayPaymentId" />
+                        <input type="hidden" name="RazorpayOrderId" />
+                        <input type="hidden" name="RazorpaySignature" />
+
+                        <input type="hidden" name="BankRRn" />
+                        <input type="hidden" name="PaymentMethod" />
+                        <input type="hidden" name="PaymentDetails" />
+
+                        <input type="hidden" name="PaymentError" />
+
                         <button type="submit" class="plan-subscribe-btn">Subscribe Now</button>
                     </form>
+
 
                 </div>
             }

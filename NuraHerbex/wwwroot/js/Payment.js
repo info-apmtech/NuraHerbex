@@ -1,4 +1,151 @@
-﻿
+﻿function razorpaySubscriptionPayment(form) {
+    // ===== 1. Get amount and customer info from hidden inputs =====
+    var amountInput = form.querySelector('input[name="Amount"]');
+    var emailInput = form.querySelector('input[name="EmailAddress"]');
+    var contactInput = form.querySelector('input[name="ContactNo"]');
+
+    var paymentAmount = parseFloat(amountInput.value) || 0;
+    var email = emailInput ? emailInput.value : "";
+    var phoneNumber = contactInput ? contactInput.value : "";
+
+    if (!paymentAmount || paymentAmount <= 0) {
+        if (window.toastr) toastr.error("Invalid plan amount.", "Error");
+        else alert("Invalid plan amount.");
+        return;
+    }
+
+    var ownerName = email || "Customer";
+    var address = "";  // optional, if you want to store something
+    var domain = "NURA"; // must match backend expectation
+
+    // ===== 2. Create order with external payment service =====
+    fetch('https://payment.tracole.com/payment/create-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            amount: paymentAmount,
+            domainName: domain
+        })
+    })
+        .then(async response => {
+            const raw = await response.text();
+            console.log('create-order HTTP status:', response.status);
+            console.log('create-order raw response:', raw);
+
+            if (!response.ok) {
+                throw new Error("HTTP " + response.status + ": " + raw);
+            }
+
+            let order;
+            try {
+                order = raw ? JSON.parse(raw) : null;
+            } catch (e) {
+                console.error('JSON parse error for create-order:', e);
+                throw new Error('Invalid JSON from create-order: ' + raw);
+            }
+            return order;
+        })
+        .then(order => {
+            console.log('Parsed order object (subscription):', order);
+
+            if (!(order && order.id)) {
+                if (window.toastr) {
+                    toastr.error("Order response missing id from payment service.", "Error");
+                } else {
+                    alert("Order response missing id from payment service.");
+                }
+                return;
+            }
+
+            // ===== 3. Configure Razorpay checkout =====
+            var options = {
+                key: "rzp_live_UBscLASQP7fAT4",
+                amount: paymentAmount * 100,   // in paise
+                currency: "INR",
+                name: "Tracole Technologies",
+                description: "Subscription Payment",
+                image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSif0XXHotoAg5YT0ltoVrNIfqwKrb5KLWwOo0ITuphqh7qrwnEdVe-aecCnV6Ai8l0awI&usqp=CAU",
+                order_id: order.id,
+
+                handler: function (response) {
+                    console.log('razorpay subscription response', response);
+
+                    var paymentData = {
+                        paymentId: response.razorpay_payment_id,
+                        orderId: response.razorpay_order_id,
+                        signature: response.razorpay_signature,
+                        domainName: domain,
+                        amount: paymentAmount
+                    };
+
+                    // ===== 4. Verify payment =====
+                    fetch('https://payment.tracole.com/payment/verify-payment', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(paymentData)
+                    })
+                        .then(res => res.json())
+                        .then(verificationResult => {
+                            console.log('Subscription payment data', paymentData);
+                            console.log('Subscription payment verification result:', verificationResult);
+
+                            if (verificationResult.message === "Payment verified successfully") {
+                                // Set hidden fields in THIS form only
+                                form.querySelector('input[name="HasPaid"]').value = "true";
+                                form.querySelector('input[name="RazorpayPaymentId"]').value = paymentData.paymentId;
+                                form.querySelector('input[name="RazorpayOrderId"]').value = paymentData.orderId;
+                                form.querySelector('input[name="RazorpaySignature"]').value = paymentData.signature;
+
+                                if (window.toastr) {
+                                    toastr.success("Payment Successful!", "Success");
+                                }
+
+                                // ===== 5. Post the form to PlanSubscribe (server will then save payment + subscription) =====
+                                form.submit();
+                            } else {
+                                form.querySelector('input[name="HasPaid"]').value = "false";
+                                if (window.toastr) {
+                                    toastr.error("Payment verification failed.", "Error");
+                                } else {
+                                    alert("Payment verification failed.");
+                                }
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error verifying subscription payment:', error);
+                            if (window.toastr) {
+                                toastr.error("Error during payment verification.", "Error");
+                            } else {
+                                alert("Error during payment verification.");
+                            }
+                        });
+                },
+                prefill: {
+                    name: ownerName,
+                    email: email,
+                    contact: phoneNumber
+                },
+                notes: {
+                    address: address
+                },
+                theme: {
+                    color: "#F37254"
+                }
+            };
+
+            var rzp = new Razorpay(options);
+            rzp.open();
+        })
+        .catch(error => {
+            console.error('Error creating subscription payment order:', error);
+            if (window.toastr) {
+                toastr.error("Error creating payment order.", "Error");
+            } else {
+                alert("Error creating payment order.");
+            }
+        });
+}
+
 function razorpayIntegrationPaymentConfirm(button, hasSticker) {
     // ===== 0. Get the parent form from the button =====
     var form = button.closest('form');

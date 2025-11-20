@@ -1,74 +1,73 @@
 ﻿@using Domain.ViewModel
-@model OrderConfirmationViewModel
+@model SubscriptionConfirmationViewModel
 
 <div class="confirmation-wrapper">
 
     <div class="success-icon">
         <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
             <circle cx="12" cy="12" r="10"></circle>
-            <polyline points="16 8 11 13 8 10"></polyline>
+            @if (Model.IsSuccess)
+            {
+                <polyline points="16 8 11 13 8 10"></polyline>
+            }
+            else
+            {
+                <line x1="9" y1="9" x2="15" y2="15"></line>
+                <line x1="15" y1="9" x2="9" y2="15"></line>
+            }
         </svg>
     </div>
 
-    <h1 class="confirmation-title">Thank You!</h1>
-    <p class="confirmation-subtitle">Your Order Has Been Placed Successfully</p>
+    <h1 class="confirmation-title">
+        @(Model.IsSuccess ? "Thank You!" : "Payment Failed")
+    </h1>
+    <p class="confirmation-subtitle">
+        @Model.Message
+    </p>
 
     <div class="order-card">
         <div class="order-grid">
             <div>
-                <span>Order</span><br />
-                @Model.Order.Id
+                <span>Subscription Amount</span><br />
+                ₹ @Model.Amount.ToString("N2")
             </div>
             <div>
-                <span>Order Date</span><br />
-                @Model.Order.OrderDate.ToString("dd/MM/yyyy")
-            </div>
-            <div>
-                <span>Estimated Delivery</span><br />
-                <span class="delivery-date">
-                    @Model.Order.OrderDate.AddDays(7).ToString("dd/MM/yyyy")
-                </span>
+                <span>Status</span><br />
+                @(Model.IsSuccess ? "Success" : "Failed")
             </div>
             <div>
                 <span>Payment Method</span><br />
-                UPI
+                @Model.PaymentMethod
+            </div>
+            <div>
+                <span>Email</span><br />
+                @Model.Email
             </div>
         </div>
 
-        <div class="order-items-label">Order Items</div>
+        <div class="order-items-label">Subscription Details</div>
 
-        @foreach (var item in Model.Details)
-        {
-            <div class="order-item-box">
-                <img src="/image/shop/Stamix1.png" alt="Product Image" />
+        <div class="order-item-box">
+            @* <img src="/image/shop/Stamix1.png" alt="Plan Image" /> *@
 
-                <div>
-                    <p><strong>Quantity :</strong> @item.Quantity</p>
-                    <p><strong>@item.productName</strong></p>
-                    <p style="color:#ff4500;font-weight:700;">
-                        ₹ @item.UnitPrice
-                    </p>
-                </div>
+            <div>
+                <p><strong>Subscription</strong></p>
+                <p>Selected Plan</p>
+                <p style="color:#ff4500;font-weight:700;">
+                    ₹ @Model.Amount.ToString("N2")
+                </p>
+            </div>
 
-                <div>
-                    <div class="order-amount-label">Total Amount</div>
-                    <div class="order-amount-total">
-                        ₹ @(item.Quantity * item.UnitPrice)
-                    </div>
+            <div>
+                <div class="order-amount-label">Total</div>
+                <div class="order-amount-total">
+                    ₹ @Model.Amount.ToString("N2")
                 </div>
             </div>
-        }
+        </div>
     </div>
 
     <div class="order-actions">
-        <a href="/Home/TrackOrder?orderId=@Model.Order.Id" class="order-btn track-btn">
-            Track Order
-        </a>
-        <a href="@Url.Action("Invoice", "Home", new { orderId = Model.Order.Id })"
-           class="order-btn invoice-btn">
-            Download Invoice
-        </a>
-
         <button class="order-btn shopping-btn" onclick="window.location.href='/'">
             Continue Shopping
         </button>
@@ -81,20 +80,18 @@
         </svg>
 
         <div>
-            <p>Confirmation Email Sent</p>
+            <p>@(Model.IsSuccess ? "Confirmation Email Sent" : "Check Your Email")</p>
             <p>
-                We've sent a confirmation email to
+                We've sent an email to
                 <strong>@Model.Email</strong>
-                with your order details.
+                with the details of your subscription payment.
             </p>
         </div>
     </div>
 
 </div>
 
-
-
- <style>
+<style>
     .confirmation-wrapper {
         max-width: 900px;
         margin: 40px auto;
