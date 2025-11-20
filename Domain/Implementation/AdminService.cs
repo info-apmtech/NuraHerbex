@@ -1682,54 +1682,42 @@ namespace Domain.Implementation
 		//}
 		public async Task<ReturnRequestViewDto> CreateReturnAsync(string userId, ReturnRequestDto dto)
 		{
-			var order = await _db.Orders
-				.Include(o => o.OrderDetails)
-				.FirstOrDefaultAsync(o => o.Id == dto.OrderId && o.UserId == userId);
-
+			var order = await _db.Orders.AsNoTracking().FirstOrDefaultAsync(o => o.Id == dto.OrderId && o.UserId == userId);
 			if (order == null)
 				throw new InvalidOperationException("Order not found or does not belong to the current user.");
-
+			var alreadyRequested = await _db.ReturnRequests.AsNoTracking().AnyAsync(r => r.OrderId == order.Id && r.UserId == userId);
+			if (alreadyRequested)
+				throw new InvalidOperationException("You have already created a return request for this order.");
 			var daysSinceOrder = (DateTime.UtcNow - order.OrderDate).TotalDays;
 			if (daysSinceOrder > 30)
 				throw new InvalidOperationException("Return window has expired.");
-
-			string productSummary = "";
-
-			if (order.OrderDetails != null && order.OrderDetails.Any())
+			string productSummary = string.Empty;
+			var firstDetail = await _db.orderDetails.AsNoTracking().Where(d => d.OrderId == order.Id).OrderBy(d => d.Id).FirstOrDefaultAsync();
+			if (firstDetail != null)
 			{
-				var firstDetail = order.OrderDetails.First();
-
 				string productName = "Product";
-
 				if (firstDetail.ProductId.HasValue)
 				{
-					var product = await _db.ProductDetails
-						.AsNoTracking()
-						.FirstOrDefaultAsync(p => p.Id == firstDetail.ProductId.Value);
-
+					var product = await _db.ProductDetails.AsNoTracking().FirstOrDefaultAsync(p => p.Id == firstDetail.ProductId.Value);
 					if (product != null)
 					{
-						productName = product.ProductName;   // <-- REAL product name from DB
+						productName = product.ProductName;
 					}
 				}
-
 				productSummary = $"{productName} (Qty: {firstDetail.Quantity})";
 			}
-
 			var entity = new ReturnRequest
 			{
-				OrderId = order.Id,
-				UserId = userId,
-				RequestedAt = DateTime.UtcNow,
-				Status = ReturnStatus.Pending,
-				Reason = dto.Reason,
-				RefundAmount = order.Total,
+				OrderId       = order.Id,
+				UserId        = userId,
+				RequestedAt   = DateTime.UtcNow,
+				Status        = ReturnStatus.Pending,
+				Reason        = dto.Reason,
+				RefundAmount  = order.Total,
 				ProductSummary = productSummary
 			};
-
 			_db.ReturnRequests.Add(entity);
 			await _db.SaveChangesAsync();
-
 			return MapToViewDto(entity, order);
 		}
 
