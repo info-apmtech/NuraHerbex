@@ -5,6 +5,7 @@ using Domain.ViewModel;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 using System.Text.RegularExpressions;
 using static Domain.ViewModel.CartItemViewModel;
 
@@ -1185,7 +1186,214 @@ namespace APIs.Controllers
 
             return BadRequest(result.Errors);
         }
+		// User creates Return request
+		//[HttpPost("request")]
+		//public async Task<IActionResult> CreateReturn([FromBody] CreateReturnRequestDto dto)
+		//{
+		//	var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+		//	if (string.IsNullOrEmpty(userId))
+		//		return Unauthorized();
 
+		//	try
+		//	{
+		//		var entity = await _adminservice.CreateReturnRequestAsync(userId, dto.OrderId, dto.Reason);
+		//		return Ok(entity.Id);
+		//	}
+		//	catch (Exception ex)
+		//	{
+		//		return BadRequest(new { error = ex.Message });
+		//	}
+		//}
+
+		//// User: get own returns
+		//[HttpGet("me")]
+		//public async Task<IActionResult> GetMyReturns([FromQuery] ReturnStatus? status)
+		//{
+		//	var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+		//	if (string.IsNullOrEmpty(userId))
+		//		return Unauthorized();
+
+		//	var list = await _adminservice.GetUserReturnsAsync(userId, status);
+		//	return Ok(list);
+		//}
+
+		//// Admin: get all
+		//[HttpGet("admin")]
+		//public async Task<IActionResult> GetAll([FromQuery] ReturnStatus? status)
+		//{
+		//	var list = await _adminservice.GetAllReturnsAsync(status);
+		//	return Ok(list);
+		//}
+
+		//[HttpPost("{id}/approve")]
+		//public async Task<IActionResult> Approve(int id)
+		//{
+		//	var result = await _adminservice.ApproveReturnAsync(id);
+		//	return result.Succeeded ? Ok() : BadRequest(result.Errors);
+		//}
+
+		//[HttpPost("{id}/cancel")]
+		//public async Task<IActionResult> Cancel(int id)
+		//{
+		//	var result = await _adminservice.CancelReturnAsync(id);
+		//	return result.Succeeded ? Ok() : BadRequest(result.Errors);
+		//}
+		//// GET api/admin/returns?status=Pending
+		//[HttpGet]
+		//public async Task<IActionResult> GetAllReturns([FromQuery] ReturnStatus? status)
+		//{
+		//	var list = await _adminservice.GetAllReturnsAsync(status);
+		//	return Ok(list);
+		//}
+
+		//// POST api/admin/returns/{id}/approve
+		//[HttpPost("return/{id}/approve")]
+		//public async Task<IActionResult> ApproveReturn(int id)
+		//{
+		//	var result = await _adminservice.ApproveReturnAsync(id);
+		//	if (result.Succeeded)
+		//		return Ok(new { success = true });
+
+		//	return BadRequest(result.Errors);
+		//}
+
+		//[HttpPost("return/{id}/cancel")]
+		//public async Task<IActionResult> CancelReturn(int id)
+		//{
+		//	var result = await _adminservice.CancelReturnAsync(id);
+		//	if (result.Succeeded)
+		//		return Ok(new { success = true });
+
+		//	return BadRequest(result.Errors);
+		//}
+		// POST: api/AdminAPI/returnrequest
+		//[HttpPost("returnrequest")]
+		//public async Task<IActionResult> CreateReturnRequest([FromBody] ReturnRequestDto dto)
+		//{
+		//	if (!ModelState.IsValid)
+		//		return BadRequest(ModelState);
+
+		//	var created = await _adminservice.CreateReturnRequestAsync(dto);
+
+		//	// Return 201 with location
+		//	return CreatedAtAction(
+		//		nameof(GetReturnRequestById),
+		//		new { id = created.Id },
+		//		created);
+		//}
+
+		// GET: api/AdminAPI/return/{id}
+		//[HttpGet("return/{id}")]
+		//public async Task<IActionResult> GetReturnRequestById(int id)
+		//{
+		//	// optional helper endpoint
+		//	var entity = await _adminservice
+		//		.GetReturnByIdAsync(id); // if you add this method
+		//	if (entity == null) return NotFound();
+		//	return Ok(entity);
+		//}
+
+		// POST: api/AdminAPI/return/{id}/approve
+		//[HttpPost("return/{id}/approve")]
+		//public async Task<IActionResult> ApproveReturn(int id, [FromBody] ReturnApproveDto dto)
+		//{
+		//	if (!ModelState.IsValid)
+		//		return BadRequest(ModelState);
+
+		//	// you can get admin name from User.Identity if using auth:
+		//	var approvedBy = User?.Identity?.Name ?? "system";
+
+		//	var updated = await _adminservice.ApproveReturnAsync(id, dto, approvedBy);
+		//	if (updated == null)
+		//		return NotFound(new { message = $"Return request {id} not found" });
+
+		//	return Ok(updated);
+		//}
+		// ========== USER ENDPOINTS ==========
+
+		// POST: AdminAPI/ReturnRequest
+		[HttpPost("ReturnRequest")]
+		[AllowAnonymous] // or nothing
+		public async Task<IActionResult> CreateReturn([FromBody] ReturnRequestDto dto)
+		{
+			if (!ModelState.IsValid)
+				return BadRequest(ModelState);
+
+			//var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+			//if (userId == null)
+			//	return Unauthorized();
+
+			try
+			{
+				var result = await _adminservice.CreateReturnAsync(dto.UserId, dto);
+				return Ok(result);
+			}
+			catch (InvalidOperationException ex)
+			{
+				return BadRequest(new { message = ex.Message });
+			}
+		}
+
+		// GET: AdminAPI/ReturnRequest/my
+		[HttpGet("ReturnRequest/my")]
+		[AllowAnonymous] // ok, because you will validate in MVC & pass userId
+		public async Task<IActionResult> MyReturns([FromQuery] string userId)
+		    {
+			if (string.IsNullOrWhiteSpace(userId))
+				return BadRequest("UserId is required.");
+
+			var list = await _adminservice.GetUserReturnsAsync(userId);
+			return Ok(list);
+		}
+
+
+		// ========== ADMIN ENDPOINTS ==========
+
+		// GET: AdminAPI/ReturnRequest/pending
+		[HttpGet("ReturnRequest/getreturn")]
+		[AllowAnonymous] // or nothing // ideally [Authorize(Roles = "Admin")]
+		public async Task<IActionResult> GetReturnOrder()
+		{
+			var list = await _adminservice.GetOrderReturnsAsync();
+			return Ok(list);
+		}
+
+		// GET: AdminAPI/ReturnRequest/5
+		[HttpGet("ReturnRequest/{id:int}")]
+		[AllowAnonymous] // or nothing // or Roles = "Admin"
+		public async Task<IActionResult> GetById(int id)
+		{
+			var rr = await _adminservice.GetByIdAsync(id);
+			if (rr == null) return NotFound();
+
+			return Ok(rr);
+		}
+
+		// PUT: AdminAPI/ReturnRequest/5/status
+		[HttpPut("ReturnRequest/{id:int}/status")]
+		[AllowAnonymous] // or nothing// or Roles = "Admin"
+		public async Task<IActionResult> UpdateStatus(int id, [FromBody] UpdateReturnStatusDto dto)
+		{
+			if (id != dto.Id)
+				return BadRequest(new { message = "Id mismatch." });
+
+			var updated = await _adminservice.UpdateStatusAsync(dto);
+			if (updated == null) return NotFound();
+
+			return Ok(updated);
+		}
+
+		[HttpDelete("DeleteReturn/{id:int}")]
+		// [Authorize(Roles = "Admin")] // when you’re ready
+		public async Task<IActionResult> DeleteReturn(int id)
+		{
+			var success = await _adminservice.DeleteReturnAsync(id);
+
+			if (!success)
+				return NotFound();
+
+			return NoContent(); // 204
+		}
 
 	}
 }
