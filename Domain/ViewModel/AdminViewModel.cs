@@ -590,6 +590,12 @@ namespace Domain.ViewModel
         public int TotalDoctors { get; set; }
         public int TotalOrders { get; set; }
     }
+    public class OrderConfirmationViewModel
+    {
+        public Order Order { get; set; }
+        public List<OrderDetail> Details { get; set; } = new();
+        public string Email { get; set; }
+    }
 
 }
 

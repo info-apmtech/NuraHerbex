@@ -3,6 +3,763 @@
 @{
 	ViewData["Title"] = "OrderSummary";
 }
+
+<!-- Main Content -->
+<div class="order-summary">
+	<!-- Checkout Steps -->
+	<div class="checkout-steps">
+		<div class="step-item">
+			<div class="step-circle active">1</div>
+			<span class="step-label active">Checkout</span>
+		</div>
+
+		<div class="step-connector"></div>
+
+		<div class="step-item">
+			<div class="step-circle">2</div>
+			<span class="step-label">Payment</span>
+		</div>
+
+		<div class="step-connector"></div>
+
+		<div class="step-item">
+			<div class="step-circle">3</div>
+			<span class="step-label">Confirmation</span>
+		</div>
+	</div>
+
+	<!-- Order Summary Title -->
+	<h1 class="page-title" style="color:white;">
+		Order <span class="highlight">Summary</span>
+	</h1>
+
+	@if (Model.Items.Any())
+	{
+		foreach (var item in Model.Items)
+		{
+			<div class="summary-content" data-cartid="@item.CartItemId" data-productid="@item.ProductId">
+				<!-- Product Image -->
+				<div class="product-image">
+					<div class="image-container">
+						<img src="@item.ProductImages" alt="@item.ProductName" style="width: 100%; height: 100%; object-fit: contain; border-radius: 0.5rem;" />
+					</div>
+				</div>
+
+				<!-- Product Details -->
+				<div class="product-details">
+					<h2 class="product-title">@item.ProductName</h2>
+
+					<!-- Quantity Controls -->
+					<div class="quantity-section">
+						<span class="quantity-label">Quantity :</span>
+						<div class="quantity-controls cart-content"
+							 data-cartid="@item.CartItemId">
+							@if (item.Quantity > 1)
+							{
+								<button class="qty-btn minus"
+										aria-label="Decrease"
+										data-cartid="@item.CartItemId"
+										data-productid="@item.ProductId">
+									−
+								</button>
+							}
+							else
+							{
+								<button class="qty-btn delete"
+										aria-label="Remove"
+										data-cartid="@item.CartItemId"
+										data-productid="@item.ProductId">
+									🗑
+								</button>
+							}
+
+							<input type="text"
+								   class="qty-val"
+								   value="@item.Quantity"
+								   readonly />
+
+							<button class="qty-btn plus"
+									aria-label="Increase"
+									data-cartid="@item.CartItemId"
+									data-productid="@item.ProductId">
+								+
+							</button>
+						</div>
+					</div>
+
+					<!-- Price -->
+					<div class="price" data-unitprice="@item.UnitPrice">
+						₹@item.UnitPrice
+					</div>
+				</div>
+			</div>
+		}
+	}
+
+	<!-- Security Icons -->
+	<div class="secure-icons">
+		<div class="security-item">
+			<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+				<rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+				<path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+			</svg>
+			<span>100% Secure Payment</span>
+		</div>
+		<span class="separator">|</span>
+		<div class="security-item">
+			<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+				<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+			</svg>
+			<span>SSL Verified & Encrypted</span>
+		</div>
+	</div>
+</div>
+
+<style>
+	select {
+		padding: 0.875rem 1rem !important;
+		border-radius: 0.5rem !important;
+		border: 1px solid #ffdac0 !important;
+		background-color: #ffe9e2 !important;
+		color: #1f2937 !important;
+		font-size: 0.95rem !important;
+	}
+</style>
+
+<!-- Delivery Address Section -->
+<!-- Delivery Address Section -->
+<div class="delivery-section">
+	<div class="container">
+		<h2 class="section-title">
+			Delivery <span class="highlight">Address</span>
+		</h2>
+
+		@* ✅ Single form for everything *@
+		<form id="proceedToPaymentForm" asp-action="ProceedToPaymentPost" method="post">
+			@Html.AntiForgeryToken()
+
+			<!-- Saved address dropdown -->
+			<div class="form-row">
+				<div class="form-group full-width">
+					<label for="addressSelect">Select address</label>
+					<select id="addressSelect"
+							class="form-select"
+							style="max-width:420px"
+							asp-for="SelectedAddressId"
+							asp-items="Model.AddressItems">
+						<option value="">-- Select address --</option>
+					</select>
+				</div>
+			</div>
+
+			<!-- Custom address checkbox -->
+			<div class="form-row">
+				<div class="form-group full-width">
+					<label>
+						<input type="checkbox"
+							   id="useCustomAddress"
+							   asp-for="UseCustomAddress" />
+						Use custom address (save to My Profile)
+					</label>
+				</div>
+			</div>
+
+			<!-- Custom address fields -->
+			<div class="delivery-form">
+				<div class="form-row">
+					<div class="form-group">
+						<label asp-for="FirstName">First Name</label>
+						<input asp-for="FirstName" id="firstName" placeholder="John" />
+					</div>
+					<div class="form-group">
+						<label asp-for="LastName">Last Name</label>
+						<input asp-for="LastName" id="lastName" placeholder="Doe" />
+					</div>
+				</div>
+
+				<div class="form-group full-width">
+					<label asp-for="StreetAddress">Street Address</label>
+					<input asp-for="StreetAddress" id="streetAddress" placeholder="123 main Street, Apt 4B" />
+				</div>
+
+				<div class="form-row">
+					<div class="form-group">
+						<label asp-for="City">City</label>
+						<input asp-for="City" id="city" placeholder="New York" />
+					</div>
+					<div class="form-group">
+						<label asp-for="State">State</label>
+						<input asp-for="State" id="state" placeholder="NY" />
+					</div>
+				</div>
+
+				<div class="form-row">
+					<div class="form-group">
+						<label asp-for="ZipCode">ZIP Code</label>
+						<input asp-for="ZipCode" id="zipCode" placeholder="10001" />
+					</div>
+					<div class="form-group">
+						<label asp-for="Phone">Phone</label>
+						<input asp-for="Phone" id="phone" placeholder="(555) 123-4567" />
+					</div>
+				</div>
+			</div>
+
+			<!-- Delivery Options -->
+			<div class="delivery-options">
+				<h3 class="subsection-title">Delivery Options</h3>
+
+				<label class="delivery-option">
+					<input type="radio" asp-for="DeliveryOption" value="standard" checked>
+					<div class="option-content">
+						<div class="option-info">
+							<svg class="option-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+								<rect x="1" y="3" width="15" height="13"></rect>
+								<polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
+								<circle cx="5.5" cy="18.5" r="2.5"></circle>
+								<circle cx="18.5" cy="18.5" r="2.5"></circle>
+							</svg>
+							<div>
+								<div class="option-name">Standard Delivery</div>
+								<div class="option-time">5-7 Business days</div>
+							</div>
+						</div>
+						<div class="option-price" id="priceStandard">₹@Model.SelectedStandard?.ToString("N2")</div>
+					</div>
+				</label>
+
+				<label class="delivery-option">
+					<input type="radio" asp-for="DeliveryOption" value="express">
+					<div class="option-content">
+						<div class="option-info">
+							<svg class="option-icon express" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+								<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+							</svg>
+							<div>
+								<div class="option-name">Express Delivery</div>
+								<div class="option-time">2-3 Business days</div>
+							</div>
+						</div>
+						<div class="option-price" id="priceExpress">₹@Model.SelectedExpress?.ToString("N2")</div>
+					</div>
+				</label>
+			</div>
+
+			<!-- Price Breakdown -->
+			<div class="summary-content">
+				<div class="product-details">
+					<div class="price-breakdown">
+						<div class="price-row">
+							<span>Subtotal</span>
+							<span id="subtotal">₹@Model.SubTotal.ToString("N2")</span>
+						</div>
+
+						<div class="price-row">
+							<span>Delivery</span>
+							<span id="shipping">₹@Model.Shipping?.ToString("N2")</span>
+						</div>
+
+						<hr class="divider">
+
+						<div class="price-row total">
+							<span>Total</span>
+							<span id="total">₹@Model.GrandTotal?.ToString("N2")</span>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- Hidden fields for SelectedAddressId & DeliveryOption (synced by JS) -->
+			<input type="hidden" name="SelectedAddressId" value="@Model.SelectedAddressId" />
+			<input type="hidden" name="DeliveryOption" value="standard" />
+
+			<!-- Hidden payment fields -->
+			<input type="hidden" id="CustomerInfo_hasPaid" name="HasPaid" value="false" />
+			<input type="hidden" id="RazorpayPaymentId" name="RazorpayPaymentId" />
+			<input type="hidden" id="RazorpayOrderId" name="RazorpayOrderId" />
+			<input type="hidden" id="RazorpaySignature" name="RazorpaySignature" />
+
+			<!-- Proceed Button -->
+			<div class="proceed-section">
+				<button type="button"
+						class="proceed-btn"
+						onclick="razorpayIntegrationPaymentConfirm(this, 'false')">
+					Proceed to Payment
+				</button>
+			</div>
+		</form>
+	</div>
+</div>
+
+
+@{
+	// IMPORTANT: camelCase so JS sees .pincode, .phoneNumber, etc.
+	var jsonOpts = new System.Text.Json.JsonSerializerOptions { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase };
+	var addressesJ = System.Text.Json.JsonSerializer.Serialize(Model.Addresses, jsonOpts);
+	var pincodesJ = System.Text.Json.JsonSerializer.Serialize(Model.Pincodes, jsonOpts);
+	var getZipInfoUrl = Url.Action("GetZipInfo", "Home");
+}
+
+<script>
+	(function () {
+		// ---------- Data from server ----------
+		const addresses = @Html.Raw(addressesJ); // from Razor
+		const pincodes  = @Html.Raw(pincodesJ);  // still available if you want
+
+		// Map address by id
+		const addrById = new Map((addresses || []).map(a => [a.id, a]));
+
+		// ---------- DOM refs ----------
+		const addressSelect   = document.getElementById('addressSelect');
+		const useCustom       = document.getElementById('useCustomAddress');
+		const zipInput        = document.getElementById('zipCode');
+		const priceStdEl      = document.getElementById('priceStandard');
+		const priceExpEl      = document.getElementById('priceExpress');
+		const shippingEl      = document.getElementById('shipping');
+		const subtotalEl      = document.getElementById('subtotal');
+		const totalEl         = document.getElementById('total');
+		// UPDATED: use DeliveryOption
+		const deliveryRadios  = document.querySelectorAll('input[name="DeliveryOption"]');
+
+		const getZipInfoUrl   = '@getZipInfoUrl'; // e.g. /Home/GetZipInfo
+
+		// address form fields (to auto-fill from selected address)
+		const fields = {
+			firstName:     document.getElementById('firstName'),
+			lastName:      document.getElementById('lastName'),
+			streetAddress: document.getElementById('streetAddress'),
+			city:          document.getElementById('city'),
+			state:         document.getElementById('state'),
+			zipCode:       zipInput,
+			phone:         document.getElementById('phone')
+		};
+
+		// Hidden inputs in the submit form
+		const form           = document.querySelector('.proceed-section form');
+		const hiddenAddress  = form ? form.querySelector('input[name="SelectedAddressId"]') : null;
+		const hiddenDelivery = form ? form.querySelector('input[name="DeliveryOption"]')   : null;
+
+		// ---------- helpers ----------
+		const fmt = n => "₹" + Number(n || 0).toLocaleString(undefined, {
+			minimumFractionDigits: 2,
+			maximumFractionDigits: 2
+		});
+
+		const parseMoney = s => Number((s || "").toString().replace(/[^\d.-]/g, "")) || 0;
+
+		function getMode() {
+			const r = Array.from(deliveryRadios).find(x => x.checked);
+			return r ? r.value : "standard";
+		}
+
+		function getSelectedAddress() {
+			const id = parseInt(addressSelect?.value || "0", 10);
+			return Number.isFinite(id) ? addrById.get(id) : null;
+		}
+
+		function fillAddressForm(addr) {
+			if (!addr) {
+				Object.values(fields).forEach(el => { if (el) el.value = ""; });
+				return;
+			}
+
+			const full = addr.name || "";
+			const i    = full.indexOf(" ");
+			const fn   = i > 0 ? full.slice(0, i) : full;
+			const ln   = i > 0 ? full.slice(i + 1) : "";
+
+			if (fields.firstName)     fields.firstName.value     = fn;
+			if (fields.lastName)      fields.lastName.value      = ln;
+			if (fields.streetAddress) fields.streetAddress.value = [addr.doorNo, addr.address].filter(Boolean).join(", ");
+			if (fields.city)          fields.city.value          = addr.location || "";
+			if (fields.state)         fields.state.value         = (addr.state ?? "").toString();
+			if (fields.zipCode)       fields.zipCode.value       = addr.pincode || "";
+			if (fields.phone)         fields.phone.value         = addr.phoneNumber || "";
+		}
+
+		function applyShipping(shipping) {
+			if (shippingEl) shippingEl.textContent = fmt(shipping);
+
+			const sub = parseMoney(subtotalEl?.textContent);
+			// if you have tax/discount later, add them here
+			const total = sub + shipping;
+
+			if (totalEl) totalEl.textContent = fmt(total);
+		}
+
+		let currentRates = { std: 0, exp: 0 };
+
+		function recalcFromCurrentRates() {
+			const mode = getMode();
+			const ship = (mode === 'express') ? currentRates.exp : currentRates.std;
+			applyShipping(ship);
+			if (hiddenDelivery) hiddenDelivery.value = mode;
+		}
+
+		function loadRatesForPincode(pin) {
+			const code = (pin || "").trim();
+			if (!/^\d{6}$/.test(code)) {
+				console.log("Invalid pincode:", code);
+				currentRates = { std: 0, exp: 0 };
+				applyShipping(0);
+				return;
+			}
+
+			fetch(getZipInfoUrl + '?zip=' + encodeURIComponent(code))
+				.then(r => {
+					if (!r.ok) throw new Error("HTTP " + r.status);
+					return r.json();
+				})
+				.then(data => {
+					// controller returns: { code, standard, express, desc }
+					currentRates = {
+						std: data.standard || 0,
+						exp: data.express  || 0
+					};
+
+					if (priceStdEl) priceStdEl.textContent = fmt(currentRates.std);
+					if (priceExpEl) priceExpEl.textContent = fmt(currentRates.exp);
+
+					recalcFromCurrentRates();
+				})
+				.catch(err => {
+					console.error("Pincode lookup failed:", err);
+					currentRates = { std: 0, exp: 0 };
+					applyShipping(0);
+				});
+		}
+
+		// ---------- event handlers ----------
+
+		function onAddressChange() {
+			const addr = getSelectedAddress();
+
+			// if using custom address, do NOT overwrite user input
+			if (!useCustom || !useCustom.checked) {
+				fillAddressForm(addr);
+			}
+
+			if (hiddenAddress && addressSelect) {
+				hiddenAddress.value = addressSelect.value || '';
+			}
+
+			if (addr && addr.pincode) {
+				loadRatesForPincode(addr.pincode);    // ⭐ THIS is the important part
+			} else {
+				currentRates = { std: 0, exp: 0 };
+				applyShipping(0);
+			}
+		}
+
+		function onDeliveryChange() {
+			recalcFromCurrentRates();
+		}
+
+		// ZIP blur (for custom address)
+		if (zipInput) {
+			zipInput.addEventListener('blur', () => {
+				loadRatesForPincode(zipInput.value);
+			});
+		}
+
+		if (addressSelect) {
+			addressSelect.addEventListener('change', onAddressChange);
+		}
+
+		if (useCustom) {
+			useCustom.addEventListener('change', () => {
+				if (useCustom.checked) {
+					// clear fields for custom
+					fillAddressForm(null);
+				} else {
+					// go back to dropdown address
+					onAddressChange();
+				}
+			});
+		}
+
+		deliveryRadios.forEach(r => r.addEventListener('change', onDeliveryChange));
+
+		// initial sync on page load
+		onAddressChange();
+	})();
+</script>
+
+<script>
+	// Sync hidden fields for SelectedAddressId & DeliveryOption on submit
+	(function () {
+		@* const form = document.querySelector('.proceed-section form'); *@
+		const form = document.getElementById('proceedToPaymentForm');
+
+		if (!form) return;
+
+		const hiddenAddress  = form.querySelector('input[name="SelectedAddressId"]');
+		const hiddenDelivery = form.querySelector('input[name="DeliveryOption"]');
+
+		const addressSelect = document.getElementById('addressSelect');
+		if (addressSelect && hiddenAddress) {
+			hiddenAddress.value = addressSelect.value || '';
+			addressSelect.addEventListener('change', () => {
+				hiddenAddress.value = addressSelect.value || '';
+			});
+		}
+
+		// UPDATED: use DeliveryOption
+		const deliveryRadios = document.querySelectorAll('input[name="DeliveryOption"]');
+		function syncDelivery() {
+			const checked = Array.from(deliveryRadios).find(r => r.checked);
+			if (checked && hiddenDelivery) hiddenDelivery.value = checked.value;
+		}
+		if (deliveryRadios.length) {
+			syncDelivery();
+			deliveryRadios.forEach(r => r.addEventListener('change', syncDelivery));
+		}
+	})();
+</script>
+
+<script>
+	// quantity / cart scripts unchanged...
+	function formatMoney(n) {
+		return "₹" + Number(n || 0).toLocaleString(undefined, {
+			minimumFractionDigits: 2,
+			maximumFractionDigits: 2
+		});
+	}
+
+	function parseMoneyText(txt) {
+		return Number((txt || "").toString().replace(/[^\d.-]/g, "")) || 0;
+	}
+
+	function updateCartTotals() {
+		let subtotal = 0;
+
+		$(".summary-content[data-cartid]").each(function () {
+			const $row = $(this);
+			const $qtyInput = $row.find(".qty-val");
+			const $priceEl  = $row.find(".price");
+
+			if (!$qtyInput.length || !$priceEl.length) return;
+
+			const qty       = parseInt($qtyInput.val()) || 0;
+			const unitPrice = parseFloat($priceEl.data("unitprice")) || 0;
+
+			subtotal += qty * unitPrice;
+		});
+
+		const $subtotalEl = $("#subtotal");
+		if ($subtotalEl.length) {
+			$subtotalEl.text(formatMoney(subtotal));
+		}
+
+		const shipping = parseMoneyText($("#shipping").text());
+		const tax      = $("#tax").length ? parseMoneyText($("#tax").text()) : 0;
+		const discount = $("#discount").length ? parseMoneyText($("#discount").text()) : 0;
+
+		const total = subtotal + tax + shipping - discount;
+
+		const $totalEl = $("#total");
+		if ($totalEl.length) {
+			$totalEl.text(formatMoney(total));
+		}
+	}
+
+	function toggleLeftButton($row, qty) {
+		const $left = $row.find(".qty-btn").first();
+		if (qty > 1) {
+			$left.removeClass("delete").addClass("minus").text("−");
+		} else {
+			$left.removeClass("minus").addClass("delete").text("🗑");
+		}
+	}
+
+	// plus / minus / delete handlers
+	$(document)
+		.off("click.cart.qty.plus")
+		.on("click.cart.qty.plus", ".qty-btn.plus", function (e) {
+			e.preventDefault();
+			const $row = $(this).closest(".cart-content");
+			const $qty = $row.find(".qty-val");
+			const cartId = $(this).data("cartid");
+			if (!cartId) return;
+
+			const oldQty = parseInt($qty.val()) || 1;
+			const newQty = oldQty + 1;
+
+			$qty.val(newQty);
+			toggleLeftButton($row, newQty);
+			updateCartTotals();   // ✅ now updates immediately (no reload)
+
+			$.ajax({
+				type: "POST",
+				url: "/Home/ChangeQuantity",
+				data: { cartId: cartId, delta: 1 }
+			})
+			.done(function () {
+				if (typeof reloadCartPartialIntoModal === "function")
+					reloadCartPartialIntoModal();
+			})
+			.fail(function () {
+				$qty.val(oldQty);
+				toggleLeftButton($row, oldQty);
+				updateCartTotals();
+				alert("Failed to increase quantity.");
+			});
+		});
+
+	$(document)
+		.off("click.cart.qty.minus")
+		.on("click.cart.qty.minus", ".qty-btn.minus", function (e) {
+			e.preventDefault();
+			const $row = $(this).closest(".cart-content");
+			const $qty = $row.find(".qty-val");
+			const cartId = $(this).data("cartid");
+			if (!cartId) return;
+
+			const oldQty = parseInt($qty.val()) || 1;
+			if (oldQty <= 1) return;
+
+			const newQty = oldQty - 1;
+
+			$qty.val(newQty);
+			toggleLeftButton($row, newQty);
+			updateCartTotals();   // ✅ already here
+
+			$.ajax({
+				type: "POST",
+				url: "/Home/ChangeQuantity",
+				data: { cartId: cartId, delta: -1 }
+			})
+			.done(function () {
+				if (typeof reloadCartPartialIntoModal === "function")
+					reloadCartPartialIntoModal();
+			})
+			.fail(function () {
+				$qty.val(oldQty);
+				toggleLeftButton($row, oldQty);
+				updateCartTotals();
+				alert("Failed to decrease quantity.");
+			});
+		});
+
+	$(document)
+		.off("click.cart.qty.delete")
+		.on("click.cart.qty.delete", ".qty-btn.delete", function (e) {
+			e.preventDefault();
+			const $row = $(this).closest(".cart-content");
+			const cartId = $(this).data("cartid");
+			if (!cartId) return;
+
+			const ok = window.confirm("Are you sure you want to remove this item from your cart?");
+			if (!ok) return;
+
+			const backup = $row.clone(true, true);
+			$row.fadeOut(150, function () {
+				$(this).remove();
+				updateCartTotals();   // ✅ update totals right after remove
+			});
+
+			$.ajax({
+				type: "DELETE",
+				url: "/Home/DeleteCartItem",
+				data: { cartId: cartId }
+			})
+			.done(function () {
+				if (typeof reloadCartPartialIntoModal === "function")
+					reloadCartPartialIntoModal();
+					window.location.reload();
+
+			})
+			.fail(function () {
+				$(".cart-footer").before(backup);
+				alert("Failed to remove item.");
+				updateCartTotals();   // ✅ recalc after restoring
+			});
+		});
+</script>
+
+
+<script>
+	(function () {
+		const zipInput    = document.getElementById('zipCode');
+		const priceStdEl  = document.getElementById('priceStandard');
+		const priceExpEl  = document.getElementById('priceExpress');
+		const shippingEl  = document.getElementById('shipping');
+		const subtotalEl  = document.getElementById('subtotal');
+		const totalEl     = document.getElementById('total');
+		// UPDATED: use DeliveryOption
+		const deliveryRadios = document.querySelectorAll('input[name="DeliveryOption"]');
+
+		const fmt = n => "₹" + Number(n || 0).toLocaleString(undefined, {
+			minimumFractionDigits: 2,
+			maximumFractionDigits: 2
+		});
+
+		const parseMoney = s => Number((s || "").toString().replace(/[^\d.-]/g, "")) || 0;
+
+		function getMode() {
+			const r = Array.from(deliveryRadios).find(x => x.checked);
+			return r ? r.value : "standard";
+		}
+
+		function applyShipping(shipping) {
+			if (shippingEl) shippingEl.textContent = fmt(shipping);
+
+			const sub = parseMoney(subtotalEl?.textContent);
+			// if you have tax/discount later, include them here
+			const total = sub + shipping;
+
+			if (totalEl) totalEl.textContent = fmt(total);
+		}
+
+		function recalcFromLabels() {
+			const std = parseMoney(priceStdEl?.textContent);
+			const exp = parseMoney(priceExpEl?.textContent);
+			const mode = getMode();
+			const ship = (mode === "express") ? exp : std;
+			applyShipping(ship);
+		}
+
+		if (zipInput) {
+			zipInput.addEventListener('blur', function () {
+				const code = (zipInput.value || "").trim();
+				// same as API: 6 digits
+				if (!/^\d{6}$/.test(code)) {
+					console.log("Invalid pincode:", code);
+					return;
+				}
+
+				// call MVC action, which in turn calls your AdminAPI
+				const url = '@Url.Action("GetZipInfo", "Home")' + '?zip=' + encodeURIComponent(code);
+
+				fetch(url)
+					.then(r => {
+						if (!r.ok) throw new Error("HTTP " + r.status);
+						return r.json();
+					})
+					.then(data => {
+						// data.standard / data.express from controller
+						if (priceStdEl) priceStdEl.textContent = fmt(data.standard);
+						if (priceExpEl) priceExpEl.textContent = fmt(data.express);
+
+						const mode = getMode();
+						const shipping = (mode === "express") ? data.express : data.standard;
+						applyShipping(shipping);
+					})
+					.catch(err => {
+						console.error("Pincode lookup failed:", err);
+						// optional: reset shipping if failed
+						// applyShipping(0);
+					});
+			});
+		}
+
+		// when user changes Standard/Express radio
+		deliveryRadios.forEach(r => r.addEventListener('change', recalcFromLabels));
+	})();
+</script>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script src="~/js/payment.js"></script>
+
 <style>
 	.container {
 		max-width: 1200px;
@@ -708,773 +1465,3 @@
 		}
 	}
 </style>
-
-<!-- Main Content -->
-<div class="order-summary">
-	<!-- Checkout Steps -->
-	<div class="checkout-steps">
-		<div class="step-item">
-			<div class="step-circle active">1</div>
-			<span class="step-label active">Checkout</span>
-		</div>
-
-		<div class="step-connector"></div>
-
-		<div class="step-item">
-			<div class="step-circle">2</div>
-			<span class="step-label">Payment</span>
-		</div>
-
-		<div class="step-connector"></div>
-
-		<div class="step-item">
-			<div class="step-circle">3</div>
-			<span class="step-label">Confirmation</span>
-		</div>
-	</div>
-
-	<!-- Order Summary Title -->
-	<h1 class="page-title" style="color:white;">
-		Order <span class="highlight">Summary</span>
-	</h1>
-
-	@if (Model.Items.Any())
-	{
-		foreach (var item in Model.Items)
-		{
-			<div class="summary-content" data-cartid="@item.CartItemId" data-productid="@item.ProductId">
-				<!-- Product Image -->
-				<div class="product-image">
-					<div class="image-container">
-						<img src="@item.ProductImages" alt="@item.ProductName" style="width: 100%; height: 100%; object-fit: contain; border-radius: 0.5rem;" />
-					</div>
-				</div>
-
-				<!-- Product Details -->
-				<div class="product-details">
-					<h2 class="product-title">@item.ProductName</h2>
-
-					<!-- Quantity Controls -->
-					<div class="quantity-section">
-						<span class="quantity-label">Quantity :</span>
-						<div class="quantity-controls cart-content"
-							 data-cartid="@item.CartItemId">
-							@if (item.Quantity > 1)
-							{
-								<button class="qty-btn minus"
-										aria-label="Decrease"
-										data-cartid="@item.CartItemId"
-										data-productid="@item.ProductId">
-									−
-								</button>
-							}
-							else
-							{
-								<button class="qty-btn delete"
-										aria-label="Remove"
-										data-cartid="@item.CartItemId"
-										data-productid="@item.ProductId">
-									🗑
-								</button>
-							}
-
-							<input type="text"
-								   class="qty-val"
-								   value="@item.Quantity"
-								   readonly />
-
-							<button class="qty-btn plus"
-									aria-label="Increase"
-									data-cartid="@item.CartItemId"
-									data-productid="@item.ProductId">
-								+
-							</button>
-						</div>
-					</div>
-
-					<!-- Price -->
-					<div class="price" data-unitprice="@item.UnitPrice">
-						₹@item.UnitPrice
-					</div>
-				</div>
-			</div>
-		}
-	}
-
-	<!-- Security Icons -->
-	<div class="secure-icons">
-		<div class="security-item">
-			<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-				<rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-				<path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-			</svg>
-			<span>100% Secure Payment</span>
-		</div>
-		<span class="separator">|</span>
-		<div class="security-item">
-			<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-				<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-			</svg>
-			<span>SSL Verified & Encrypted</span>
-		</div>
-	</div>
-</div>
-
-<style>
-	select {
-		padding: 0.875rem 1rem !important;
-		border-radius: 0.5rem !important;
-		border: 1px solid #ffdac0 !important;
-		background-color: #ffe9e2 !important;
-		color: #1f2937 !important;
-		font-size: 0.95rem !important;
-	}
-</style>
-
-<!-- Delivery Address Section -->
-<div class="delivery-section">
-	<div class="container">
-		<h2 class="section-title">
-			Delivery <span class="highlight">Address</span>
-		</h2>
-		<form asp-action="ProceedToPayment" method="post">
-
-			<!-- Custom / filled address form -->
-			<!-- Saved address dropdown -->
-			<div class="form-row">
-				<div class="form-group full-width">
-					<label for="addressSelect">Select address</label>
-					<select id="addressSelect"
-							class="form-select"
-							style="max-width:420px"
-							asp-for="SelectedAddressId"
-							asp-items="Model.AddressItems">
-						<option value="">-- Select address --</option>
-					</select>
-				</div>
-			</div>
-
-			<!-- Custom address checkbox -->
-			<div class="form-row">
-				<div class="form-group full-width">
-					<label>
-						<input type="checkbox"
-							   id="useCustomAddress"
-							   asp-for="UseCustomAddress" />
-						Use custom address (save to My Profile)
-					</label>
-				</div>
-			</div>
-			<div class="delivery-form">
-				<div class="form-row">
-					<div class="form-group">
-						<label asp-for="FirstName">First Name</label>
-						<input asp-for="FirstName" id="firstName" placeholder="John" />
-					</div>
-					<div class="form-group">
-						<label asp-for="LastName">Last Name</label>
-						<input asp-for="LastName" id="lastName" placeholder="Doe" />
-					</div>
-				</div>
-
-				<div class="form-group full-width">
-					<label asp-for="StreetAddress">Street Address</label>
-					<input asp-for="StreetAddress" id="streetAddress" placeholder="123 main Street, Apt 4B" />
-				</div>
-
-				<div class="form-row">
-					<div class="form-group">
-						<label asp-for="City">City</label>
-						<input asp-for="City" id="city" placeholder="New York" />
-					</div>
-					<div class="form-group">
-						<label asp-for="State">State</label>
-						<input asp-for="State" id="state" placeholder="NY" />
-					</div>
-				</div>
-
-				<div class="form-row">
-					<div class="form-group">
-						<label asp-for="ZipCode">ZIP Code</label>
-						<input asp-for="ZipCode" id="zipCode" placeholder="10001" />
-					</div>
-					<div class="form-group">
-						<label asp-for="Phone">Phone</label>
-						<input asp-for="Phone" id="phone" placeholder="(555) 123-4567" />
-					</div>
-				</div>
-			</div>
-
-			<!-- Delivery Options -->
-			<div class="delivery-options">
-				<h3 class="subsection-title">Delivery Options</h3>
-
-				<label class="delivery-option">
-					<input type="radio" asp-for="DeliveryOption" value="standard" checked>
-					<div class="option-content">
-						<div class="option-info">
-							<svg class="option-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-								<rect x="1" y="3" width="15" height="13"></rect>
-								<polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
-								<circle cx="5.5" cy="18.5" r="2.5"></circle>
-								<circle cx="18.5" cy="18.5" r="2.5"></circle>
-							</svg>
-							<div>
-								<div class="option-name">Standard Delivery</div>
-								<div class="option-time">5-7 Business days</div>
-							</div>
-						</div>
-						<div class="option-price" id="priceStandard">₹@Model.SelectedStandard?.ToString("N2")</div>
-					</div>
-				</label>
-
-				<label class="delivery-option">
-					<input type="radio" asp-for="DeliveryOption" value="express">
-					<div class="option-content">
-						<div class="option-info">
-							<svg class="option-icon express" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-								<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
-							</svg>
-							<div>
-								<div class="option-name">Express Delivery</div>
-								<div class="option-time">2-3 Business days</div>
-							</div>
-						</div>
-						<div class="option-price" id="priceExpress">₹@Model.SelectedExpress?.ToString("N2")</div>
-					</div>
-				</label>
-			</div>
-
-			<!-- Price Breakdown under delivery section -->
-			<div class="summary-content">
-				<div class="product-details">
-					<div class="price-breakdown">
-						<div class="price-row">
-							<span>Subtotal</span>
-							<span id="subtotal">₹@Model.SubTotal.ToString("N2")</span>
-						</div>
-
-						<div class="price-row">
-							<span>Delivery</span>
-							<span id="shipping">₹@Model.Shipping?.ToString("N2")</span>
-						</div>
-
-						@* optional: if you add tax/discount later, keep IDs tax/discount *@
-						@* <div class="price-row">
-                        <span>Tax</span>
-                        <span id="tax">₹@Model.Tax.ToString("N2")</span>
-                    </div>
-                    <div class="price-row">
-                        <span>Discount</span>
-                        <span id="discount">−₹@Model.TotalDiscount.ToString("N2")</span>
-                    </div> *@
-
-						<hr class="divider">
-
-						<div class="price-row total">
-							<span>Total</span>
-							<span id="total">₹@Model.GrandTotal?.ToString("N2")</span>
-						</div>
-					</div>
-				</div>
-			</div>
-
-			<!-- Proceed Button -->
-			@* <div class="proceed-section">
-
-				@Html.AntiForgeryToken()
-				<input type="hidden" name="SelectedAddressId" value="@Model.SelectedAddressId" />
-				<input type="hidden" name="DeliveryOption" value="standard" />
-				<button type="submit" class="proceed-btn">Proceed to Payment</button>
-
-			</div> *@
-			<div class="proceed-section">
-				<form id="proceedToPaymentForm" asp-action="ProceedToPayment" method="post">
-					@Html.AntiForgeryToken()
-					<input type="hidden" name="SelectedAddressId" value="@Model.SelectedAddressId" />
-					<input type="hidden" name="DeliveryOption" value="standard" />
-
-					<input type="hidden" id="CustomerInfo_hasPaid" name="HasPaid" value="false" />
-					<input type="hidden" id="RazorpayPaymentId" name="RazorpayPaymentId" />
-					<input type="hidden" id="RazorpayOrderId" name="RazorpayOrderId" />
-					<input type="hidden" id="RazorpaySignature" name="RazorpaySignature" />
-
-					<button type="button"
-							class="proceed-btn"
-							onclick="razorpayIntegrationPaymentConfirm(this, 'false')">
-						Proceed to Payment
-					</button>
-				</form>
-			</div>
-
-		</form>
-	</div>
-</div>
-
-
-@{
-	// IMPORTANT: camelCase so JS sees .pincode, .phoneNumber, etc.
-	var jsonOpts = new System.Text.Json.JsonSerializerOptions { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase };
-	var addressesJ = System.Text.Json.JsonSerializer.Serialize(Model.Addresses, jsonOpts);
-	var pincodesJ = System.Text.Json.JsonSerializer.Serialize(Model.Pincodes, jsonOpts);
-	var getZipInfoUrl = Url.Action("GetZipInfo", "Home");
-}
-
-<script>
-	(function () {
-		// ---------- Data from server ----------
-		const addresses = @Html.Raw(addressesJ); // from Razor
-		const pincodes  = @Html.Raw(pincodesJ);  // still available if you want
-
-		// Map address by id
-		const addrById = new Map((addresses || []).map(a => [a.id, a]));
-
-		// ---------- DOM refs ----------
-		const addressSelect   = document.getElementById('addressSelect');
-		const useCustom       = document.getElementById('useCustomAddress');
-		const zipInput        = document.getElementById('zipCode');
-		const priceStdEl      = document.getElementById('priceStandard');
-		const priceExpEl      = document.getElementById('priceExpress');
-		const shippingEl      = document.getElementById('shipping');
-		const subtotalEl      = document.getElementById('subtotal');
-		const totalEl         = document.getElementById('total');
-		// UPDATED: use DeliveryOption
-		const deliveryRadios  = document.querySelectorAll('input[name="DeliveryOption"]');
-
-		const getZipInfoUrl   = '@getZipInfoUrl'; // e.g. /Home/GetZipInfo
-
-		// address form fields (to auto-fill from selected address)
-		const fields = {
-			firstName:     document.getElementById('firstName'),
-			lastName:      document.getElementById('lastName'),
-			streetAddress: document.getElementById('streetAddress'),
-			city:          document.getElementById('city'),
-			state:         document.getElementById('state'),
-			zipCode:       zipInput,
-			phone:         document.getElementById('phone')
-		};
-
-		// Hidden inputs in the submit form
-		const form           = document.querySelector('.proceed-section form');
-		const hiddenAddress  = form ? form.querySelector('input[name="SelectedAddressId"]') : null;
-		const hiddenDelivery = form ? form.querySelector('input[name="DeliveryOption"]')   : null;
-
-		// ---------- helpers ----------
-		const fmt = n => "₹" + Number(n || 0).toLocaleString(undefined, {
-			minimumFractionDigits: 2,
-			maximumFractionDigits: 2
-		});
-
-		const parseMoney = s => Number((s || "").toString().replace(/[^\d.-]/g, "")) || 0;
-
-		function getMode() {
-			const r = Array.from(deliveryRadios).find(x => x.checked);
-			return r ? r.value : "standard";
-		}
-
-		function getSelectedAddress() {
-			const id = parseInt(addressSelect?.value || "0", 10);
-			return Number.isFinite(id) ? addrById.get(id) : null;
-		}
-
-		function fillAddressForm(addr) {
-			if (!addr) {
-				Object.values(fields).forEach(el => { if (el) el.value = ""; });
-				return;
-			}
-
-			const full = addr.name || "";
-			const i    = full.indexOf(" ");
-			const fn   = i > 0 ? full.slice(0, i) : full;
-			const ln   = i > 0 ? full.slice(i + 1) : "";
-
-			if (fields.firstName)     fields.firstName.value     = fn;
-			if (fields.lastName)      fields.lastName.value      = ln;
-			if (fields.streetAddress) fields.streetAddress.value = [addr.doorNo, addr.address].filter(Boolean).join(", ");
-			if (fields.city)          fields.city.value          = addr.location || "";
-			if (fields.state)         fields.state.value         = (addr.state ?? "").toString();
-			if (fields.zipCode)       fields.zipCode.value       = addr.pincode || "";
-			if (fields.phone)         fields.phone.value         = addr.phoneNumber || "";
-		}
-
-		function applyShipping(shipping) {
-			if (shippingEl) shippingEl.textContent = fmt(shipping);
-
-			const sub = parseMoney(subtotalEl?.textContent);
-			// if you have tax/discount later, add them here
-			const total = sub + shipping;
-
-			if (totalEl) totalEl.textContent = fmt(total);
-		}
-
-		let currentRates = { std: 0, exp: 0 };
-
-		function recalcFromCurrentRates() {
-			const mode = getMode();
-			const ship = (mode === 'express') ? currentRates.exp : currentRates.std;
-			applyShipping(ship);
-			if (hiddenDelivery) hiddenDelivery.value = mode;
-		}
-
-		function loadRatesForPincode(pin) {
-			const code = (pin || "").trim();
-			if (!/^\d{6}$/.test(code)) {
-				console.log("Invalid pincode:", code);
-				currentRates = { std: 0, exp: 0 };
-				applyShipping(0);
-				return;
-			}
-
-			fetch(getZipInfoUrl + '?zip=' + encodeURIComponent(code))
-				.then(r => {
-					if (!r.ok) throw new Error("HTTP " + r.status);
-					return r.json();
-				})
-				.then(data => {
-					// controller returns: { code, standard, express, desc }
-					currentRates = {
-						std: data.standard || 0,
-						exp: data.express  || 0
-					};
-
-					if (priceStdEl) priceStdEl.textContent = fmt(currentRates.std);
-					if (priceExpEl) priceExpEl.textContent = fmt(currentRates.exp);
-
-					recalcFromCurrentRates();
-				})
-				.catch(err => {
-					console.error("Pincode lookup failed:", err);
-					currentRates = { std: 0, exp: 0 };
-					applyShipping(0);
-				});
-		}
-
-		// ---------- event handlers ----------
-
-		function onAddressChange() {
-			const addr = getSelectedAddress();
-
-			// if using custom address, do NOT overwrite user input
-			if (!useCustom || !useCustom.checked) {
-				fillAddressForm(addr);
-			}
-
-			if (hiddenAddress && addressSelect) {
-				hiddenAddress.value = addressSelect.value || '';
-			}
-
-			if (addr && addr.pincode) {
-				loadRatesForPincode(addr.pincode);    // ⭐ THIS is the important part
-			} else {
-				currentRates = { std: 0, exp: 0 };
-				applyShipping(0);
-			}
-		}
-
-		function onDeliveryChange() {
-			recalcFromCurrentRates();
-		}
-
-		// ZIP blur (for custom address)
-		if (zipInput) {
-			zipInput.addEventListener('blur', () => {
-				loadRatesForPincode(zipInput.value);
-			});
-		}
-
-		if (addressSelect) {
-			addressSelect.addEventListener('change', onAddressChange);
-		}
-
-		if (useCustom) {
-			useCustom.addEventListener('change', () => {
-				if (useCustom.checked) {
-					// clear fields for custom
-					fillAddressForm(null);
-				} else {
-					// go back to dropdown address
-					onAddressChange();
-				}
-			});
-		}
-
-		deliveryRadios.forEach(r => r.addEventListener('change', onDeliveryChange));
-
-		// initial sync on page load
-		onAddressChange();
-	})();
-</script>
-
-<script>
-	// Sync hidden fields for SelectedAddressId & DeliveryOption on submit
-	(function () {
-		const form = document.querySelector('.proceed-section form');
-		if (!form) return;
-
-		const hiddenAddress  = form.querySelector('input[name="SelectedAddressId"]');
-		const hiddenDelivery = form.querySelector('input[name="DeliveryOption"]');
-
-		const addressSelect = document.getElementById('addressSelect');
-		if (addressSelect && hiddenAddress) {
-			hiddenAddress.value = addressSelect.value || '';
-			addressSelect.addEventListener('change', () => {
-				hiddenAddress.value = addressSelect.value || '';
-			});
-		}
-
-		// UPDATED: use DeliveryOption
-		const deliveryRadios = document.querySelectorAll('input[name="DeliveryOption"]');
-		function syncDelivery() {
-			const checked = Array.from(deliveryRadios).find(r => r.checked);
-			if (checked && hiddenDelivery) hiddenDelivery.value = checked.value;
-		}
-		if (deliveryRadios.length) {
-			syncDelivery();
-			deliveryRadios.forEach(r => r.addEventListener('change', syncDelivery));
-		}
-	})();
-</script>
-
-<script>
-	// quantity / cart scripts unchanged...
-	function formatMoney(n) {
-		return "₹" + Number(n || 0).toLocaleString(undefined, {
-			minimumFractionDigits: 2,
-			maximumFractionDigits: 2
-		});
-	}
-
-	function parseMoneyText(txt) {
-		return Number((txt || "").toString().replace(/[^\d.-]/g, "")) || 0;
-	}
-
-	function updateCartTotals() {
-		let subtotal = 0;
-
-		$(".summary-content[data-cartid]").each(function () {
-			const $row = $(this);
-			const $qtyInput = $row.find(".qty-val");
-			const $priceEl  = $row.find(".price");
-
-			if (!$qtyInput.length || !$priceEl.length) return;
-
-			const qty       = parseInt($qtyInput.val()) || 0;
-			const unitPrice = parseFloat($priceEl.data("unitprice")) || 0;
-
-			subtotal += qty * unitPrice;
-		});
-
-		const $subtotalEl = $("#subtotal");
-		if ($subtotalEl.length) {
-			$subtotalEl.text(formatMoney(subtotal));
-		}
-
-		const shipping = parseMoneyText($("#shipping").text());
-		const tax      = $("#tax").length ? parseMoneyText($("#tax").text()) : 0;
-		const discount = $("#discount").length ? parseMoneyText($("#discount").text()) : 0;
-
-		const total = subtotal + tax + shipping - discount;
-
-		const $totalEl = $("#total");
-		if ($totalEl.length) {
-			$totalEl.text(formatMoney(total));
-		}
-	}
-
-	function toggleLeftButton($row, qty) {
-		const $left = $row.find(".qty-btn").first();
-		if (qty > 1) {
-			$left.removeClass("delete").addClass("minus").text("−");
-		} else {
-			$left.removeClass("minus").addClass("delete").text("🗑");
-		}
-	}
-
-	// plus / minus / delete handlers
-	$(document)
-		.off("click.cart.qty.plus")
-		.on("click.cart.qty.plus", ".qty-btn.plus", function (e) {
-			e.preventDefault();
-			const $row = $(this).closest(".cart-content");
-			const $qty = $row.find(".qty-val");
-			const cartId = $(this).data("cartid");
-			if (!cartId) return;
-
-			const oldQty = parseInt($qty.val()) || 1;
-			const newQty = oldQty + 1;
-
-			$qty.val(newQty);
-			toggleLeftButton($row, newQty);
-			updateCartTotals();   // ✅ now updates immediately (no reload)
-
-			$.ajax({
-				type: "POST",
-				url: "/Home/ChangeQuantity",
-				data: { cartId: cartId, delta: 1 }
-			})
-			.done(function () {
-				if (typeof reloadCartPartialIntoModal === "function")
-					reloadCartPartialIntoModal();
-			})
-			.fail(function () {
-				$qty.val(oldQty);
-				toggleLeftButton($row, oldQty);
-				updateCartTotals();
-				alert("Failed to increase quantity.");
-			});
-		});
-
-	$(document)
-		.off("click.cart.qty.minus")
-		.on("click.cart.qty.minus", ".qty-btn.minus", function (e) {
-			e.preventDefault();
-			const $row = $(this).closest(".cart-content");
-			const $qty = $row.find(".qty-val");
-			const cartId = $(this).data("cartid");
-			if (!cartId) return;
-
-			const oldQty = parseInt($qty.val()) || 1;
-			if (oldQty <= 1) return;
-
-			const newQty = oldQty - 1;
-
-			$qty.val(newQty);
-			toggleLeftButton($row, newQty);
-			updateCartTotals();   // ✅ already here
-
-			$.ajax({
-				type: "POST",
-				url: "/Home/ChangeQuantity",
-				data: { cartId: cartId, delta: -1 }
-			})
-			.done(function () {
-				if (typeof reloadCartPartialIntoModal === "function")
-					reloadCartPartialIntoModal();
-			})
-			.fail(function () {
-				$qty.val(oldQty);
-				toggleLeftButton($row, oldQty);
-				updateCartTotals();
-				alert("Failed to decrease quantity.");
-			});
-		});
-
-	$(document)
-		.off("click.cart.qty.delete")
-		.on("click.cart.qty.delete", ".qty-btn.delete", function (e) {
-			e.preventDefault();
-			const $row = $(this).closest(".cart-content");
-			const cartId = $(this).data("cartid");
-			if (!cartId) return;
-
-			const ok = window.confirm("Are you sure you want to remove this item from your cart?");
-			if (!ok) return;
-
-			const backup = $row.clone(true, true);
-			$row.fadeOut(150, function () {
-				$(this).remove();
-				updateCartTotals();   // ✅ update totals right after remove
-			});
-
-			$.ajax({
-				type: "DELETE",
-				url: "/Home/DeleteCartItem",
-				data: { cartId: cartId }
-			})
-			.done(function () {
-				if (typeof reloadCartPartialIntoModal === "function")
-					reloadCartPartialIntoModal();
-					window.location.reload();
-
-			})
-			.fail(function () {
-				$(".cart-footer").before(backup);
-				alert("Failed to remove item.");
-				updateCartTotals();   // ✅ recalc after restoring
-			});
-		});
-</script>
-
-
-<script>
-	(function () {
-		const zipInput    = document.getElementById('zipCode');
-		const priceStdEl  = document.getElementById('priceStandard');
-		const priceExpEl  = document.getElementById('priceExpress');
-		const shippingEl  = document.getElementById('shipping');
-		const subtotalEl  = document.getElementById('subtotal');
-		const totalEl     = document.getElementById('total');
-		// UPDATED: use DeliveryOption
-		const deliveryRadios = document.querySelectorAll('input[name="DeliveryOption"]');
-
-		const fmt = n => "₹" + Number(n || 0).toLocaleString(undefined, {
-			minimumFractionDigits: 2,
-			maximumFractionDigits: 2
-		});
-
-		const parseMoney = s => Number((s || "").toString().replace(/[^\d.-]/g, "")) || 0;
-
-		function getMode() {
-			const r = Array.from(deliveryRadios).find(x => x.checked);
-			return r ? r.value : "standard";
-		}
-
-		function applyShipping(shipping) {
-			if (shippingEl) shippingEl.textContent = fmt(shipping);
-
-			const sub = parseMoney(subtotalEl?.textContent);
-			// if you have tax/discount later, include them here
-			const total = sub + shipping;
-
-			if (totalEl) totalEl.textContent = fmt(total);
-		}
-
-		function recalcFromLabels() {
-			const std = parseMoney(priceStdEl?.textContent);
-			const exp = parseMoney(priceExpEl?.textContent);
-			const mode = getMode();
-			const ship = (mode === "express") ? exp : std;
-			applyShipping(ship);
-		}
-
-		if (zipInput) {
-			zipInput.addEventListener('blur', function () {
-				const code = (zipInput.value || "").trim();
-				// same as API: 6 digits
-				if (!/^\d{6}$/.test(code)) {
-					console.log("Invalid pincode:", code);
-					return;
-				}
-
-				// call MVC action, which in turn calls your AdminAPI
-				const url = '@Url.Action("GetZipInfo", "Home")' + '?zip=' + encodeURIComponent(code);
-
-				fetch(url)
-					.then(r => {
-						if (!r.ok) throw new Error("HTTP " + r.status);
-						return r.json();
-					})
-					.then(data => {
-						// data.standard / data.express from controller
-						if (priceStdEl) priceStdEl.textContent = fmt(data.standard);
-						if (priceExpEl) priceExpEl.textContent = fmt(data.express);
-
-						const mode = getMode();
-						const shipping = (mode === "express") ? data.express : data.standard;
-						applyShipping(shipping);
-					})
-					.catch(err => {
-						console.error("Pincode lookup failed:", err);
-						// optional: reset shipping if failed
-						// applyShipping(0);
-					});
-			});
-		}
-
-		// when user changes Standard/Express radio
-		deliveryRadios.forEach(r => r.addEventListener('change', recalcFromLabels));
-	})();
-</script>
-<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-<script src="~/js/payment.js"></script>
-

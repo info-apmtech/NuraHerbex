@@ -921,15 +921,23 @@ namespace APIs.Controllers
             var orders = await _adminservice.GetAllOrdersAsync();
             return Ok(orders);
         }
+        //[AllowAnonymous]
+        //[HttpGet("orderdetails")]
+        //public async Task<IActionResult> GetOrderDetails([FromQuery] int orderId)
+        //{
+        //    var details = await _adminservice.GetOrderDetailsAsync(orderId);
+        //    if (details == null || !details.Any())
+        //        return NotFound();
+        //    return Ok(details);
+        //}
         [AllowAnonymous]
         [HttpGet("orderdetails")]
         public async Task<IActionResult> GetOrderDetails([FromQuery] int orderId)
         {
             var details = await _adminservice.GetOrderDetailsAsync(orderId);
-            if (details == null || !details.Any())
-                return NotFound();
-            return Ok(details);
+            return Ok(details ?? new List<OrderDetail>()); 
         }
+
         [AllowAnonymous]
         [HttpGet("user/orders/{userId}")]
         public async Task<IActionResult> GetOrdersByUserId(string userId)

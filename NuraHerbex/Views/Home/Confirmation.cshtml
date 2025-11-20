@@ -1,4 +1,180 @@
-﻿<style>
+﻿@using Domain.ViewModel
+@model OrderConfirmationViewModel
+
+<div class="confirmation-wrapper">
+
+    <div class="success-icon">
+        <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="16 8 11 13 8 10"></polyline>
+        </svg>
+    </div>
+
+    <h1 class="confirmation-title">Thank You!</h1>
+    <p class="confirmation-subtitle">Your Order Has Been Placed Successfully</p>
+
+    <div class="order-card">
+        <div class="order-grid">
+            <div>
+                <span>Order</span><br />
+                @Model.Order.Id
+            </div>
+            <div>
+                <span>Order Date</span><br />
+                @Model.Order.OrderDate.ToString("dd/MM/yyyy")
+            </div>
+            <div>
+                <span>Estimated Delivery</span><br />
+                <span class="delivery-date">
+                    @Model.Order.OrderDate.AddDays(7).ToString("dd/MM/yyyy")
+                </span>
+            </div>
+            <div>
+                <span>Payment Method</span><br />
+                UPI
+            </div>
+        </div>
+
+        <div class="order-items-label">Order Items</div>
+
+        @foreach (var item in Model.Details)
+        {
+            <div class="order-item-box">
+                <img src="/image/shop/Stamix1.png" alt="Product Image" />
+
+                <div>
+                    <p><strong>Quantity :</strong> @item.Quantity</p>
+                    <p><strong>@item.productName</strong></p>
+                    <p style="color:#ff4500;font-weight:700;">
+                        ₹ @item.UnitPrice
+                    </p>
+                </div>
+
+                <div>
+                    <div class="order-amount-label">Total Amount</div>
+                    <div class="order-amount-total">
+                        ₹ @(item.Quantity * item.UnitPrice)
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <div class="order-actions">
+        <a href="/Home/TrackOrder?orderId=@Model.Order.Id" class="order-btn track-btn">
+            Track Order
+        </a>
+        <a href="@Url.Action("Invoice", "Home", new { orderId = Model.Order.Id })"
+           class="order-btn invoice-btn">
+            Download Invoice
+        </a>
+
+        <button class="order-btn shopping-btn" onclick="window.location.href='/'">
+            Continue Shopping
+        </button>
+    </div>
+
+    <div class="email-box">
+        <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <rect x="3" y="5" width="18" height="14" rx="2"></rect>
+            <polyline points="3 7 12 13 21 7"></polyline>
+        </svg>
+
+        <div>
+            <p>Confirmation Email Sent</p>
+            <p>
+                We've sent a confirmation email to
+                <strong>@Model.Email</strong>
+                with your order details.
+            </p>
+        </div>
+    </div>
+
+</div>
+
+
+@* <div class="confirmation-wrapper">
+
+    <div class="success-icon">
+        <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="16 8 11 13 8 10"></polyline>
+        </svg>
+    </div>
+
+    <h1 class="confirmation-title">Thank You!</h1>
+    <p class="confirmation-subtitle">Your Order Has Been Placed Successfully</p>
+
+    <div class="order-card">
+
+        <div class="order-grid">
+            <div>
+                <span>Order</span>
+                <br />
+                ORD34YUON311
+            </div>
+
+            <div>
+                <span>Order Date</span>
+                <br />
+                09/10/2025
+            </div>
+
+            <div>
+                <span>Estimated Delivery</span>
+                <br />
+                <span class="delivery-date">16/10/2025</span>
+            </div>
+
+            <div>
+                <span>Payment Method</span>
+                <br />
+                UPI
+            </div>
+        </div>
+
+        <div class="order-items-label">Order Items</div>
+
+        <div class="order-item-box">
+            <img src="/image/shop/Stamix1.png" alt="Product Image" />
+            <div>
+                <p><strong>Quantity :</strong> 1</p>
+                <p><strong>Order Summary</strong></p>
+                <p style="color:#ff4500;font-weight:700;">$ 49</p>
+            </div>
+            <div>
+                <div class="order-amount-label">Total Amount</div>
+                <div class="order-amount-total">$ 54.00</div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="order-actions">
+        <button class="order-btn track-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h18"></path><path d="M12 3l9 9-9 9"></path></svg>
+            Track Order
+        </button>
+        <button class="order-btn invoice-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="#ff5722" stroke-width="2" width="18" height="18" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            Download Invoice
+        </button>
+        <button class="order-btn shopping-btn" onclick="window.location.href='/'">Continue Shopping</button>
+    </div>
+
+    <div class="email-box">
+        <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <rect x="3" y="5" width="18" height="14" rx="2"></rect>
+            <polyline points="3 7 12 13 21 7"></polyline>
+        </svg>
+        <div>
+            <p>Confirmation Email Sent</p>
+            <p>We've sent a confirmation email to <strong>merin@123456</strong> with your order details and tracking information.</p>
+        </div>
+    </div>
+
+</div>
+ *@<style>
     .confirmation-wrapper {
         max-width: 900px;
         margin: 40px auto;
@@ -166,85 +342,3 @@
         }
 
 </style>
-
-<div class="confirmation-wrapper">
-
-    <div class="success-icon">
-        <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-            <circle cx="12" cy="12" r="10"></circle>
-            <polyline points="16 8 11 13 8 10"></polyline>
-        </svg>
-    </div>
-
-    <h1 class="confirmation-title">Thank You!</h1>
-    <p class="confirmation-subtitle">Your Order Has Been Placed Successfully</p>
-
-    <div class="order-card">
-
-        <div class="order-grid">
-            <div>
-                <span>Order</span>
-                <br />
-                ORD34YUON311
-            </div>
-
-            <div>
-                <span>Order Date</span>
-                <br />
-                09/10/2025
-            </div>
-
-            <div>
-                <span>Estimated Delivery</span>
-                <br />
-                <span class="delivery-date">16/10/2025</span>
-            </div>
-
-            <div>
-                <span>Payment Method</span>
-                <br />
-                UPI
-            </div>
-        </div>
-
-        <div class="order-items-label">Order Items</div>
-
-        <div class="order-item-box">
-            <img src="/image/shop/Stamix1.png" alt="Product Image" />
-            <div>
-                <p><strong>Quantity :</strong> 1</p>
-                <p><strong>Order Summary</strong></p>
-                <p style="color:#ff4500;font-weight:700;">$ 49</p>
-            </div>
-            <div>
-                <div class="order-amount-label">Total Amount</div>
-                <div class="order-amount-total">$ 54.00</div>
-            </div>
-        </div>
-
-    </div>
-
-    <div class="order-actions">
-        <button class="order-btn track-btn">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h18"></path><path d="M12 3l9 9-9 9"></path></svg>
-            Track Order
-        </button>
-        <button class="order-btn invoice-btn">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="#ff5722" stroke-width="2" width="18" height="18" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-            Download Invoice
-        </button>
-        <button class="order-btn shopping-btn" onclick="window.location.href='/'">Continue Shopping</button>
-    </div>
-
-    <div class="email-box">
-        <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-            <rect x="3" y="5" width="18" height="14" rx="2"></rect>
-            <polyline points="3 7 12 13 21 7"></polyline>
-        </svg>
-        <div>
-            <p>Confirmation Email Sent</p>
-            <p>We've sent a confirmation email to <strong>merin@123456</strong> with your order details and tracking information.</p>
-        </div>
-    </div>
-
-</div>
