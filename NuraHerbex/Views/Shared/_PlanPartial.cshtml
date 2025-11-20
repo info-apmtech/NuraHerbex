@@ -48,10 +48,11 @@
                         }
                     </ul>
 
-                    <button class="plan-subscribe-btn"
-                            onclick="window.location.href='@Url.Action("Plan", "Home")'">
-                        Subscribe Now
-                    </button>
+                    
+                    <form method="post" action="@Url.Action("PlanSubscribe", "Home")">
+                        <input type="hidden" name="planId" value="@plan.Id" />
+                        <button type="submit" class="plan-subscribe-btn">Subscribe Now</button>
+                    </form>
 
                 </div>
             }

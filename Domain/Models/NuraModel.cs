@@ -167,6 +167,14 @@ namespace Domain.Models
         public DateTime UpdatedAt { get; set; }
 
     }
+    public class Subscription
+    {
+        public int Id { get; set; }
+        public string UserId { get; set; }
+        public int PlanId { get; set; }        
+        public DateTime UpdatedAt { get; set; }
+
+    }
     public class CartItem
     {
         public int Id { get; set; }
@@ -409,4 +417,5 @@ namespace Domain.Models
         public string OptionText { get; set; }
         public int Points { get; set; }
     }
+
 }

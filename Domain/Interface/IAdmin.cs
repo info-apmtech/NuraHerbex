@@ -76,7 +76,8 @@ namespace Domain.Interface
         Task<PricingPlan> GetPricingPlanByIdAsync(int id);
         Task<IdentityResult> AddOrUpdatePricingPlanAsync(PricingPlan plan);
         Task<IdentityResult> DeletePricingPlanAsync(int id);
-      
+        Task<IdentityResult> AddSubscriptionAsync(Subscription sub);
+
         //Wishlist
         Task<List<WishlistItem>> GetWishlistByUserAsync(string userId);
         Task<IdentityResult> AddOrUpdateWishlistAsync(WishlistItem item);

@@ -310,6 +310,33 @@ namespace NuraHerbex.Controllers
             return plans;
         }
 
+        [HttpPost]
+        public async Task<IActionResult> PlanSubscribe(int planId)
+        {
+            var userId = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            var subscription = new Subscription
+            {
+                UserId = userId,
+                PlanId = planId,
+                UpdatedAt = DateTime.UtcNow
+            };
+
+            var response = await AuthorizedClient.PostAsJsonAsync("AdminAPI/subscription", subscription);
+
+            if (response.IsSuccessStatusCode)
+            {
+                TempData["Success"] = "Subscription successful!";
+                return RedirectToAction("Plan");
+            }
+
+            TempData["Error"] = "Unable to subscribe. Try again.";
+            return RedirectToAction("Plan");
+        }
+
+       
 
         public async Task<IActionResult> Shop(int id = 0)
 		{

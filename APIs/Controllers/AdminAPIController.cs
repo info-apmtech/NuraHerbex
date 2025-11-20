@@ -453,6 +453,22 @@ namespace APIs.Controllers
 
             return BadRequest(result.Errors);
         }
+
+        //Subscription
+        [AllowAnonymous]
+        [HttpPost("subscription")]
+        public async Task<IActionResult> AddSubscription([FromBody] Subscription sub)
+        {
+            if (sub == null)
+                return BadRequest("Subscription data missing");
+
+            var result = await _adminservice.AddSubscriptionAsync(sub);
+            if (result.Succeeded)
+                return Ok(new { success = true });
+
+            return BadRequest(result.Errors);
+        }
+
         //Address
         [AllowAnonymous]
         [HttpGet("addresses/{userId}")]

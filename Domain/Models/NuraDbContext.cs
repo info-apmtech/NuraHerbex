@@ -36,5 +36,6 @@ namespace Domain.Models
         public DbSet<QuizCategory> QuizCategories { get; set; }
         public DbSet<QuizQuestion> QuizQuestions { get; set; }
         public DbSet<QuizOption> QuizOptions { get; set; }
+        public DbSet<Subscription> Subscriptions { get; set; }
     }
 }

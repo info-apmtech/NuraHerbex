@@ -671,9 +671,30 @@ namespace Domain.Implementation
 			return IdentityResult.Success;
 		}
 
+		//Subscription
+        public async Task<IdentityResult> AddSubscriptionAsync(Subscription sub)
+        {
+            if (sub == null)
+                return IdentityResult.Failed(new IdentityError { Description = "Subscription cannot be null" });
 
-		// DELETE
-		public async Task<IdentityResult> DeleteProductAsync(int id)
+            // Check before inserting
+            var exists = await _db.Subscriptions
+                .AnyAsync(s => s.UserId == sub.UserId && s.PlanId == sub.PlanId);
+
+            if (exists)
+                return IdentityResult.Failed(new IdentityError { Description = "Subscription already exists" });
+
+            sub.UpdatedAt = DateTime.UtcNow;
+            await _db.Subscriptions.AddAsync(sub);
+            await _db.SaveChangesAsync();
+
+            return IdentityResult.Success;
+        }
+
+
+
+        // DELETE
+        public async Task<IdentityResult> DeleteProductAsync(int id)
 		{
 			var existing = await _db.ProductDetails.FindAsync(id);
 			if (existing == null)
