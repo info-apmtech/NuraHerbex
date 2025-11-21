@@ -1,4 +1,5 @@
-﻿using Domain.Extensions;
+﻿using AspNetCoreHero.ToastNotification.Abstractions;
+using Domain.Extensions;
 using Domain.Implementation;
 using Domain.Models;
 using Domain.ViewModel;
@@ -36,17 +37,18 @@ namespace NuraHerbex.Controllers
 		private readonly ILogger<HomeController> _logger;
 		private readonly EmailSettings _emailSettings;
 		private readonly IHttpContextAccessor _httpContextAccessor;
-
-		private readonly HttpClient _httpClient;
+        private readonly INotyfService _notyf;
+        private readonly HttpClient _httpClient;
         private JsonSerializerOptions? _jsonOptions;
 
-        public HomeController(ILogger<HomeController> logger, IHttpClientFactory httpClientFactory, IOptions<EmailSettings> emailSettings, IHttpContextAccessor httpContextAccessor)
+        public HomeController(ILogger<HomeController> logger, IHttpClientFactory httpClientFactory, IOptions<EmailSettings> emailSettings, IHttpContextAccessor httpContextAccessor, INotyfService notyf)
 		{
 			_logger = logger;
 			_emailSettings = emailSettings.Value;
 			_httpClientFactory = httpClientFactory;
 			_httpContextAccessor = httpContextAccessor;
-			_httpClient = httpClientFactory.CreateClient("NuraHerbexApi");
+            _notyf = notyf;
+            _httpClient = httpClientFactory.CreateClient("NuraHerbexApi");
 
 		}
 		private System.Net.Http.HttpClient AuthorizedClient => _httpClientFactory.CreateAuthorizedClient(_httpContextAccessor);
@@ -430,35 +432,9 @@ namespace NuraHerbex.Controllers
                 Email = email
             };
 
-            return View(vm); // Views/Home/SubscriptionConfirmation.cshtml
+            return View(vm); 
         }
 
-
-        //[HttpPost]
-        //public async Task<IActionResult> PlanSubscribe(int planId)
-        //{
-        //    var userId = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        //    if (string.IsNullOrEmpty(userId))
-        //        return Unauthorized();
-
-        //    var subscription = new Subscription
-        //    {
-        //        UserId = userId,
-        //        PlanId = planId,
-        //        UpdatedAt = DateTime.UtcNow
-        //    };
-
-        //    var response = await AuthorizedClient.PostAsJsonAsync("AdminAPI/subscription", subscription);
-
-        //    if (response.IsSuccessStatusCode)
-        //    {
-        //        TempData["Success"] = "Subscription successful!";
-        //        return RedirectToAction("Plan");
-        //    }
-
-        //    TempData["Error"] = "Unable to subscribe. Try again.";
-        //    return RedirectToAction("Plan");
-        //}
 
 
 
@@ -822,11 +798,6 @@ namespace NuraHerbex.Controllers
             return View(vm);
         }
 
-
-        //public IActionResult Confirmation()
-        //{
-        //    return View();
-        //}
         public IActionResult Privacy()
 		{
 			return View();
@@ -835,7 +806,7 @@ namespace NuraHerbex.Controllers
         {
             if (!orderId.HasValue)
             {
-                TempData["ErrorMessage"] = "Please select an order to track.";
+                _notyf.Error("Please select an order to track.", 5);
                 return RedirectToAction("MyOrders");
             }
 
@@ -850,14 +821,14 @@ namespace NuraHerbex.Controllers
             var orderResponse = await client.GetAsync($"AdminAPI/orders/full/{orderId.Value}");
             if (!orderResponse.IsSuccessStatusCode)
             {
-                TempData["ErrorMessage"] = "Order not found.";
+                _notyf.Error("Order not found.", 5);
                 return RedirectToAction("MyOrders");
             }
 
             var orderSummary = await orderResponse.Content.ReadFromJsonAsync<OrderSummaryViewModel>(jsonOptions);
             if (orderSummary == null || orderSummary.Order == null)
             {
-                TempData["ErrorMessage"] = "Order not found.";
+                _notyf.Error("Order not found.", 5);
                 return RedirectToAction("MyOrders");
             }
 
@@ -892,75 +863,13 @@ namespace NuraHerbex.Controllers
 
             return View(model);
         }
-        //public async Task<IActionResult> TrackOrder(int? orderId)
-        //{
-        //    if (!orderId.HasValue)
-        //    {
-        //        TempData["ErrorMessage"] = "Please select an order to track.";
-        //        return RedirectToAction("MyOrders");
-        //    }
-
-        //    var client = _httpClient;
-        //    var jsonOptions = new JsonSerializerOptions
-        //    {
-        //        PropertyNameCaseInsensitive = true,
-        //        Converters = { new JsonStringEnumConverter() }
-        //    };
-
-        //    // Fetch the order
-        //    var orderResponse = await client.GetAsync($"AdminAPI/orders/{orderId.Value}");
-        //    if (!orderResponse.IsSuccessStatusCode)
-        //    {
-        //        TempData["ErrorMessage"] = "Order not found.";
-        //        return RedirectToAction("MyOrders");
-        //    }
-
-        //    var order = await orderResponse.Content.ReadFromJsonAsync<Order>(jsonOptions);
-
-        //    if (order == null)
-        //    {
-        //        TempData["ErrorMessage"] = "Order not found.";
-        //        return RedirectToAction("MyOrders");
-        //    }
-
-        //    // Fetch order details
-        //    var detailsResponse = await client.GetAsync($"AdminAPI/orderdetails?orderId={order.Id}");
-        //    var orderDetails = detailsResponse.IsSuccessStatusCode
-        //        ? await detailsResponse.Content.ReadFromJsonAsync<List<OrderDetail>>(jsonOptions) ?? new List<OrderDetail>()
-        //        : new List<OrderDetail>();
-
-        //    // Fetch product info
-        //    var products = new List<Product>();
-        //    foreach (var detail in orderDetails)
-        //    {
-        //        if (detail.ProductId.HasValue)
-        //        {
-        //            var prodResponse = await client.GetAsync($"AdminAPI/product/{detail.ProductId.Value}");
-        //            if (prodResponse.IsSuccessStatusCode)
-        //            {
-        //                var product = await prodResponse.Content.ReadFromJsonAsync<Product>(jsonOptions);
-        //                if (product != null)
-        //                    products.Add(product);
-        //            }
-        //        }
-        //    }
-
-        //    var model = new TrackOrderViewModel
-        //    {
-        //        Order = order,
-        //        UserRole = User.FindFirstValue(ClaimTypes.Role) ?? "User",
-        //        OrderDetails = orderDetails,
-        //        Products = products
-        //    };
-
-        //    return View(model);
-        //}
+       
         public async Task<IActionResult> MyOrders()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId))
             {
-                TempData["OrderMessage"] = "Please login to view your orders.";
+                _notyf.Warning("Please login to view your orders.", 5);
                 return RedirectToAction("Index");
             }
 
@@ -1048,8 +957,9 @@ namespace NuraHerbex.Controllers
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userId))
-            {
-                TempData["OrderError"] = "Please login to cancel orders.";
+			{
+                _notyf.Error("Please login to cancel orders.", 5);
+
                 return RedirectToAction("Index");
             }
 
@@ -1068,12 +978,14 @@ namespace NuraHerbex.Controllers
             var res = await _httpClient.PostAsJsonAsync("AdminAPI/updateStatus", payload);
             if (res.IsSuccessStatusCode)
             {
-                TempData["OrderMessage"] = "Order cancelled successfully.";
+                _notyf.Success("Order cancelled successfully.", 5);
             }
             else
             {
                 var errMsg = await res.Content.ReadAsStringAsync();
-                TempData["OrderError"] = "Failed to cancel order: " + errMsg;
+                _notyf.Error($"Failed to cancel order: {errMsg}", 5);
+
+
             }
 
             return RedirectToAction("MyOrders");
@@ -1091,7 +1003,6 @@ namespace NuraHerbex.Controllers
 				return RedirectToAction("SignIn", "Authentication");
 			}
 
-			// 🔥 FIX: enable enum string conversion ONLY here
 			var options = new JsonSerializerOptions
 			{
 				PropertyNameCaseInsensitive = true
@@ -1100,7 +1011,6 @@ namespace NuraHerbex.Controllers
 
 			var url = $"AdminAPI/ReturnRequest/my?userId={Uri.EscapeDataString(userId)}";
 
-			// 🔥 FIX APPLIED ONLY TO THIS CALL
 			var list = await AuthorizedClient
 				.GetFromJsonAsync<List<ReturnRequestViewDto>>(url, options)
 				?? new List<ReturnRequestViewDto>();
@@ -1115,8 +1025,8 @@ namespace NuraHerbex.Controllers
 
 			if (string.IsNullOrEmpty(userId))
 			{
-				TempData["WishlistMessage"] = "Please login to modify wishlist.";
-				return RedirectToAction("Index");
+                _notyf.Warning("Please login to modify wishlist.", 5);
+                return RedirectToAction("Index");
 			}
 
 			try
@@ -1135,9 +1045,9 @@ namespace NuraHerbex.Controllers
 					// ? Remove from wishlist
 					var deleteResponse = await _httpClient.DeleteAsync($"AdminAPI/wishlist/{existingItem.Id}");
 					if (deleteResponse.IsSuccessStatusCode)
-						TempData["WishlistMessage"] = "Product removed from wishlist.";
+						_notyf.Success("Product removed from wishlist.", 5);
 					else
-						TempData["WishlistMessage"] = "Failed to remove product from wishlist.";
+						_notyf.Error("Failed to remove product from wishlist.", 5);
 				}
 				else
 				{
@@ -1145,17 +1055,17 @@ namespace NuraHerbex.Controllers
 					var postData = new { UserId = userId, ProductId = productId };
 					var postResponse = await _httpClient.PostAsJsonAsync("AdminAPI/wishlist", postData);
 					if (postResponse.IsSuccessStatusCode)
-						TempData["WishlistMessage"] = "Product added to wishlist.";
+						_notyf.Success("Product added to wishlist.", 5);
 					else
-						TempData["WishlistMessage"] = "Failed to add product to wishlist.";
+						_notyf.Error("Failed to add product to wishlist.", 5);
 				}
 			}
 			catch (Exception ex)
 			{
-				TempData["WishlistMessage"] = $"Unexpected error: {ex.Message}";
-			}
+                _notyf.Error($"Unexpected error: {ex.Message}", 5);
+            }
 
-			return RedirectToAction("Index");
+            return RedirectToAction("Index");
 		}
 
 
@@ -1356,8 +1266,8 @@ namespace NuraHerbex.Controllers
 
 			if (string.IsNullOrEmpty(userId))
 			{
-				TempData["ConsultationMessage"] = "Please login to view consultations.";
-				return RedirectToAction("Index");
+                _notyf.Warning("Please login to view consultations.", 5);
+                return RedirectToAction("Index");
 			}
 
 			var jsonOptions = new JsonSerializerOptions
@@ -1530,8 +1440,8 @@ namespace NuraHerbex.Controllers
 			var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 			if (string.IsNullOrEmpty(userId))
 			{
-				TempData["ConsultationMessage"] = "Please login to book a consultation.";
-				return RedirectToAction("Index");
+                _notyf.Warning("Please login to book a consultation.", 5);
+                return RedirectToAction("Index");
 			}
 
 			var bookingEntity = new ConsultationBooking
@@ -1554,14 +1464,14 @@ namespace NuraHerbex.Controllers
 
 			if (response.IsSuccessStatusCode)
 			{
-				TempData["ConsultationMessage"] = "Consultation booked successfully.";
-				return RedirectToAction("MyConsultation");
+                _notyf.Success("Consultation booked successfully.", 5);
+                return RedirectToAction("MyConsultation");
 			}
 
 			var errorMsg = await response.Content.ReadAsStringAsync();
-			ModelState.AddModelError(string.Empty, "Failed to book consultation: " + errorMsg);
+            _notyf.Error($"Failed to book consultation: {errorMsg}", 5);
 
-			return View(model);
+            return View(model);
 		}
 
 		[HttpGet]
@@ -1612,24 +1522,14 @@ namespace NuraHerbex.Controllers
 		}
 
 
-		//        [HttpPost]
-		//        [ValidateAntiForgeryToken]
-		//        public async Task<IActionResult> Subscribe(string email)
-		//        {
-		//            var fromAddress = _emailSettings.FromAddress;
-		//            var fromPassword = _emailSettings.Password;
-		//            var smtpHost = _emailSettings.Host;
-		//            var smtpPort = _emailSettings.Port;
-		//            var useSsl = _emailSettings.UseSSL;
-
 		[HttpPost]
 		[ValidateAntiForgeryToken]
 		public async Task<IActionResult> Subscribe([FromForm] string email)
 		{
 			if (string.IsNullOrWhiteSpace(email) || !MailboxAddress.TryParse(email, out var parsed))
 			{
-				TempData["Message"] = "Invalid email address.";
-				return RedirectToAction("Index");
+                _notyf.Error("Invalid email address.", 5);
+                return RedirectToAction("Index");
 			}
 
 			var payload = new { Email = parsed.Address.Trim().ToLowerInvariant() };
@@ -1638,14 +1538,14 @@ namespace NuraHerbex.Controllers
 			if (!apiResponse.IsSuccessStatusCode)
 			{
 				var err = await apiResponse.Content.ReadAsStringAsync();
-				TempData["Message"] = $"Subscription failed: {err}";
-				return RedirectToAction("Index");
+                _notyf.Error($"Subscription failed: {err}", 5);
+                return RedirectToAction("Index");
 			}
 
 			var dto = await apiResponse.Content.ReadFromJsonAsync<NewsletterSubscriptionResult>();
 			if (dto is null || !dto.Succeeded)
 			{
-				TempData["Message"] = "Subscription failed: unexpected response.";
+				_notyf.Error("Subscription failed: unexpected response.", 5);
 				return RedirectToAction("Index");
 			}
 
@@ -1693,24 +1593,23 @@ namespace NuraHerbex.Controllers
 				await smtp.SendAsync(adminMsg);
 				await smtp.DisconnectAsync(true);
 
-				TempData["Message"] = "Thank you for subscribing! Please check your inbox.";
+				_notyf.Success("Thank you for subscribing! Please check your inbox.", 5);
 			}
 			catch (SmtpCommandException ex)
 			{
-				TempData["Message"] = $"Email send failed ({ex.StatusCode}): {ex.Message}";
+				_notyf.Error($"Email send failed ({ex.StatusCode}): {ex.Message}", 5);
 			}
 			catch (SmtpProtocolException ex)
 			{
-				TempData["Message"] = $"Email send failed (protocol): {ex.Message}";
+				_notyf.Error($"Email send failed (protocol): {ex.Message}", 5);
 			}
 			catch (SslHandshakeException ex)
 			{
-				TempData["Message"] =
-					$"TLS handshake failed: {ex.Message}. Make sure the SMTP certificate includes '{_emailSettings.Host}'.";
-			}
-			catch (Exception ex)
+                _notyf.Error($"TLS handshake failed: {ex.Message}. Make sure the SMTP certificate includes '{_emailSettings.Host}'.", 5);
+            }
+            catch (Exception ex)
 			{
-				TempData["Message"] = $"Saved successfully, but sending email failed: {ex.Message}";
+				_notyf.Warning($"Saved successfully, but sending email failed: {ex.Message}", 5);
 			}
 
 			return RedirectToAction("Index");
@@ -1822,13 +1721,12 @@ namespace NuraHerbex.Controllers
 			var postResponse = await _httpClient.PostAsJsonAsync("AdminAPI/address", model.AddressDetail);
 			if (postResponse.IsSuccessStatusCode)
 			{
-				TempData["Success"] = model.AddressDetail.Id > 0 ? "Address updated successfully" : "Address added successfully";
+				_notyf.Success(model.AddressDetail.Id > 0 ? "Address updated successfully" : "Address added successfully", 5);
 				return RedirectToAction(nameof(MyProfile));
 			}
 
-			TempData["Error"] = "Failed to save address";
-			// reload dropdown data after failure
-			return await MyProfile(model.AddressDetail.Id);
+            _notyf.Error("Failed to save address", 5);
+            return await MyProfile(model.AddressDetail.Id);
 		}
 
 		[HttpPost]
@@ -1852,15 +1750,15 @@ namespace NuraHerbex.Controllers
 
 			if (response.IsSuccessStatusCode)
 			{
-				TempData["Success"] = "Profile updated successfully";
+				_notyf.Success("Profile updated successfully", 5);
 				return RedirectToAction(nameof(MyProfile));
 			}
 
 			var errorBody = await response.Content.ReadAsStringAsync();
-			ModelState.AddModelError(string.Empty, errorBody);
+            _notyf.Error(errorBody, 5);
 
-			// re-load addresses / dropdown data (same as GET MyProfile)
-			var addressesResponse = await _httpClient.GetAsync($"AdminAPI/addresses/{userId}");
+            // re-load addresses / dropdown data (same as GET MyProfile)
+            var addressesResponse = await _httpClient.GetAsync($"AdminAPI/addresses/{userId}");
 			model.Addresses = addressesResponse.IsSuccessStatusCode
 				? await addressesResponse.Content.ReadFromJsonAsync<List<AddressDetail>>()
 				: new List<AddressDetail>();
@@ -1886,9 +1784,9 @@ namespace NuraHerbex.Controllers
 		{
 			var response = await _httpClient.DeleteAsync($"AdminAPI/address/{id}");
 			if (response.IsSuccessStatusCode)
-				TempData["Success"] = "Address deleted successfully";
+				_notyf.Success("Address deleted successfully", 5);
 			else
-				TempData["Error"] = "Failed to delete address";
+				_notyf.Error("Failed to delete address", 5);
 
 			return RedirectToAction(nameof(MyProfile));
 		}
@@ -1919,31 +1817,6 @@ namespace NuraHerbex.Controllers
 			}
 		}
 
-
-		//public async Task<IActionResult> Cart()
-		//{
-		//	var userId = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-		//	if (string.IsNullOrEmpty(userId))
-		//		return RedirectToAction("SignIn", "Authentication");
-
-		//	var client = AuthorizedClient;
-
-		//	var cartResponse = await client.GetAsync($"AdminAPI/Cart/{userId}");
-		//	var cartItems = cartResponse.IsSuccessStatusCode
-		//		? await cartResponse.Content.ReadFromJsonAsync<List<CartItem>>()
-		//		: new List<CartItem>();
-
-		//	var productsResponse = await client.GetAsync("AdminAPI/products");
-		//	var products = productsResponse.IsSuccessStatusCode
-		//		? await productsResponse.Content.ReadFromJsonAsync<List<Product>>()
-		//		: new List<Product>();
-
-		//	var cartProducts = from wish in cartItems
-		//						   join prod in products on wish.ProductId equals prod.Id
-		//						   select prod;
-
-		//	return View(cartProducts.ToList());
-		//}
 		[HttpPost]
 		[IgnoreAntiforgeryToken]
 		public async Task<IActionResult> ChangeQuantity(int cartId, int delta)
@@ -2029,7 +1902,7 @@ namespace NuraHerbex.Controllers
        string.IsNullOrWhiteSpace(input.ZipCode) ||
        string.IsNullOrWhiteSpace(input.Phone))
                 {
-                    ModelState.AddModelError("", "Please fill all required address fields for custom address.");
+                    _notyf.Error("Please fill all required address fields for custom address.", 5);
                     return await OrderSummary(input.SelectedAddressId);
                 }
                 //  Keep your original mapping so address API keeps working
@@ -2052,8 +1925,8 @@ namespace NuraHerbex.Controllers
 				if (!createAddr.IsSuccessStatusCode)
 				{
 					var body = await createAddr.Content.ReadAsStringAsync();
-					ModelState.AddModelError("", $"Failed to save custom address: {body}");
-					return await OrderSummary(null);
+                    _notyf.Error($"Failed to save custom address: {body}", 5);
+                    return await OrderSummary(null);
 				}
 
 				// 🔹 Now re-load addresses for this user
@@ -2066,7 +1939,7 @@ namespace NuraHerbex.Controllers
 				address = addrList.OrderByDescending(a => a.Id).FirstOrDefault();
 				if (address == null)
 				{
-					ModelState.AddModelError("", "Failed to load saved address.");
+					_notyf.Error("Failed to load saved address.", 5);
 					return await OrderSummary(null);
 				}
 				input.SelectedAddressId = address.Id;
@@ -2158,7 +2031,7 @@ namespace NuraHerbex.Controllers
 			if (!response.IsSuccessStatusCode)
 			{
 				var body = await response.Content.ReadAsStringAsync();
-				ModelState.AddModelError("", $"Order creation failed: {body}");
+				_notyf.Error($"Order creation failed: {body}", 5);
 				// Better to re-show summary instead of redirect blindly:
 				return await OrderSummary(input.SelectedAddressId);
 			}
@@ -2253,15 +2126,15 @@ namespace NuraHerbex.Controllers
 
 			if (response.IsSuccessStatusCode)
 			{
-				TempData["ReturnSuccess"] = "Return request submitted.";
-			}
-			else
+                _notyf.Success("Return request submitted.", 5);
+            }
+            else
 			{
 				var content = await response.Content.ReadAsStringAsync();
-				TempData["ReturnError"] = $"Failed to submit return: {content}";
-			}
+                _notyf.Error($"Failed to submit return: {content}", 5);
+            }
 
-			return RedirectToAction("MyOrders", "Home");
+            return RedirectToAction("MyOrders", "Home");
 		}
 
 		[HttpPost]
@@ -2273,11 +2146,11 @@ namespace NuraHerbex.Controllers
 
 			if (response.IsSuccessStatusCode)
 			{
-				TempData["Success"] = "Return request cancelled.";
+				_notyf.Success("Return request cancelled.", 5);
 			}
 			else
 			{
-				TempData["Error"] = "Unable to cancel return request.";
+				_notyf.Error("Unable to cancel return request.", 5);
 			}
 
 			// Redirect back to whatever page shows returns
