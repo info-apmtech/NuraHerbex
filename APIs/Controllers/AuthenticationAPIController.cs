@@ -55,7 +55,7 @@ namespace APIs.Controllers
 				Email = "admin@NuraHerbex.com",
 				FirstName = "Nura Herbex",
 				Role = UserRole.Admin,
-				CreatedAt = DateTime.UtcNow,
+				CreatedAt = DateTime.Now,
 				CreatedBy = "Admin",
 				Password = "Admin@123",
 				EmailConfirmed = true,

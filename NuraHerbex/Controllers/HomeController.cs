@@ -387,7 +387,7 @@ namespace NuraHerbex.Controllers
             {
                 UserId = userId,
                 PlanId = model.PlanId,
-                UpdatedAt = DateTime.UtcNow
+                UpdatedAt = DateTime.Now
             };
 
             var subscriptionResponse = await AuthorizedClient.PostAsJsonAsync("AdminAPI/subscription", subscription);

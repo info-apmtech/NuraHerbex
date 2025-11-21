@@ -41,6 +41,24 @@
             height: 32px;
             display: inline-block;
         }
+    /*Shop cart button*/
+    .btn-add-cart {
+        padding: 0.83rem 1.5rem;
+        font-size: 1rem;
+        font-weight: 700;
+        background: #ff8800;
+        color: #fff;
+        border: none;
+        border-radius: 7px;
+        cursor: pointer;
+        margin: 0;
+        transition: background 0.2s;
+        white-space: nowrap;
+    }
+
+        .btn-add-cart:hover {
+            background: #ed7300;
+        }
 
 </style>
 
@@ -161,6 +179,7 @@
                                         Buy Now
                                     </button>
                                     <button onclick="location.href='@Url.Action("Quiz", "Home")'" class="shop-quiz-btn">Take Quiz</button>
+                                    <button type="button" class="btn-add-cart" data-product-id="@product.Id">Add to Cart</button>
                                 </div>
                                 <span class="shop-choose-help">Confused to Choose Your Level?</span>
                             </div>

@@ -653,7 +653,7 @@ namespace NuraHerbex.Controllers
                 _notyf.Success("User Registered Successfully!", 5);
 				if (User.Identity.IsAuthenticated) 
 					//return RedirectToAction("UserCreation", new { role = model.RegisteredUser.Role });
-				return RedirectToAction(nameof(UserCreation));
+				return RedirectToAction(nameof(UserCreation), new { id = (string)null });
 				else
 					return RedirectToAction("SignIn", "Authentication");
 			}
@@ -1153,7 +1153,7 @@ namespace NuraHerbex.Controllers
             // DEFAULT: last 7 days excluding Delivered and Cancelled
             if (!filtersApplied)
             {
-                DateTime lastWeek = DateTime.UtcNow.AddDays(-7);
+                DateTime lastWeek = DateTime.Now.AddDays(-7);
                 ordersWithUserName = ordersWithUserName.Where(x => x.Order.OrderDate >= lastWeek && x.Order.Status != OrderStatus.Delivered &&x.Order.Status != OrderStatus.Cancelled) .OrderByDescending(x => x.Order.OrderDate).ToList();
             }
             else
