@@ -245,6 +245,22 @@ namespace Domain.ViewModel
         public string timestamp { get; set; }
         public List<SmsDataSet> dataSet { get; set; }
     }
+    public class AdminProfileViewModel
+    {
+        public string Id { get; set; }
+
+        [Required]
+        public string FirstName { get; set; }
+
+        public string? LastName { get; set; }
+
+        [Required]
+        [EmailAddress]
+        public string Email { get; set; }
+
+        [Phone]
+        public string? PhoneNumber { get; set; }
+    }
 
     public class UserProfileViewModel
     {
