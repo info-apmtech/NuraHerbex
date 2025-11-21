@@ -675,33 +675,6 @@ namespace NuraHerbex.Controllers
 			return RedirectToAction(nameof(UserCreation));
         }
 
-        //public async Task<IActionResult> Product(int id = 0)
-        //{
-        //    // Get all products
-        //    var response = await AuthorizedClient.GetAsync("AdminAPI/products");
-        //    var products = response.IsSuccessStatusCode
-        //        ? JsonConvert.DeserializeObject<List<Product>>(await response.Content.ReadAsStringAsync())
-        //        : new List<Product>();
-
-        //    var vm = new ProductViewModel
-        //    {
-        //        ProductList = products,
-        //        NewProduct = new Product()
-        //    };
-        //    if (id > 0)
-        //    {
-        //        var prodResponse = await AuthorizedClient.GetAsync($"AdminAPI/product/{id}");
-        //        if (prodResponse.IsSuccessStatusCode)
-        //        {
-        //            var product = JsonConvert.DeserializeObject<Product>(await prodResponse.Content.ReadAsStringAsync());
-        //            if (product != null)
-        //                vm.NewProduct = product;
-        //        }
-        //    }
-
-        //    return View(vm);
-
-        //}
         public async Task<IActionResult> Product(int id = 0)
         {
             var vm = new ProductViewModel();

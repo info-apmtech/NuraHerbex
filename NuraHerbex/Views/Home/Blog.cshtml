@@ -143,38 +143,81 @@
                 </div>
 
                 <!-- Newsletter -->
-                <div class="sidebar-widget newsletter-widget">
+               @*  <div class="sidebar-widget newsletter-widget">
                     <h3 class="widget-title">Stay Informed</h3>
                     <p class="newsletter-text">Get Wellness Insights Delivered to your inbox</p>
                     <input type="email" placeholder="Your Email Address" class="newsletter-input" />
                     <button class="newsletter-btn">Subscribe</button>
+                </div> *@
+                <div class="sidebar-widget newsletter-widget">
+                    <form id="sidebarNewsletterForm" method="post" asp-controller="Home" asp-action="Subscribe">
+
+                        <h3 class="widget-title">Stay Informed</h3>
+                        <p class="newsletter-text">Get Wellness Insights Delivered to your inbox</p>
+
+                        <input type="email" name="Email" placeholder="Your Email Address" class="newsletter-input" required />
+
+                        <!-- Captcha and input side by side -->
+                        <div class="captcha-row" style="margin: 10px 0; display: flex; align-items: center; gap: 10px;">
+                            <canvas id="sidebarCaptchaCanvas" width="120" height="40"></canvas>
+                            <button type="button" class="refresh-captcha" onclick="generateSidebarCaptcha()">↻</button>
+                            <input type="text" id="sidebarCaptchaInput"
+                                   placeholder="Enter Captcha"
+                                   class="captcha-input"
+                                   required
+                                   style="width: 120px; padding: 10px; border-radius: 6px; border: 1px solid #ccc; font-size: 14px;" />
+                        </div>
+
+                        <!-- Subscribe button below -->
+                        <button type="button" class="newsletter-btn" onclick="validateSidebarCaptcha()" style="width: 100%; margin-top: 10px;">
+                            Subscribe
+                        </button>
+
+
+                    </form>
                 </div>
+                <script>
+                    let sidebarCaptchaCode = "";
+
+                    function generateSidebarCaptcha() {
+                        const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+                        sidebarCaptchaCode = "";
+
+                        for (let i = 0; i < 5; i++) {
+                            sidebarCaptchaCode += chars.charAt(Math.floor(Math.random() * chars.length));
+                        }
+
+                        const canvas = document.getElementById("sidebarCaptchaCanvas");
+                        if (!canvas) return; // ensures it won't break on other pages
+
+                        const ctx = canvas.getContext("2d");
+                        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                        ctx.font = "26px Arial";
+                        ctx.fillStyle = "#ffffff";   // 🔥 HIGH VISIBILITY for dark background
+                        ctx.fillText(sidebarCaptchaCode, 15, 30);
+                    }
+
+                    function validateSidebarCaptcha() {
+                        const input = document.getElementById("sidebarCaptchaInput").value.trim().toUpperCase();
+
+                        if (input === sidebarCaptchaCode) {
+                            document.getElementById("sidebarNewsletterForm").submit();
+                        } else {
+                            alert("❌ Invalid captcha. Please try again.");
+                            generateSidebarCaptcha();
+                        }
+                    }
+
+                    // Load captcha when page is ready — works even if other scripts also use onload
+                    document.addEventListener("DOMContentLoaded", generateSidebarCaptcha);
+                </script>
+
             </aside>
         </div>
     </div>
 </section>
 
-<!-- Expert Panel Section -->
-@* <section class="expert-panel-section">
-    <div class="expert-panel-container">
-        <h2 class="expert-panel-title">All articles are Curated and reviewed by Our Expert Panel</h2>
-
-        <div class="experts-grid">
-            @for (int i = 0; i < 3; i++)
-            {
-                <div class="expert-card">
-                    <div class="expert-image">
-                        <img src="~/image/blog/doctor-with-his-arms-crossed-white-background.png" alt="Dr.Marcus Chen" />
-                    </div>
-                    <div class="expert-info">
-                        <h3 class="expert-name">Dr.Marcus Chen</h3>
-                        <p class="expert-title">Sports Medicine Specialist</p>
-                    </div>
-                </div>
-            }
-        </div>
-    </div>
-</section> *@
 <section class="expert-panel-section">
     <div class="expert-panel-container">
         <h2 class="expert-panel-title">All articles are Curated and reviewed by Our Expert Panel</h2>
