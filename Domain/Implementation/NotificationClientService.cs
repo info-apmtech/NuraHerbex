@@ -79,7 +79,7 @@ namespace Domain.Implementation
 
 		private SmsJson SmsData(string message, string number, string templateId)
 		{
-			var currentTime = DateTime.UtcNow.ToString("yyyyMMddHHmmss");
+			var currentTime = DateTime.Now.ToString("yyyyMMddHHmmss");
 
 			var smsData = new SmsJson
 			{

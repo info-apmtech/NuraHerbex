@@ -12,6 +12,7 @@ using ServiceStack.Messaging;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Mime;
+using System.Runtime.InteropServices;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
@@ -652,7 +653,7 @@ namespace NuraHerbex.Controllers
                 _notyf.Success("User Registered Successfully!", 5);
 				if (User.Identity.IsAuthenticated) 
 					//return RedirectToAction("UserCreation", new { role = model.RegisteredUser.Role });
-				return RedirectToAction(nameof(UserCreation));
+				return RedirectToAction(nameof(UserCreation), new { id = (string)null });
 				else
 					return RedirectToAction("SignIn", "Authentication");
 			}
@@ -1125,7 +1126,7 @@ namespace NuraHerbex.Controllers
             // DEFAULT: last 7 days excluding Delivered and Cancelled
             if (!filtersApplied)
             {
-                DateTime lastWeek = DateTime.UtcNow.AddDays(-7);
+                DateTime lastWeek = DateTime.Now.AddDays(-7);
                 ordersWithUserName = ordersWithUserName.Where(x => x.Order.OrderDate >= lastWeek && x.Order.Status != OrderStatus.Delivered &&x.Order.Status != OrderStatus.Cancelled) .OrderByDescending(x => x.Order.OrderDate).ToList();
             }
             else
@@ -1166,11 +1167,7 @@ namespace NuraHerbex.Controllers
             return View(vm);
         }
 
-        public async Task<IActionResult> AdminDispatchedOrders(
-    string? orderIdFilter,
-    DateTime? startDate,
-    DateTime? endDate,
-    string? userNameFilter)
+        public async Task<IActionResult> AdminDispatchedOrders(string? orderIdFilter,DateTime? startDate,DateTime? endDate, string? userNameFilter)
         {
             var jsonOptions = new JsonSerializerOptions
             {
@@ -1185,34 +1182,21 @@ namespace NuraHerbex.Controllers
             if (!response.IsSuccessStatusCode)
                 return View(new OrderListViewModel());
 
-            var orders = await response.Content.ReadFromJsonAsync<List<Order>>(jsonOptions)
-                         ?? new List<Order>();
+            var orders = await response.Content.ReadFromJsonAsync<List<Order>>(jsonOptions)?? new List<Order>();
 
             // Fetch users
             var userResponse = await client.GetAsync("AdminAPI/users");
-            var users = userResponse.IsSuccessStatusCode
-                ? await userResponse.Content.ReadFromJsonAsync<List<RegisterUser>>(jsonOptions)
-                : new List<RegisterUser>();
+            var users = userResponse.IsSuccessStatusCode? await userResponse.Content.ReadFromJsonAsync<List<RegisterUser>>(jsonOptions): new List<RegisterUser>();
 
             // Build map UserId -> FullName
-            var userMap = users
-                .Where(u => !string.IsNullOrEmpty(u.Id))
-                .ToDictionary(u => u.Id.Trim(), u => u.FullName ?? "Unknown User",
-                              StringComparer.OrdinalIgnoreCase);
-
-            // Filter ONLY SHIPPED orders
-            var shippedOrders = orders
-                .Where(o => o.Status == OrderStatus.Shipped)
-                .ToList();
-
-            // Map with username for filtering
-            var mappedOrders = shippedOrders.Select(o =>
+            var userMap = users.Where(u => !string.IsNullOrEmpty(u.Id)).ToDictionary(u => u.Id.Trim(), u => u.FullName ?? "Unknown User", StringComparer.OrdinalIgnoreCase);
+			// Filter ONLY SHIPPED orders
+			var shippedOrders = orders.Where(o => o.Status == OrderStatus.Shipped).ToList();
+			// Map with username for filtering
+			var mappedOrders = shippedOrders.Select(o =>
             {
-                var name = (!string.IsNullOrEmpty(o.UserId) && userMap.ContainsKey(o.UserId.Trim()))
-                            ? userMap[o.UserId.Trim()]
-                            : "Unknown User";
-
-                return new
+                var name = (!string.IsNullOrEmpty(o.UserId) && userMap.ContainsKey(o.UserId.Trim())) ? userMap[o.UserId.Trim()] : "Unknown User";
+				return new
                 {
                     Order = o,
                     UserName = name
@@ -1273,7 +1257,7 @@ namespace NuraHerbex.Controllers
             var orderSummary = await orderResponse.Content.ReadFromJsonAsync<OrderSummaryViewModel>(jsonOptions);
             if (orderSummary == null || orderSummary.Order == null)
             {
-                ViewBag.Error = "Order not found.";
+                _notyf.Error("Order not found.", 5);
                 return View(null);
             }
 
@@ -1290,9 +1274,7 @@ namespace NuraHerbex.Controllers
                     order.UserId = user?.FullName ?? "Unknown User";
                 }
                 else
-                {
                     order.UserId = "Unknown User";
-                }
             }
 
             var productsResponse = await client.GetAsync("AdminAPI/products");
@@ -1327,9 +1309,9 @@ namespace NuraHerbex.Controllers
             });
 
             if (response.IsSuccessStatusCode)
-                TempData["Success"] = "Order status updated successfully.";
+                _notyf.Success("Order status updated successfully.", 5);
             else
-                TempData["Error"] = "Failed to update order status.";
+            _notyf.Error("Failed to update order status.", 5);
 
             return RedirectToAction(nameof(AdminOrderStatus));
         }
@@ -1340,10 +1322,9 @@ namespace NuraHerbex.Controllers
 			var response = await AuthorizedClient.PostAsync($"AdminAPI/user/{id}/toggle-active", null);
 
 			if (response.IsSuccessStatusCode)
-				TempData["Success"] = "User status updated successfully!";
+            _notyf.Success("User status updated successfully!", 5);
 			else
-				TempData["Error"] = "Failed to update user status.";
-
+				_notyf.Success("Failed to update user status.", 5);
 			return RedirectToAction(nameof(UserCreation));
 		}
 
@@ -1399,15 +1380,12 @@ namespace NuraHerbex.Controllers
 
             if (response.IsSuccessStatusCode)
             {
-                TempData["Success"] = model.NewCategory.Id > 0
-                    ? "Quiz category updated successfully"
-                    : "Quiz category added successfully";
-
-                return RedirectToAction(nameof(AdminQuizCategory), new { id = 0 });
+                _notyf.Success(model.NewCategory.Id > 0 ? "Quiz category updated successfully" : "Quiz category added successfully");
+				return RedirectToAction(nameof(AdminQuizCategory), new { id = 0 });
             }
 
             var error = await response.Content.ReadAsStringAsync();
-            TempData["Error"] = $"Error: {error}";
+            _notyf.Error($"Error: {error}");
             return View(model);
         }
 
@@ -1418,13 +1396,11 @@ namespace NuraHerbex.Controllers
             var response = await AuthorizedClient.DeleteAsync($"AdminAPI/quizcategory/{id}");
 
             if (response.IsSuccessStatusCode)
-            {
-                TempData["Success"] = "Quiz category deleted successfully!";
-            }
+            _notyf.Success("Quiz category deleted successfully!", 5);
             else
             {
                 var error = await response.Content.ReadAsStringAsync();
-                TempData["Error"] = $"Delete failed: {error}";
+                _notyf.Error($"Delete failed: {error}");
             }
 
             return RedirectToAction(nameof(AdminQuizCategory));
@@ -1473,15 +1449,11 @@ namespace NuraHerbex.Controllers
 
             if (response.IsSuccessStatusCode)
             {
-                TempData["Success"] = model.NewQuestion.Id > 0
-                    ? "Quiz question updated successfully"
-                    : "Quiz question added successfully";
-
-                return RedirectToAction(nameof(AdminQuizQuestion), new { id = 0 });
+                _notyf.Success(model.NewQuestion.Id > 0 ? "Quiz question updated successfully" : "Quiz question added successfully");
+				return RedirectToAction(nameof(AdminQuizQuestion), new { id = 0 });
 
             }
-
-            TempData["Error"] = await response.Content.ReadAsStringAsync();
+            _notyf.Error(await response.Content.ReadAsStringAsync());
             return View(model);
         }
 
@@ -1492,9 +1464,9 @@ namespace NuraHerbex.Controllers
             var response = await AuthorizedClient.DeleteAsync($"AdminAPI/quizquestion/{id}");
 
             if (response.IsSuccessStatusCode)
-                TempData["Success"] = "Question deleted successfully!";
+            _notyf.Success("Question deleted successfully!", 5);
             else
-                TempData["Error"] = await response.Content.ReadAsStringAsync();
+            _notyf.Error(await response.Content.ReadAsStringAsync(), 5);
 
             return RedirectToAction(nameof(AdminQuizQuestion));
         }
@@ -1542,12 +1514,12 @@ namespace NuraHerbex.Controllers
 
             if (response.IsSuccessStatusCode)
             {
-                TempData["Success"] = model.NewOption.Id > 0 ? "Option updated" : "Option added";
+                _notyf.Success(model.NewOption.Id > 0 ? "Option updated" : "Option added");
                 return RedirectToAction(nameof(AdminQuizOption), new { id = 0 });
 
             }
 
-            TempData["Error"] = "Something went wrong";
+            _notyf.Error("Something went wrong");
             return View(model);
         }
 
@@ -1558,63 +1530,25 @@ namespace NuraHerbex.Controllers
             var response = await AuthorizedClient.DeleteAsync($"AdminAPI/quizoption/{id}");
 
             if (response.IsSuccessStatusCode)
-                TempData["Success"] = "Option deleted";
+            _notyf.Success("Option deleted", 5);
             else
-                TempData["Error"] = "Delete failed";
+            _notyf.Error("Delete failed",5);
 
             return RedirectToAction(nameof(AdminQuizOption));
         }
-		//Return
-		//[HttpGet]
-		//public async Task<IActionResult> Index(ReturnStatus? status)
-		//{
-		//	string url = "api/admin/returns";
-		//	if (status.HasValue)
-		//		url += $"?status={status}";
-
-		//	var list = await AuthorizedClient.GetFromJsonAsync<List<ReturnRequest>>(url)
-		//			   ?? new List<ReturnRequest>();
-
-		//	return View(list);
-		//}
-
-		// GET: /AdminReturn
-		//public async Task<IActionResult> ReturnResponse()
-		//{
-		//	var jsonOptions = new JsonSerializerOptions(JsonSerializerDefaults.Web);
-		//	jsonOptions.Converters.Add(new JsonStringEnumConverter());
-
-		//	var list = await AuthorizedClient
-		//		.GetFromJsonAsync<List<ReturnRequestViewDto>>(
-		//			"AdminAPI/ReturnRequest/pending",
-		//			jsonOptions)
-		//		?? new List<ReturnRequestViewDto>();
-
-		//	return View(list);
-		//}
 		public async Task<IActionResult> ReturnResponse()
 		{
 			// JSON options for enum handling
 			var jsonOptions = new JsonSerializerOptions(JsonSerializerDefaults.Web);
 			jsonOptions.Converters.Add(new JsonStringEnumConverter());
 
-			// 1️⃣ Load return requests
-			var list = await AuthorizedClient
-				.GetFromJsonAsync<List<ReturnRequestViewDto>>(
-					"AdminAPI/ReturnRequest/getreturn",
-					jsonOptions)
-				?? new List<ReturnRequestViewDto>();
-
-
-			// 2️⃣ Load users (same as your other action)
+			// Load return requests
+			var list = await AuthorizedClient.GetFromJsonAsync<List<ReturnRequestViewDto>>("AdminAPI/ReturnRequest/getreturn",jsonOptions)?? new List<ReturnRequestViewDto>();
+			// Load users (same as your other action)
 			var userResponse = await AuthorizedClient.GetAsync("AdminAPI/users");
 
-			var users = userResponse.IsSuccessStatusCode
-				? await userResponse.Content.ReadFromJsonAsync<List<RegisterUser>>(jsonOptions)
-				: new List<RegisterUser>();
-
-
-			// 3️⃣ Replace UserId with FullName
+			var users = userResponse.IsSuccessStatusCode? await userResponse.Content.ReadFromJsonAsync<List<RegisterUser>>(jsonOptions): new List<RegisterUser>();
+			// Replace UserId with FullName
 			foreach (var request in list)
 			{
 				if (!string.IsNullOrEmpty(request.UserId))
@@ -1625,46 +1559,27 @@ namespace NuraHerbex.Controllers
 					request.UserId = user?.FullName ?? "Unknown User"; // <-- fill FullName
 				}
 				else
-				{
 					request.UserId = "Unknown User";
-				}
 			}
 
 			return View(list);
 		}
-
-
-		// GET: /AdminReturn/Details/5
-		//public async Task<IActionResult> DeleteReturn(int id)
-		//{
-		//	var rr = await AuthorizedClient
-		//		.GetFromJsonAsync<ReturnRequestViewDto>($"AdminAPI/ReturnRequest/{id}");
-
-		//	if (rr == null) return NotFound();
-
-		//	return View(rr); // @model ReturnRequestViewDto
-		//}
-
 		// POST: /AdminReturn/UpdateStatus
 		[HttpPost]
 		[ValidateAntiForgeryToken]
 		public async Task<IActionResult> ReturnStatusUpdate(UpdateReturnStatusDto dto)
 		{
-			var response = await AuthorizedClient
-				.PutAsJsonAsync($"AdminAPI/ReturnRequest/{dto.Id}/status", dto);
-
+			var response = await AuthorizedClient.PutAsJsonAsync($"AdminAPI/ReturnRequest/{dto.Id}/status", dto);
 			if (response.IsSuccessStatusCode)
-			{
-				TempData["AdminSuccess"] = "Return status updated.";
-			}
+                _notyf.Success("Return status updated.", 5);
 			else
 			{
 				var content = await response.Content.ReadAsStringAsync();
-				TempData["AdminError"] = $"Failed to update status: {content}";
+                _notyf.Error($"Failed to update status: {content}", 5);
 			}
-
 			return RedirectToAction("ReturnResponse");
 		}
+	}
 
         [HttpGet]
         public async Task<IActionResult> AdminMyProfile()

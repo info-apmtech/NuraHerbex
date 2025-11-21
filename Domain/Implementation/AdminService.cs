@@ -74,7 +74,7 @@ namespace Domain.Implementation
 			if (existingUser == null)
 			{
 				// ✅ Create new user
-				user.CreatedAt = DateTime.UtcNow;
+				user.CreatedAt = DateTime.Now;
 				user.Role = user.Role == 0 ? UserRole.Customer : user.Role; // Ensure safe default
 				user.UserName = user.Email;
 				return await _usermanager.CreateAsync(user, user.Password);
@@ -90,7 +90,7 @@ namespace Domain.Implementation
 				existingUser.FirstName = user.FirstName;
 				existingUser.LastName = user.LastName;
 				existingUser.Address = user.Address;
-				existingUser.UpdatedAt = DateTime.UtcNow;
+				existingUser.UpdatedAt = DateTime.Now;
 
 				// Update password only if explicitly provided
 				if (!string.IsNullOrWhiteSpace(user.Password))
@@ -154,7 +154,7 @@ namespace Domain.Implementation
             var token = new JwtSecurityToken(
                 issuer: issuer,
                 audience: audience,
-                expires: DateTime.UtcNow.AddMinutes(60),
+                expires: DateTime.Now.AddMinutes(60),
                 claims: authClaims,
                 signingCredentials: new SigningCredentials(signingKey, SecurityAlgorithms.HmacSha256)
             );
@@ -217,7 +217,7 @@ namespace Domain.Implementation
 			if (user == null) return false;
 
 			var otp = new Random().Next(100000, 999999).ToString();
-			_otpStore[email] = (otp, DateTime.UtcNow.AddMinutes(5));
+			_otpStore[email] = (otp, DateTime.Now.AddMinutes(5));
 
 			var body = $@"
                 <p>Hi {user.UserName},</p>
@@ -234,7 +234,7 @@ namespace Domain.Implementation
 		{
 			if (_otpStore.TryGetValue(email, out var entry))
 			{
-				if (entry.Expiry < DateTime.UtcNow)
+				if (entry.Expiry < DateTime.Now)
 				{
 					_otpStore.TryRemove(email, out _);
 					return false;
@@ -300,7 +300,7 @@ namespace Domain.Implementation
 			}
 			else
 			{
-				category.CreatedAt = DateTime.UtcNow;
+				category.CreatedAt = DateTime.Now;
 				await _db.BlogCategoryDetails.AddAsync(category);
 			}
 
@@ -351,7 +351,7 @@ namespace Domain.Implementation
 			}
 			else
 			{
-				blog.CreatedAt = DateTime.UtcNow;
+				blog.CreatedAt = DateTime.Now;
 				await _db.BlogDetails.AddAsync(blog);
 			}
 
@@ -407,7 +407,7 @@ namespace Domain.Implementation
 			}
 			else
 			{
-				ingredient.CreatedAt = DateTime.UtcNow;
+				ingredient.CreatedAt = DateTime.Now;
 				await _db.Ingredients.AddAsync(ingredient);
 			}
 
@@ -457,7 +457,7 @@ namespace Domain.Implementation
 			}
 			else
 			{
-				category.CreatedAt = DateTime.UtcNow;
+				category.CreatedAt = DateTime.Now;
 				await _db.IngredientCategories.AddAsync(category);
 			}
 
@@ -538,7 +538,7 @@ namespace Domain.Implementation
 				if (!string.IsNullOrWhiteSpace(product.ProductImages))
 					existing.ProductImages = product.ProductImages;
 
-				existing.UpdatedAt = DateTime.UtcNow;
+				existing.UpdatedAt = DateTime.Now;
 				existing.UpdatedBy = actingUser ?? product.UpdatedBy;
 
 				_db.ProductDetails.Update(existing);
@@ -546,8 +546,8 @@ namespace Domain.Implementation
 			else
 			{
 				// New product
-				product.CreatedAt = DateTime.UtcNow;
-				product.UpdatedAt = DateTime.UtcNow;
+				product.CreatedAt = DateTime.Now;
+				product.UpdatedAt = DateTime.Now;
 
 				if (!string.IsNullOrWhiteSpace(actingUser))
 					product.CreatedBy = actingUser;
@@ -578,7 +578,7 @@ namespace Domain.Implementation
 			gst.SGSTPercentage = gst.TaxPercentage / 2;
 			gst.CGSTPercentage = gst.TaxPercentage / 2;
 			gst.IGSTPercentage = gst.TaxPercentage;
-			gst.UpdateDate = DateTime.UtcNow;
+			gst.UpdateDate = DateTime.Now;
 			if (gst.Id > 0)
 			{
 				var existing = await _db.GSTDetails.FindAsync(gst.Id);
@@ -632,7 +632,7 @@ namespace Domain.Implementation
 			if (plan == null)
 				return IdentityResult.Failed(new IdentityError { Description = "Pricing plan cannot be null" });
 
-			plan.UpdatedAt = DateTime.UtcNow;
+			plan.UpdatedAt = DateTime.Now;
 			if (plan.Id > 0)
 			{
 				var existing = await _db.PricingPlans.FindAsync(plan.Id);
@@ -684,7 +684,7 @@ namespace Domain.Implementation
             if (exists)
                 return IdentityResult.Failed(new IdentityError { Description = "Subscription already exists" });
 
-            sub.UpdatedAt = DateTime.UtcNow;
+            sub.UpdatedAt = DateTime.Now;
             await _db.Subscriptions.AddAsync(sub);
             await _db.SaveChangesAsync();
 
@@ -771,7 +771,7 @@ namespace Domain.Implementation
 			}
 			else
 			{
-				address.CreatedAt = DateTime.UtcNow;
+				address.CreatedAt = DateTime.Now;
 				await _db.AddressDetails.AddAsync(address);
 			}
 
@@ -830,7 +830,7 @@ namespace Domain.Implementation
 				entity = new NewsletterSubscription
 				{
 					Email = email,
-					SubscribedAt = DateTime.UtcNow
+					SubscribedAt = DateTime.Now
 				};
 
 				await _db.SubscriptionsDetails.AddAsync(entity);
@@ -1049,7 +1049,7 @@ namespace Domain.Implementation
             }
             else
             {
-                speciality.CreatedAt = DateTime.UtcNow;
+                speciality.CreatedAt = DateTime.Now;
                 await _db.DoctorSpecialities.AddAsync(speciality);
             }
 
@@ -1222,7 +1222,7 @@ namespace Domain.Implementation
 					CustomerID = customerId,
 					RatingCount = req.Rating,
 					Message = req.Message,
-					SubmittedAt = DateTime.UtcNow
+					SubmittedAt = DateTime.Now
 				};
 				_db.FeedBack.Add(fb);
 				await _db.SaveChangesAsync(ct);
@@ -1231,7 +1231,7 @@ namespace Domain.Implementation
 
 			existing.RatingCount = req.Rating;
 			existing.Message = req.Message;
-			existing.SubmittedAt = DateTime.UtcNow;
+			existing.SubmittedAt = DateTime.Now;
 			await _db.SaveChangesAsync(ct);
 			return existing;
 		}
@@ -1459,7 +1459,7 @@ namespace Domain.Implementation
 			user.Email       = dto.Email;
 			user.UserName    = dto.Email;
 			user.PhoneNumber = dto.PhoneNumber;
-			user.UpdatedAt   = DateTime.UtcNow;
+			user.UpdatedAt   = DateTime.Now;
 
 			return await _usermanager.UpdateAsync(user);
 		}
@@ -1477,7 +1477,7 @@ namespace Domain.Implementation
 			}
 
 			user.isActive = !user.isActive;
-			user.UpdatedAt = DateTime.UtcNow;
+			user.UpdatedAt = DateTime.Now;
 
 			return await _usermanager.UpdateAsync(user);
 		}
@@ -1513,7 +1513,7 @@ namespace Domain.Implementation
             }
             else
             {
-                category.CreatedAt = DateTime.UtcNow;
+                category.CreatedAt = DateTime.Now;
                 await _db.QuizCategories.AddAsync(category);
             }
 
@@ -1688,7 +1688,7 @@ namespace Domain.Implementation
 			var alreadyRequested = await _db.ReturnRequests.AsNoTracking().AnyAsync(r => r.OrderId == order.Id && r.UserId == userId);
 			if (alreadyRequested)
 				throw new InvalidOperationException("You have already created a return request for this order.");
-			var daysSinceOrder = (DateTime.UtcNow - order.OrderDate).TotalDays;
+			var daysSinceOrder = (DateTime.Now - order.OrderDate).TotalDays;
 			if (daysSinceOrder > 30)
 				throw new InvalidOperationException("Return window has expired.");
 			string productSummary = string.Empty;
@@ -1710,7 +1710,7 @@ namespace Domain.Implementation
 			{
 				OrderId       = order.Id,
 				UserId        = userId,
-				RequestedAt   = DateTime.UtcNow,
+				RequestedAt   = DateTime.Now,
 				Status        = ReturnStatus.Pending,
 				Reason        = dto.Reason,
 				RefundAmount  = order.Total,

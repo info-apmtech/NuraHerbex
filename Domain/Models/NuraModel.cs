@@ -429,7 +429,7 @@ namespace Domain.Models
 		public string UserId { get; set; } = default!;
 
 		// When they asked for the return
-		public DateTime RequestedAt { get; set; } = DateTime.UtcNow;
+		public DateTime RequestedAt { get; set; } = DateTime.Now;
 
 		// Status of the request
 		public ReturnStatus Status { get; set; } = ReturnStatus.Pending;

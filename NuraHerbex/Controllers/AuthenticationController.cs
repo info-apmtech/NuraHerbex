@@ -236,7 +236,7 @@ namespace NuraHerbex.Controllers
 			var entry = new OtpEntry
 			{
 				Hash = hash,
-				ExpiresUtc = DateTime.UtcNow.AddMinutes(15),
+				ExpiresUtc = DateTime.Now.AddMinutes(15),
 				Attempts = 0
 			};
 
@@ -261,7 +261,7 @@ namespace NuraHerbex.Controllers
 			if (!_cache.TryGetValue<OtpEntry>(key, out var entry))
 				return BadRequest(new { success = false, message = "OTP not found. Please resend." });
 
-			if (DateTime.UtcNow > entry.ExpiresUtc)
+			if (DateTime.Now > entry.ExpiresUtc)
 			{
 				_cache.Remove(key);
 				return BadRequest(new { success = false, message = "OTP expired. Please resend." });

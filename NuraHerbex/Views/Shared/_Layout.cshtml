@@ -166,6 +166,14 @@
                                     </a>
                                 </li>
                             }
+                            else if (User.IsInRole("Doctor"))
+                            {
+                                <li>
+                                    <a class="dropdown-item" asp-controller="Admin" asp-action="DoctorConsultation">
+                                        Doctor Panel
+                                    </a>
+                                </li>
+                            }
 
                             <li><hr class="dropdown-divider" /></li>
                             <li>
@@ -203,7 +211,7 @@
                                 <polyline points="6 9 12 15 18 9"></polyline>
                             </svg>
                         </span>
-                        <span class="user-name">Merin!...</span>
+                        <span class="user-name">@User.Identity.Name</span>
                     </div>
                 </div>
 
@@ -366,6 +374,7 @@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="~/js/cart.js"></script>
     @await RenderSectionAsync("Scripts", required: false)
 
     <script>
@@ -424,8 +433,6 @@
 
         window.onload = generateCaptcha;
     </script>
-    @RenderSection("Scripts", required: false)
-
     @await Html.PartialAsync("_FloatingActions")
     @await Component.InvokeAsync("Notyf")
 </body>
