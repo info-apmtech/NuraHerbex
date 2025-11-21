@@ -802,6 +802,14 @@ namespace NuraHerbex.Controllers
 		{
 			return View();
 		}
+		public IActionResult TermsOfService()
+		{
+			return View();
+		}
+		public IActionResult RefundPolicy()
+		{
+			return View();
+		}
         public async Task<IActionResult> TrackOrder(int? orderId)
         {
             if (!orderId.HasValue)

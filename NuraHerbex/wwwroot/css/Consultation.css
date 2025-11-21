@@ -598,6 +598,7 @@
         font-family: inherit;
         background: white;
         transition: border-color 0.3s ease;
+        color:black;
     }
 
         .form-group input:focus,
