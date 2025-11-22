@@ -1580,4 +1580,69 @@ namespace NuraHerbex.Controllers
 			return RedirectToAction("ReturnResponse");
 		}
 	}
+
+        [HttpGet]
+        public async Task<IActionResult> AdminMyProfile()
+        {
+            var userId = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "";
+            if (string.IsNullOrEmpty(userId))
+                return RedirectToAction("SignIn", "Authentication");
+
+            var vm = new AdminProfileViewModel
+            {
+                Id = userId
+            };
+
+            var userResponse = await AuthorizedClient.GetAsync($"AdminAPI/user/{userId}");
+            if (userResponse.IsSuccessStatusCode)
+            {
+                var json = await userResponse.Content.ReadAsStringAsync();
+                var user = JsonConvert.DeserializeObject<RegisterUser>(json);
+
+                vm.FirstName = user.FirstName;
+                vm.LastName = user.LastName;
+                vm.Email = user.Email;
+                vm.PhoneNumber = user.PhoneNumber;
+            }
+
+            return View(vm);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AdminMyProfile(AdminProfileViewModel model)
+        {
+            var userId = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "";
+            if (string.IsNullOrEmpty(userId))
+                return RedirectToAction("SignIn", "Authentication");
+
+            if (!ModelState.IsValid)
+                return View(model);
+
+            var dto = new ProfileUpdateDto
+            {
+                Id = userId,
+                FirstName = model.FirstName,
+                LastName = model.LastName,
+                Email = model.Email,
+                PhoneNumber = model.PhoneNumber
+            };
+
+            var response = await AuthorizedClient.PostAsJsonAsync("AdminAPI/profile", dto);
+
+            if (response.IsSuccessStatusCode)
+            {
+                _notyf.Success("Profile updated successfully", 5);
+                return RedirectToAction(nameof(AdminMyProfile));
+            }
+
+            var errorBody = await response.Content.ReadAsStringAsync();
+            _notyf.Error(errorBody, 5);
+
+            return View(model);
+        }
+
+
+
+    }
 }
