@@ -148,84 +148,6 @@
 	</div>
 </section>
 
-
-<!-- 3-Level Journey Section -->
-@* <section class="journey-section">
-    <div class="journey-container">
-        <div class="journey-header">
-            <h2 class="journey-title">Your 3-Level Journey to <span class="highlight-text">Peak Performance</span></h2>
-            <p class="journey-subtitle">A progressive system designed to take you from where you are to where you want to be</p>
-        </div>
-
-        <div class="journey-grid">
-            <!-- Level 3: Unleash Card (Left - Brown) -->
-            <div class="journey-card card-brown">
-                <button class="wishlist-btn" aria-label="Add to wishlist">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-                    </svg>
-                </button>
-                <div class="card-product-image">
-                    <img src="~/image/HomePage/STAMIX Unleash.png" alt="Level 3: Unleash" />
-                </div>
-                <div class="card-info">
-                    <h3 class="card-level-title">Level 3: Unleash</h3>
-                    <p class="card-level-description">Peak physical performance, maximum cognitive function, and elite recovery protocols.</p>
-                    <p class="card-price">₹129</p>
-                    <div class="card-buttons">
-                        <button class="btn-buy-now" onclick="location.href='@Url.Action("Shop", "Home")'">Buy Now</button>
-                        <button class="btn-add-cart">Add to Cart</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Level 1: Activate Card (Center - Green - Featured/Larger) -->
-            <div class="journey-card card-green card-featured">
-                <button class="wishlist-btn" aria-label="Add to wishlist">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-                    </svg>
-                </button>
-                <div class="card-product-image">
-                    <img src="~/image/HomePage/STAMIX Activate.png" alt="Level 1: Activate" />
-                </div>
-                <div class="card-info">
-                    <h3 class="card-level-title">Level 1: Activate</h3>
-                    <p class="card-level-description">Activate healthy testosterone, relieve stress, and restore the energy and balance you've been missing.</p>
-                    <p class="card-price">₹49</p>
-                    <div class="card-buttons">
-                        <button class="btn-buy-now" onclick="location.href='@Url.Action("Shop", "Home")'">Buy Now</button>
-                        <button class="btn-add-cart">Add to Cart</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Level 2: Elevate Card (Right - Dark Brown) -->
-            <div class="journey-card card-dark-brown">
-                <button class="wishlist-btn" aria-label="Add to wishlist">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-                    </svg>
-                </button>
-                <div class="card-product-image">
-                    <img src="~/image/HomePage/STAMIX Elevate.png" alt="Level 2: Elevate" />
-                </div>
-                <div class="card-info">
-                    <h3 class="card-level-title">Level 2: Elevate</h3>
-                    <p class="card-level-description">Optimize testosterone naturally, accelerate muscle recovery, and build stress resilience.</p>
-                    <p class="card-price">₹79</p>
-                    <div class="card-buttons">
-                        <button class="btn-buy-now" onclick="location.href='@Url.Action("Shop", "Home")'">Buy Now</button>
-                        <button class="btn-add-cart">Add to Cart</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
- *@
-
-
 <section class="journey-section">
 	<div class="journey-container">
 		<div class="journey-header">
@@ -235,38 +157,31 @@
 
 		<div class="journey-grid">
 			@{
-				// 1) Sort by DisplayOrderId; nulls last
-				//    If your property is DisplayOrder (not DisplayOrderId), replace below accordingly.
 				var featured = (Model?.FeaturedProducts ?? Enumerable.Empty<Product>())
 				.OrderBy(p => p.DisplayOrder ?? int.MaxValue)
 				.ToList();
 
-				// 2) CSS classes keyed by "level" (we'll derive level from DisplayOrderId)
 				var cardClasses = new Dictionary<int, string>
-						{
-						{ 1, "card-green card-featured" },
-						{ 2, "card-dark-brown" },
-						{ 3, "card-brown" }
-						};
+			{
+			{ 1, "card-green card-featured" },
+			{ 2, "card-dark-brown" },
+			{ 3, "card-brown" }
+			};
 
-				// 3) Default images per level
 				var defaultImages = new Dictionary<int, string>
-						{
-						{ 1, "~/image/HomePage/STAMIX Activate.png" },
-						{ 2, "~/image/HomePage/STAMIX Elevate.png" },
-						{ 3, "~/image/HomePage/STAMIX Unleash.png" }
-						};
+			{
+			{ 1, "~/image/HomePage/STAMIX Activate.png" },
+			{ 2, "~/image/HomePage/STAMIX Elevate.png" },
+			{ 3, "~/image/HomePage/STAMIX Unleash.png" }
+			};
 
-				// 4) Helpers
-				//    If Amount/DiscountPercentage are nullable in your model, use '?? 0m' below.
 				decimal FinalPrice(Product p)
 				{
-					var amount = p.Amount;                 // or: p.Amount ?? 0m
-					var disc = p.DiscountPercentage;     // or: p.DiscountPercentage ?? 0m
+					var amount = p.Amount;
+					var disc = p.DiscountPercentage;
 					return amount * (1 - disc / 100m);
 				}
 
-				// Return the first product image or a default image for the given level
 				string FirstImageOrDefault(Product p, int level)
 				{
 					var first = (p.ProductImages ?? string.Empty)
@@ -282,33 +197,33 @@
 
 			@foreach (var product in featured)
 			{
-				// 5) Coalesce DisplayOrderId (int?) -> int to avoid CS1503
-				var level = product.DisplayOrder ?? 1;  // <-- key line; pick 1 as default if null
-
+				var level = product.DisplayOrder ?? 1;
 				var cardClass = cardClasses.ContainsKey(level) ? cardClasses[level] : "journey-card";
 				var imagePath = FirstImageOrDefault(product, level);
 				var finalPrice = FinalPrice(product);
 
 				<div class="journey-card @cardClass" data-product-id="@product.Id">
-					<form method="post" action="@Url.Action("ToggleWishlist", "Home")" style="display:inline;">
-						<input type="hidden" name="productId" value="@product.Id" />
-						<button type="button" class="wishlist-btn" aria-label="Add to wishlist" title="Add to wishlist" data-product-id="@product.Id" style="background:none; border:none; padding:0; cursor:pointer;">
-							@if (Model.WishlistProductIds.Contains(product.Id))
-							{
-								<!-- Filled heart -->
-								<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2">
-									<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-								</svg>
-							}
-							else
-							{
-								<!-- Outline heart -->
+					<button type="button"
+							class="wishlist-btn"
+							aria-label="Add to wishlist"
+							title="Add to wishlist"
+							data-product-id="@product.Id"
+							style="background:none; border:none; padding:0; cursor:pointer;">
+						@if (Model.WishlistProductIds.Contains(product.Id))
+						{
+							<!-- Filled heart -->
+							<svg class="wishlist-heart" width="20" height="20" viewBox="0 0 24 24" fill="red" stroke="red" stroke-width="2">
+								<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+							</svg>
+						}
+						else
+						{
+							<!-- Outline heart -->
 								<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
 									<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-								</svg>
-							}
-						</button>
-					</form>
+							</svg>
+						}
+					</button>
 
 					<div class="card-product-image">
 						<img src="@Url.Content(imagePath)" alt="Level @level: @product.ProductName" />
@@ -336,37 +251,67 @@
 
 	</div>
 </section>
-<script>
-	$(document).ready(function () {
-		$('.wishlist-btn').click(function () {
-			var btn = $(this);
-			var productId = btn.data('product-id');
 
-			$.ajax({
-				type: "POST",
-				url: '@Url.Action("ToggleWishlist", "Home")',
-				data: { productId: productId },
-				success: function (response) {
-					// Red filled heart
-					var filledHeart = '<svg width="20" height="20" viewBox="0 0 24 24" fill="red" stroke="red" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>';
+@section Scripts {
+	<script>
+		$(document).ready(function () {
+			$('.wishlist-btn').on('click', function (e) {
+				e.preventDefault();
 
-					// Outline heart
-					var outlineHeart = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>';
+				var btn = $(this);
+				var productId = btn.data('product-id');
 
-					// Check current fill to toggle
-					if (btn.find('svg').attr('fill') === 'red') {
-						btn.html(outlineHeart);
-					} else {
-						btn.html(filledHeart);
+				$.ajax({
+					type: "POST",
+					url: '@Url.Action("ToggleWishlist", "Home")',
+					data: { productId: productId },
+					statusCode: {
+						// 👇 Exactly like cart: if 401, open login popup
+						401: function () {
+							if (window.openLoginModal) {
+								window.openLoginModal();
+							} else {
+								$('#loginModal').fadeIn(200);
+							}
+						}
 					}
-				},
-				error: function () {
-					alert("Something went wrong. Please try again.");
-				}
+				})
+				.done(function (response) {
+					// If API returned JSON with isInWishlist
+					if (!response || typeof response.isInWishlist === 'undefined') {
+						return;
+					}
+
+					// Two SVG versions to swap
+					var filledHeart =
+						'<svg class="wishlist-heart" width="20" height="20" viewBox="0 0 24 24" fill="red" stroke="red" stroke-width="2">' +
+						'<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>' +
+						'</svg>';
+
+					var outlineHeart =
+						'<svg class="wishlist-heart" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">' +
+						'<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>' +
+						'</svg>';
+
+					if (response.isInWishlist) {
+						btn.html(filledHeart);
+					} else {
+						btn.html(outlineHeart);
+					}
+				})
+				.fail(function (xhr) {
+					if (xhr.status === 401) {
+						if (window.openLoginModal) window.openLoginModal();
+						else $('#loginModal').fadeIn(200);
+					} else {
+						alert("Something went wrong. Please try again.");
+					}
+				});
 			});
 		});
-	});
-</script>
+	</script>
+}
+
 
 <!-- Powered by Nature's Best Section -->
 <section class="ingredients-section">
@@ -509,113 +454,6 @@
 	</div>
 </section>
 
-@* <section class="testimonials-section">
-	<div class="testimonials-container">
-		<div class="testimonials-header">
-			<h2 class="testimonials-title">Real Men, <span class="highlight-text">Real Results</span></h2>
-			<p class="testimonials-subtitle">Join thousands of men who've already unlocked their next level</p>
-		</div>
-
-		<div class="testimonials-grid">
-			<!-- Testimonial 1 -->
-			<div class="testimonial-card">
-				<div class="rating">
-					<svg width="18" height="18" viewBox="0 0 24 24" fill="#FFD700">
-						<path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-					</svg>
-					<svg width="18" height="18" viewBox="0 0 24 24" fill="#FFD700">
-						<path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-					</svg>
-					<svg width="18" height="18" viewBox="0 0 24 24" fill="#FFD700">
-						<path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-					</svg>
-					<svg width="18" height="18" viewBox="0 0 24 24" fill="#FFD700">
-						<path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-					</svg>
-					<svg width="18" height="18" viewBox="0 0 24 24" fill="#FFD700">
-						<path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-					</svg>
-				</div>
-				<p class="testimonial-text">"STAMIX transformed my energy levels completely. I went from struggling to get through afternoon meetings to having energy for evening workouts with my kids."</p>
-				<div class="testimonial-author">
-					<img src="~/image/HomePage/Marcus.png" alt="Marcus Thompson" class="author-photo" />
-					<div class="author-info">
-						<h4 class="author-name">Marcus Thompson</h4>
-						<p class="author-title">CEO & Father, Age 34</p>
-					</div>
-				</div>
-			</div>
-
-			<!-- Testimonial 2 -->
-			<div class="testimonial-card">
-				<div class="rating">
-					<svg width="18" height="18" viewBox="0 0 24 24" fill="#FFD700">
-						<path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-					</svg>
-					<svg width="18" height="18" viewBox="0 0 24 24" fill="#FFD700">
-						<path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-					</svg>
-					<svg width="18" height="18" viewBox="0 0 24 24" fill="#FFD700">
-						<path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-					</svg>
-					<svg width="18" height="18" viewBox="0 0 24 24" fill="#FFD700">
-						<path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-					</svg>
-					<svg width="18" height="18" viewBox="0 0 24 24" fill="#FFD700">
-						<path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-					</svg>
-				</div>
-				<p class="testimonial-text">"As a trainer, I've tried everything. STAMIX is the only supplement that delivered on ALL its promises. My clients notice the difference too."</p>
-				<div class="testimonial-author">
-					<img src="~/image/HomePage/David.png" alt="David Chen" class="author-photo" />
-					<div class="author-info">
-						<h4 class="author-name">David Chen</h4>
-						<p class="author-title">Personal Trainer, Age 29</p>
-					</div>
-				</div>
-			</div>
-
-			<!-- Testimonial 3 -->
-			<div class="testimonial-card">
-				<div class="rating">
-					<svg width="18" height="18" viewBox="0 0 24 24" fill="#FFD700">
-						<path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-					</svg>
-					<svg width="18" height="18" viewBox="0 0 24 24" fill="#FFD700">
-						<path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-					</svg>
-					<svg width="18" height="18" viewBox="0 0 24 24" fill="#FFD700">
-						<path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-					</svg>
-					<svg width="18" height="18" viewBox="0 0 24 24" fill="#FFD700">
-						<path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-					</svg>
-					<svg width="18" height="18" viewBox="0 0 24 24" fill="#FFD700">
-						<path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-					</svg>
-				</div>
-				<p class="testimonial-text">"After 6 months on STAMIX, my wife says I'm like a new man. Better energy, better mood, better everything. Worth every penny."</p>
-				<div class="testimonial-author">
-					<img src="~/image/HomePage/James.png" alt="James Rodriguez" class="author-photo" />
-					<div class="author-info">
-						<h4 class="author-name">James Rodriguez</h4>
-						<p class="author-title">Construction Manager, Age 42</p>
-					</div>
-				</div>
-			</div>
-		</div>
-
-		<div class="testimonials-cta">
-			<button class="btn-rating">
-				4.9/5 from 10,000+ verified customers
-				<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-					<path d="M5 12h14M12 5l7 7-7 7" />
-				</svg>
-			</button>
-		</div>
-	</div>
-</section>
- *@
 
 <!-- Expert Insights & Tips Section -->
 <section class="blog-section">

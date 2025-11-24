@@ -1059,58 +1059,90 @@ namespace NuraHerbex.Controllers
 			return View(list);
 		}
 
-		[HttpPost]
-		public async Task<IActionResult> ToggleWishlist(int productId)
-		{
-			var userId = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        [HttpPost]
+        public async Task<IActionResult> ToggleWishlist(int productId)
+        {
+            var userId = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-			if (string.IsNullOrEmpty(userId))
-			{
-                _notyf.Warning("Please login to modify wishlist.", 5);
-                return RedirectToAction("Index");
-			}
-
-			try
-			{
-				// 1?? Get current wishlist
-				var wishlistResponse = await _httpClient.GetAsync($"AdminAPI/wishlist/{userId}");
-				var wishlistItems = wishlistResponse.IsSuccessStatusCode
-					? await wishlistResponse.Content.ReadFromJsonAsync<List<WishlistItem>>()
-					: new List<WishlistItem>();
-
-				// 2?? Check if product already in wishlist
-				var existingItem = wishlistItems.FirstOrDefault(x => x.ProductId == productId);
-
-				if (existingItem != null)
-				{
-					// ? Remove from wishlist
-					var deleteResponse = await _httpClient.DeleteAsync($"AdminAPI/wishlist/{existingItem.Id}");
-					if (deleteResponse.IsSuccessStatusCode)
-						_notyf.Success("Product removed from wishlist.", 5);
-					else
-						_notyf.Error("Failed to remove product from wishlist.", 5);
-				}
-				else
-				{
-					// ? Add to wishlist
-					var postData = new { UserId = userId, ProductId = productId };
-					var postResponse = await _httpClient.PostAsJsonAsync("AdminAPI/wishlist", postData);
-					if (postResponse.IsSuccessStatusCode)
-						_notyf.Success("Product added to wishlist.", 5);
-					else
-						_notyf.Error("Failed to add product to wishlist.", 5);
-				}
-			}
-			catch (Exception ex)
-			{
-                _notyf.Error($"Unexpected error: {ex.Message}", 5);
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized(new { message = "Please login to modify wishlist." });
             }
 
-            return RedirectToAction("Index");
-		}
+            try
+            {
+                // 1️⃣ Get current wishlist
+                var wishlistResponse = await _httpClient.GetAsync($"AdminAPI/wishlist/{userId}");
+                var wishlistItems = wishlistResponse.IsSuccessStatusCode
+                    ? await wishlistResponse.Content.ReadFromJsonAsync<List<WishlistItem>>()
+                    : new List<WishlistItem>();
+
+                // 2️⃣ Check if product already in wishlist
+                var existingItem = wishlistItems.FirstOrDefault(x => x.ProductId == productId);
+
+                if (existingItem != null)
+                {
+                    // ❌ Remove from wishlist
+                    var deleteResponse = await _httpClient.DeleteAsync($"AdminAPI/wishlist/{existingItem.Id}");
+                    if (deleteResponse.IsSuccessStatusCode)
+                    {
+                        // return JSON instead of redirect/toast
+                        return Ok(new
+                        {
+                            success = true,
+                            isInWishlist = false,
+                            message = "Product removed from wishlist."
+                        });
+                    }
+
+                    var err = await deleteResponse.Content.ReadAsStringAsync();
+                    return StatusCode((int)deleteResponse.StatusCode, new
+                    {
+                        success = false,
+                        isInWishlist = true,
+                        message = string.IsNullOrWhiteSpace(err) ? "Failed to remove product from wishlist." : err
+                    });
+                }
+                else
+                {
+                    // ✅ Add to wishlist
+                    var postData = new { UserId = userId, ProductId = productId };
+                    var postResponse = await _httpClient.PostAsJsonAsync("AdminAPI/wishlist", postData);
+
+                    if (postResponse.IsSuccessStatusCode)
+                    {
+                        return Ok(new
+                        {
+                            success = true,
+                            isInWishlist = true,
+                            message = "Product added to wishlist."
+                        });
+                    }
+
+                    var err = await postResponse.Content.ReadAsStringAsync();
+                    return StatusCode((int)postResponse.StatusCode, new
+                    {
+                        success = false,
+                        isInWishlist = false,
+                        message = string.IsNullOrWhiteSpace(err) ? "Failed to add product to wishlist." : err
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Unexpected error while toggling wishlist for product {ProductId}", productId);
+                return StatusCode(500, new
+                {
+                    success = false,
+                    isInWishlist = false,
+                    message = "Unexpected error. Please try again."
+                });
+            }
+        }
 
 
-		public async Task<IActionResult> Wishlist()
+
+        public async Task<IActionResult> Wishlist()
 		{
 			var userId = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 			if (string.IsNullOrEmpty(userId))
@@ -2193,7 +2225,6 @@ namespace NuraHerbex.Controllers
 				_notyf.Error("Unable to cancel return request.", 5);
 			}
 
-			// Redirect back to whatever page shows returns
 			return RedirectToAction("MyOrders", "Home"); 
 		}
         [HttpGet]
