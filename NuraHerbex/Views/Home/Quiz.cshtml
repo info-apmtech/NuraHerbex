@@ -40,7 +40,8 @@
             <div class="quiz-box" id="quiz-container">
 
                 <div class="quiz-question">
-                    <p>Select a Quiz Category</p>
+                    @* <p>Select a Quiz Category</p> *@
+                    <p>Your Quiz, Your Choice — Pick a Category</p>
                 </div>
 
                 <div class="quiz-options">
@@ -58,24 +59,24 @@
 </section>
 
 <script>
-    let currentQuestionIndex = 0;
+        let currentQuestionIndex = 0;
     let totalPoints = 0;
     let selectedCategoryId = null;
 
-    // Start quiz when a category is clicked
+    let answers = {}; // Stores selected option by question index
+
+    // Start quiz when clicking a category
     document.querySelectorAll('.category-btn').forEach(btn => {
         btn.addEventListener('click', async () => {
             selectedCategoryId = btn.dataset.categoryId;
             currentQuestionIndex = 0;
             totalPoints = 0;
+            answers = {};
             await loadQuestion();
         });
     });
 
-    // Load a single question via HomeController's GetQuestion
-    async function loadQuestion(selectedPoints = 0) {
-        totalPoints += selectedPoints;
-
+    async function loadQuestion() {
         try {
             const response = await fetch(`/Home/GetQuestion?categoryId=${selectedCategoryId}&questionIndex=${currentQuestionIndex}&totalPoints=${totalPoints}`);
             const data = await response.json();
@@ -83,47 +84,85 @@
             const container = document.getElementById('quiz-container');
             container.innerHTML = '';
 
-            // Finish
             if (data.quizFinished) {
                 window.location.href = data.redirectUrl;
                 return;
             }
 
-            // Build question UI
-            const questionHtml = `
+            const savedPoints = answers[currentQuestionIndex] ?? null;
+
+            const html = `
                 <div class="quiz-question">
                     <span class="quiz-badge">Q${data.currentQuestionIndex + 1}</span>
                     <p>${data.currentQuestion.QuestionText}</p>
                 </div>
 
                 <div class="quiz-options">
-                    ${data.options.map(o =>
-                        `<button class="quiz-option" onclick="nextQuestion(${o.Points})">${o.OptionText}</button>`
-                    ).join('')}
+                    ${data.options.map(o => `
+                        <button class="quiz-option ${savedPoints === o.Points ? 'active' : ''}"
+                                data-points="${o.Points}">
+                            ${o.OptionText}
+                        </button>
+                    `).join('')}
                 </div>
 
                 <div class="quiz-footer">
-                    <span class="quiz-progress">Question ${data.currentQuestionIndex + 1}</span>
-                </div>
+                    <span class="quiz-progress">
+                        Question ${data.currentQuestionIndex + 1} of ${data.totalQuestions}
+                    </span>
 
-                <p>Score so far: ${data.totalPoints}</p>
+                    <div class="quiz-nav">
+                        <button class="nav-btn prev-btn" id="prevBtn" ${currentQuestionIndex === 0 ? 'disabled' : ''}>
+                            Previous
+                        </button>
+                        <button class="nav-btn next-btn" id="nextBtn">
+                            Next
+                        </button>
+                    </div>
+                </div>
             `;
 
-            container.innerHTML = questionHtml;
-            currentQuestionIndex++;
+            container.innerHTML = html;
+
+            // Option selection
+            document.querySelectorAll('.quiz-option').forEach(option => {
+                option.addEventListener('click', () => {
+                    document.querySelectorAll('.quiz-option').forEach(o => o.classList.remove('active'));
+                    option.classList.add('active');
+
+                    answers[currentQuestionIndex] = Number(option.dataset.points);
+                });
+            });
+
+            // NEXT BUTTON — requires selection
+            document.getElementById("nextBtn").onclick = () => {
+                if (answers[currentQuestionIndex] == null) {
+                    alert("Please select an option before continuing.");
+                    return;
+                }
+
+                currentQuestionIndex++;
+                updateTotalPoints();
+                loadQuestion();
+            };
+
+            // PREVIOUS BUTTON
+            document.getElementById("prevBtn").onclick = () => {
+                currentQuestionIndex--;
+                loadQuestion();
+            };
 
         } catch (error) {
-            console.error('Error loading question', error);
-            alert('Failed to load the question. Check console for details.');
+            console.error("Error loading question", error);
+            alert("Failed to load question.");
         }
     }
 
-    function nextQuestion(points) {
-        loadQuestion(points);
+    function updateTotalPoints() {
+        totalPoints = Object.values(answers).reduce((a, b) => a + b, 0);
     }
+
 </script>
-
-
 
 @* <section class="quiz-section">
     <div class="quiz-wrapper">

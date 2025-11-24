@@ -1,6 +1,7 @@
 ﻿using AspNetCoreHero.ToastNotification.Abstractions;
 using Domain.Extensions;
 using Domain.Implementation;
+using Domain.Interface;
 using Domain.Models;
 using Domain.ViewModel;
 using MailKit;
@@ -21,6 +22,7 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Mail;
 using System.Security.Claims;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
@@ -36,16 +38,18 @@ namespace NuraHerbex.Controllers
 		private readonly IHttpClientFactory _httpClientFactory;
 		private readonly ILogger<HomeController> _logger;
 		private readonly EmailSettings _emailSettings;
-		private readonly IHttpContextAccessor _httpContextAccessor;
-		private readonly INotyfService _notyf;
-		private readonly HttpClient _httpClient;
-		private JsonSerializerOptions? _jsonOptions;
+        private readonly IEmailService _emailService;
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly INotyfService _notyf;
+        private readonly HttpClient _httpClient;
+        private JsonSerializerOptions? _jsonOptions;
 
-		public HomeController(ILogger<HomeController> logger, IHttpClientFactory httpClientFactory, IOptions<EmailSettings> emailSettings, IHttpContextAccessor httpContextAccessor, INotyfService notyf)
+        public HomeController(ILogger<HomeController> logger, IHttpClientFactory httpClientFactory, IOptions<EmailSettings> emailSettings, IEmailService emailService, IHttpContextAccessor httpContextAccessor, INotyfService notyf)
 		{
 			_logger = logger;
 			_emailSettings = emailSettings.Value;
-			_httpClientFactory = httpClientFactory;
+            _emailService = emailService;
+            _httpClientFactory = httpClientFactory;
 			_httpContextAccessor = httpContextAccessor;
 			_notyf = notyf;
 			_httpClient = httpClientFactory.CreateClient("NuraHerbexApi");
@@ -609,15 +613,16 @@ namespace NuraHerbex.Controllers
 			var allOptions = JsonConvert.DeserializeObject<List<QuizOption>>(optionsJson);
 			var options = allOptions.Where(o => o.QuestionId == currentQuestion.Id).ToList();
 
-			return Json(new
-			{
-				quizFinished = false,
-				currentQuestionIndex = questionIndex,
-				totalPoints,
-				currentQuestion = currentQuestion,
-				options
-			});
-		}
+            return Json(new
+            {
+                quizFinished = false,
+                currentQuestionIndex = questionIndex,
+                totalPoints,
+                totalQuestions = questions.Count,
+                currentQuestion = currentQuestion,
+                options
+            });
+        }
 
 		public async Task<IActionResult> Ingredients()
 		{
@@ -1050,58 +1055,90 @@ namespace NuraHerbex.Controllers
 			return View(list);
 		}
 
-		[HttpPost]
-		public async Task<IActionResult> ToggleWishlist(int productId)
-		{
-			var userId = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        [HttpPost]
+        public async Task<IActionResult> ToggleWishlist(int productId)
+        {
+            var userId = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-			if (string.IsNullOrEmpty(userId))
-			{
-				_notyf.Warning("Please login to modify wishlist.", 5);
-				return RedirectToAction("Index");
-			}
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized(new { message = "Please login to modify wishlist." });
+            }
 
-			try
-			{
-				// 1?? Get current wishlist
-				var wishlistResponse = await _httpClient.GetAsync($"AdminAPI/wishlist/{userId}");
-				var wishlistItems = wishlistResponse.IsSuccessStatusCode
-					? await wishlistResponse.Content.ReadFromJsonAsync<List<WishlistItem>>()
-					: new List<WishlistItem>();
+            try
+            {
+                // 1️⃣ Get current wishlist
+                var wishlistResponse = await _httpClient.GetAsync($"AdminAPI/wishlist/{userId}");
+                var wishlistItems = wishlistResponse.IsSuccessStatusCode
+                    ? await wishlistResponse.Content.ReadFromJsonAsync<List<WishlistItem>>()
+                    : new List<WishlistItem>();
 
-				// 2?? Check if product already in wishlist
-				var existingItem = wishlistItems.FirstOrDefault(x => x.ProductId == productId);
+                // 2️⃣ Check if product already in wishlist
+                var existingItem = wishlistItems.FirstOrDefault(x => x.ProductId == productId);
 
-				if (existingItem != null)
-				{
-					// ? Remove from wishlist
-					var deleteResponse = await _httpClient.DeleteAsync($"AdminAPI/wishlist/{existingItem.Id}");
-					if (deleteResponse.IsSuccessStatusCode)
-						_notyf.Success("Product removed from wishlist.", 5);
-					else
-						_notyf.Error("Failed to remove product from wishlist.", 5);
-				}
-				else
-				{
-					// ? Add to wishlist
-					var postData = new { UserId = userId, ProductId = productId };
-					var postResponse = await _httpClient.PostAsJsonAsync("AdminAPI/wishlist", postData);
-					if (postResponse.IsSuccessStatusCode)
-						_notyf.Success("Product added to wishlist.", 5);
-					else
-						_notyf.Error("Failed to add product to wishlist.", 5);
-				}
-			}
-			catch (Exception ex)
-			{
-				_notyf.Error($"Unexpected error: {ex.Message}", 5);
-			}
+                if (existingItem != null)
+                {
+                    // ❌ Remove from wishlist
+                    var deleteResponse = await _httpClient.DeleteAsync($"AdminAPI/wishlist/{existingItem.Id}");
+                    if (deleteResponse.IsSuccessStatusCode)
+                    {
+                        // return JSON instead of redirect/toast
+                        return Ok(new
+                        {
+                            success = true,
+                            isInWishlist = false,
+                            message = "Product removed from wishlist."
+                        });
+                    }
 
-			return RedirectToAction("Index");
-		}
+                    var err = await deleteResponse.Content.ReadAsStringAsync();
+                    return StatusCode((int)deleteResponse.StatusCode, new
+                    {
+                        success = false,
+                        isInWishlist = true,
+                        message = string.IsNullOrWhiteSpace(err) ? "Failed to remove product from wishlist." : err
+                    });
+                }
+                else
+                {
+                    // ✅ Add to wishlist
+                    var postData = new { UserId = userId, ProductId = productId };
+                    var postResponse = await _httpClient.PostAsJsonAsync("AdminAPI/wishlist", postData);
+
+                    if (postResponse.IsSuccessStatusCode)
+                    {
+                        return Ok(new
+                        {
+                            success = true,
+                            isInWishlist = true,
+                            message = "Product added to wishlist."
+                        });
+                    }
+
+                    var err = await postResponse.Content.ReadAsStringAsync();
+                    return StatusCode((int)postResponse.StatusCode, new
+                    {
+                        success = false,
+                        isInWishlist = false,
+                        message = string.IsNullOrWhiteSpace(err) ? "Failed to add product to wishlist." : err
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Unexpected error while toggling wishlist for product {ProductId}", productId);
+                return StatusCode(500, new
+                {
+                    success = false,
+                    isInWishlist = false,
+                    message = "Unexpected error. Please try again."
+                });
+            }
+        }
 
 
-		public async Task<IActionResult> Wishlist()
+
+        public async Task<IActionResult> Wishlist()
 		{
 			var userId = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 			if (string.IsNullOrEmpty(userId))
@@ -2185,8 +2222,52 @@ namespace NuraHerbex.Controllers
 				_notyf.Error("Unable to cancel return request.", 5);
 			}
 
-			// Redirect back to whatever page shows returns
-			return RedirectToAction("MyOrders", "Home");
+			return RedirectToAction("MyOrders", "Home"); 
 		}
-	}
+        [HttpGet]
+        public IActionResult Contact()
+        {
+            return View(new ContactFormViewModel());
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Contact(ContactFormViewModel model)
+        {
+            if (!ModelState.IsValid)
+                return View(model);
+
+            // Build email body
+            var sb = new StringBuilder();
+            sb.AppendLine("<h2>New Contact Form Submission</h2>");
+            sb.AppendLine("<p><strong>Name:</strong> " + WebUtility.HtmlEncode(model.Name) + "</p>");
+            sb.AppendLine("<p><strong>Email:</strong> " + WebUtility.HtmlEncode(model.Email) + "</p>");
+            if (!string.IsNullOrWhiteSpace(model.Phone))
+                sb.AppendLine("<p><strong>Phone:</strong> " + WebUtility.HtmlEncode(model.Phone) + "</p>");
+            sb.AppendLine("<p><strong>Message:</strong></p>");
+            sb.AppendLine("<p>" + WebUtility.HtmlEncode(model.Message).Replace("\n", "<br />") + "</p>");
+
+            var subject = $"New contact message from {model.Name}";
+
+            try
+            {
+                // Send to your support inbox (FromAddress is your own email)
+                await _emailService.SendAsync(_emailSettings.FromAddress, /*"abusuhoothahamed678@gmail.com",*/ subject, sb.ToString());
+
+                _notyf.Success("Your message was sent. We’ll get back to you soon.");
+                return RedirectToAction("Contact");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to send contact email.");
+                _notyf.Error("Sorry, something went wrong while sending your message.");
+
+                // Show same page with error message
+                ModelState.AddModelError(string.Empty, "We couldn't send your message right now. Please try again later.");
+                return View(model);
+            }
+        }
+
+
+
+    }
 }

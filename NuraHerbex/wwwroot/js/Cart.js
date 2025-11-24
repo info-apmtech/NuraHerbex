@@ -125,7 +125,7 @@
             .attr("aria-hidden", "false");
     }
 
-
+    window.openLoginModal = openLoginModal;
     function closeLoginModal() {
         const $m = $("#loginModal");
         $m.removeClass("is-open")            // remove the class

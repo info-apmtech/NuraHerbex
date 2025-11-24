@@ -1,0 +1,745 @@
+﻿@using Domain.ViewModel
+@model ContactFormViewModel
+@{
+    ViewData["Title"] = "Contact Us";
+}
+
+<section class="contact-page-v2">
+
+    <div class="contact-page-v2-header">
+        <span class="pill-label">
+            <i class="fas fa-handshake"></i>
+            Contact
+        </span>
+        <h1>Let’s talk</h1>
+        <p>
+            Have questions, feedback, or need support? Share a few details and we’ll reach out as soon as possible.
+        </p>
+        <div class="header-meta">
+            <span><i class="fas fa-bolt"></i> Avg response within 24 hours</span>
+            <span><i class="fas fa-user-shield"></i> Your details are kept private</span>
+        </div>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert-success-v2">
+            <i class="fas fa-check-circle"></i>
+            <span>@TempData["Success"]</span>
+        </div>
+    }
+
+    <div class="contact-highlight-row">
+        <div class="highlight-card">
+            <div class="highlight-icon">
+                <i class="fas fa-envelope-open-text"></i>
+            </div>
+            <div class="highlight-text">
+                <h3>Email support</h3>
+                <p>Perfect for general questions, orders, and assistance.</p>
+            </div>
+        </div>
+        <div class="highlight-card">
+            <div class="highlight-icon">
+                <i class="fas fa-headset"></i>
+            </div>
+            <div class="highlight-text">
+                <h3>Dedicated team</h3>
+                <p>Our support specialists are here to help you.</p>
+            </div>
+        </div>
+        <div class="highlight-card">
+            <div class="highlight-icon">
+                <i class="fas fa-location-dot"></i>
+            </div>
+            <div class="highlight-text">
+                <h3>Physical location</h3>
+                <p>Visit us at our office during working hours.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="contact-page-v2-wrapper">
+
+        <!-- Left: Form -->
+        <div class="contact-form-panel">
+            <h2>Send us a message</h2>
+            <p class="contact-form-subtitle">
+                Tell us what you need help with and include any relevant details. We’ll reply by email or phone.
+            </p>
+
+            <div asp-validation-summary="ModelOnly" class="validation-summary"></div>
+
+            <form method="post" asp-action="Contact" class="contact-form-v2">
+
+                <div class="input-row">
+                    <div class="form-group-v2">
+                        <label asp-for="Name">Full Name</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-user input-icon"></i>
+                            <input asp-for="Name" class="input-v2" placeholder="John Doe" required />
+                        </div>
+                        <span asp-validation-for="Name" class="field-validation-error"></span>
+                    </div>
+
+                    <div class="form-group-v2">
+                        <label asp-for="Email">Email</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-envelope input-icon"></i>
+                            <input asp-for="Email" type="email" class="input-v2" placeholder="you@example.com" required />
+                        </div>
+                        <span asp-validation-for="Email" class="field-validation-error"></span>
+                    </div>
+                </div>
+
+                <div class="input-row">
+                    <div class="form-group-v2">
+                        <label asp-for="Phone">Phone (optional)</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-phone input-icon"></i>
+                            <input asp-for="Phone" class="input-v2" placeholder="+91 9876543210" />
+                        </div>
+                        <span asp-validation-for="Phone" class="field-validation-error"></span>
+                    </div>
+                </div>
+
+                <div class="form-group-v2">
+                    <div class="label-row">
+                        <label asp-for="Message">Message</label>
+                        <span class="label-hint">Share how we can help you</span>
+                    </div>
+                    <textarea asp-for="Message" class="textarea-v2" placeholder="Write your message here..." required></textarea>
+                    <span asp-validation-for="Message" class="field-validation-error"></span>
+                </div>
+
+                <div class="form-footer-row">
+                    <p class="privacy-note">
+                        <i class="fas fa-lock"></i>
+                        We only use your details to respond to your enquiry.
+                    </p>
+                    <button type="submit" class="btn-primary-v2">
+                        <span>Send Message</span>
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Right: Info -->
+        <div class="contact-info-panel">
+            <div class="info-inner">
+                <h2>Contact details</h2>
+                <p class="info-text">
+                    Prefer a more direct way? Reach out using any of the methods below.
+                </p>
+
+                <div class="info-list">
+                    <div class="info-item">
+                        <div class="icon-circle">
+                            <i class="fas fa-map-marker-alt"></i>
+                        </div>
+                        <div>
+                            <h3>Office Address</h3>
+                            <p>
+                                27A, Maruthi Nagar, Nehru St, Oil Mills Rd, Thundalam, Porur,<br />
+                                Kanchipuram, Sriperumbudur,<br />
+                                Tamil Nadu 600116
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="info-item">
+                        <div class="icon-circle">
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                        <div>
+                            <h3>Email</h3>
+                            <p><a href="mailto:support@nuraherbex.com">support@nuraherbex.com</a></p>
+                        </div>
+                    </div>
+
+                    <div class="info-item">
+                        <div class="icon-circle">
+                            <i class="fas fa-phone"></i>
+                        </div>
+                        <div>
+                            <h3>Phone</h3>
+                            <p><a href="tel:+919876543210">+91 9876543210</a></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="info-cta">
+                    <h4>Need urgent help?</h4>
+                    <p>
+                        Call us during support hours for immediate assistance, or walk in to our office with your order details.
+                    </p>
+                </div>
+
+                <div class="info-footer-text">
+                    <i class="fas fa-clock"></i>
+                    <span>Support hours: Mon–Sat, 9:00 AM – 7:00 PM IST</span>
+                </div>
+            </div>
+
+            <div class="map-shell">
+                <iframe src="https://www.google.com/maps?q=27A,+MARUTHI+NAGAR,+NEHRU+ST,+OIL+MILLS+RD,+THUNDALAM,+Porur,+Kanchipuram,+Sriperumbudur,+Tamil+Nadu+600116&output=embed"
+                        loading="lazy"
+                        allowfullscreen>
+                </iframe>
+            </div>
+        </div>
+
+    </div>
+
+</section>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+<style>
+    :root {
+        --primary: #f26b3a;
+        --primary-soft: rgba(242, 107, 58, 0.08);
+        --primary-soft-border: rgba(242, 107, 58, 0.25);
+        --primary-shadow: rgba(242, 107, 58, 0.35);
+        --bg-soft: #fff6ef;
+        --text-main: #2b1a12;
+        --text-muted: #7a6a62;
+        --border-soft: #e0d3c7;
+    }
+
+    /* Overall page */
+    .contact-page-v2 {
+        min-height: 100vh;
+        padding: 4rem 1.5rem 5rem;
+        background: radial-gradient(circle at top, #ffffff 0, var(--bg-soft) 45%, #ffffff 100%);
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        color: var(--text-main);
+    }
+
+    .contact-page-v2-header {
+        max-width: 800px;
+        margin: 0 auto 2.5rem;
+        text-align: center;
+    }
+
+    .pill-label {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.3rem 1rem;
+        border-radius: 999px;
+        background: var(--primary-soft);
+        color: var(--primary);
+        font-size: 0.78rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.09em;
+    }
+
+        .pill-label i {
+            font-size: 0.85rem;
+        }
+
+    .contact-page-v2-header h1 {
+        margin-top: 1.1rem;
+        margin-bottom: 0.75rem;
+        font-size: 2.5rem;
+        letter-spacing: -0.03em;
+        font-weight: 700;
+        color: var(--text-main);
+    }
+
+    .contact-page-v2-header p {
+        margin: 0 auto;
+        max-width: 560px;
+        font-size: 1rem;
+        color: var(--text-muted);
+    }
+
+    .header-meta {
+        margin-top: 1.2rem;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 0.75rem;
+        font-size: 0.86rem;
+        color: var(--text-muted);
+    }
+
+        .header-meta span {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.3rem 0.8rem;
+            border-radius: 999px;
+            background: #ffffff;
+            border: 1px solid rgba(0, 0, 0, 0.03);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.02);
+        }
+
+        .header-meta i {
+            color: var(--primary);
+        }
+
+    /* Success alert */
+    .alert-success-v2 {
+        max-width: 720px;
+        margin: 0 auto 2rem;
+        padding: 0.85rem 1.2rem;
+        border-radius: 0.75rem;
+        background: #ecfdf5;
+        border: 1px solid #6ee7b7;
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        color: #166534;
+        font-size: 0.92rem;
+        box-shadow: 0 8px 24px rgba(22, 163, 74, 0.08);
+    }
+
+        .alert-success-v2 i {
+            font-size: 1.1rem;
+        }
+
+    /* Highlight row */
+    .contact-highlight-row {
+        max-width: 1120px;
+        margin: 0 auto 2.5rem;
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 1.2rem;
+    }
+
+    .highlight-card {
+        background: #ffffff;
+        border-radius: 1rem;
+        padding: 1.1rem 1.2rem;
+        display: flex;
+        gap: 0.8rem;
+        align-items: flex-start;
+        border: 1px solid rgba(0, 0, 0, 0.02);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.03);
+    }
+
+    .highlight-icon {
+        width: 2.4rem;
+        height: 2.4rem;
+        border-radius: 999px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--primary-soft);
+        flex-shrink: 0;
+    }
+
+        .highlight-icon i {
+            color: var(--primary);
+            font-size: 1rem;
+        }
+
+    .highlight-text h3 {
+        font-size: 0.98rem;
+        font-weight: 600;
+        margin: 0 0 0.15rem;
+        color: var(--text-main);
+    }
+
+    .highlight-text p {
+        font-size: 0.82rem;
+        margin: 0;
+        color: var(--text-muted);
+    }
+
+    /* Layout wrapper */
+    .contact-page-v2-wrapper {
+        max-width: 1120px;
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns: minmax(0, 1.25fr) minmax(0, 1.1fr);
+        gap: 2rem;
+        align-items: stretch;
+    }
+
+    /* Left: Form panel */
+    .contact-form-panel {
+        background: #ffffff;
+        border-radius: 1.4rem;
+        padding: 2.4rem 2.4rem 2.6rem;
+        box-shadow: 0 18px 45px rgba(0, 0, 0, 0.06), 0 0 0 1px var(--primary-soft-border);
+        display: flex;
+        flex-direction: column;
+    }
+
+        .contact-form-panel h2 {
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+    .contact-form-subtitle {
+        font-size: 0.9rem;
+        color: var(--text-muted);
+        margin-bottom: 1.9rem;
+    }
+
+    .validation-summary {
+        margin-bottom: 1.2rem;
+        padding: 0.7rem 0.9rem;
+        border-radius: 0.6rem;
+        background: #fef2f2;
+        border: 1px solid #fecaca;
+        color: #b91c1c;
+        font-size: 0.84rem;
+    }
+
+    .contact-form-v2 {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    .input-row {
+        display: flex;
+        gap: 1.1rem;
+        flex-wrap: wrap;
+    }
+
+        .input-row > .form-group-v2 {
+            flex: 1 1 180px;
+        }
+
+    .form-group-v2 {
+        display: flex;
+        flex-direction: column;
+        gap: 0.45rem;
+    }
+
+        .form-group-v2 label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #5b4a42;
+        }
+
+    .label-row {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 0.75rem;
+    }
+
+    .label-hint {
+        font-size: 0.78rem;
+        color: var(--text-muted);
+    }
+
+    .input-wrapper {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+
+    .input-icon {
+        position: absolute;
+        left: 0.85rem;
+        font-size: 0.9rem;
+        color: var(--text-muted);
+        pointer-events: none;
+    }
+
+    .input-v2,
+    .textarea-v2 {
+        border-radius: 0.8rem;
+        border: 1px solid var(--border-soft);
+        padding: 0.75rem 0.9rem;
+        font-size: 0.93rem;
+        font-family: inherit;
+        color: var(--text-main);
+        transition: border-color 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease;
+        background: #fffaf6;
+    }
+
+    .input-v2 {
+        width: 100%;
+        padding-left: 2.3rem;
+    }
+
+        .input-v2::placeholder,
+        .textarea-v2::placeholder {
+            color: #b39a8c;
+        }
+
+        .input-v2:focus,
+        .textarea-v2:focus {
+            outline: none;
+            border-color: var(--primary);
+            background-color: #ffffff;
+            box-shadow: 0 0 0 1px var(--primary-soft-border), 0 0 0 4px rgba(242, 107, 58, 0.18);
+        }
+
+    .textarea-v2 {
+        min-height: 150px;
+        resize: vertical;
+        line-height: 1.5;
+        padding-top: 0.85rem;
+    }
+
+    .field-validation-error {
+        font-size: 0.78rem;
+        color: #b91c1c;
+    }
+
+    .form-footer-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        flex-wrap: wrap;
+        margin-top: 0.6rem;
+    }
+
+    .privacy-note {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        font-size: 0.8rem;
+        color: var(--text-muted);
+        max-width: 260px;
+    }
+
+        .privacy-note i {
+            color: var(--primary);
+        }
+
+    /* Button */
+    .btn-primary-v2 {
+        border: none;
+        border-radius: 999px;
+        padding: 0.9rem 1.6rem;
+        font-weight: 600;
+        font-size: 0.95rem;
+        letter-spacing: 0.03em;
+        text-transform: uppercase;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        cursor: pointer;
+        background: var(--primary);
+        color: #ffffff;
+        box-shadow: 0 12px 26px var(--primary-shadow);
+        transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease;
+        white-space: nowrap;
+    }
+
+        .btn-primary-v2:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 18px 40px rgba(242, 107, 58, 0.45);
+            filter: brightness(1.03);
+        }
+
+        .btn-primary-v2:active {
+            transform: translateY(0);
+            box-shadow: 0 8px 22px rgba(242, 107, 58, 0.30);
+        }
+
+        .btn-primary-v2 i {
+            font-size: 0.95rem;
+        }
+
+    /* Right: Info panel */
+    .contact-info-panel {
+        position: relative;
+        border-radius: 1.4rem;
+        overflow: hidden;
+        display: grid;
+        grid-template-rows: auto minmax(220px, 1fr);
+        background: #ffffff;
+        color: var(--text-main);
+        box-shadow: 0 18px 45px rgba(0, 0, 0, 0.06), 0 0 0 1px var(--primary-soft-border);
+        border-top: 4px solid var(--primary);
+    }
+
+    .info-inner {
+        padding: 2.2rem 2.3rem 1.8rem;
+    }
+
+    .contact-info-panel h2 {
+        font-size: 1.35rem;
+        font-weight: 600;
+        margin-bottom: 0.4rem;
+    }
+
+    .info-text {
+        font-size: 0.9rem;
+        color: var(--text-muted);
+        margin-bottom: 1.7rem;
+    }
+
+    .info-list {
+        display: flex;
+        flex-direction: column;
+        gap: 1.4rem;
+        margin-bottom: 1.4rem;
+    }
+
+    .info-item {
+        display: flex;
+        gap: 0.9rem;
+    }
+
+    .icon-circle {
+        width: 2.4rem;
+        height: 2.4rem;
+        border-radius: 999px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--primary-soft);
+        border: 1px solid rgba(242, 107, 58, 0.4);
+        flex-shrink: 0;
+    }
+
+        .icon-circle i {
+            font-size: 1.05rem;
+            color: var(--primary);
+        }
+
+    .info-item h3 {
+        font-size: 0.92rem;
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+    }
+
+    .info-item p {
+        font-size: 0.85rem;
+        color: #4b3a32;
+        margin: 0;
+        line-height: 1.4;
+    }
+
+    .info-item a {
+        color: var(--primary);
+        text-decoration: none;
+        border-bottom: 1px dashed transparent;
+        padding-bottom: 1px;
+    }
+
+        .info-item a:hover {
+            border-bottom-color: var(--primary);
+        }
+
+    .info-cta {
+        margin-bottom: 1.4rem;
+        padding: 0.9rem 1rem;
+        border-radius: 0.9rem;
+        background: var(--primary-soft);
+        border: 1px solid var(--primary-soft-border);
+    }
+
+        .info-cta h4 {
+            margin: 0 0 0.25rem;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .info-cta p {
+            margin: 0;
+            font-size: 0.82rem;
+            color: var(--text-muted);
+        }
+
+    .info-footer-text {
+        display: flex;
+        align-items: center;
+        gap: 0.55rem;
+        font-size: 0.8rem;
+        color: var(--text-muted);
+    }
+
+        .info-footer-text i {
+            font-size: 0.9rem;
+            color: var(--primary);
+        }
+
+    /* Map section */
+    .map-shell {
+        position: relative;
+        overflow: hidden;
+        border-top: 1px solid rgba(242, 107, 58, 0.2);
+        background: #fffaf6;
+    }
+
+        .map-shell iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            display: block;
+            filter: grayscale(20%) contrast(1.02);
+        }
+
+    /* Responsive */
+    @@media (max-width: 1024px) {
+        .contact-page-v2-wrapper {
+            grid-template-columns: minmax(0, 1fr);
+            gap: 1.8rem;
+        }
+
+        .contact-info-panel {
+            grid-template-rows: auto 260px;
+        }
+    }
+
+    @@media (max-width: 860px) {
+        .contact-highlight-row {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @@media (max-width: 640px) {
+        .contact-page-v2 {
+            padding: 3rem 1.1rem 3.5rem;
+        }
+
+        .contact-page-v2-header h1 {
+            font-size: 2rem;
+        }
+
+        .contact-form-panel,
+        .info-inner {
+            padding: 1.9rem 1.5rem 2rem;
+        }
+
+        .input-row {
+            flex-direction: column;
+        }
+
+        .form-footer-row {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .privacy-note {
+            max-width: 100%;
+        }
+
+        .contact-highlight-row {
+            grid-template-columns: minmax(0, 1fr);
+        }
+    }
+
+    @@media (max-width: 400px) {
+        .contact-page-v2-header h1 {
+            font-size: 1.7rem;
+        }
+
+        .btn-primary-v2 {
+            width: 100%;
+        }
+
+        .info-item {
+            align-items: flex-start;
+        }
+    }
+</style>
