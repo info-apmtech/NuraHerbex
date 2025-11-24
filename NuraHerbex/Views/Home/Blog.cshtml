@@ -121,14 +121,19 @@
                     <ul class="categories-list">
                         @foreach (var cat in Model.Categories)
                         {
-                            <li>
+                            var count = Model.CategoryCounts != null && Model.CategoryCounts.ContainsKey(cat.Id)
+                            ? Model.CategoryCounts[cat.Id]
+                            : 0;
+
+                            <li class="@(Model.CategoryId == cat.Id ? "active" : "")">
                                 <a href="@Url.Action("BlogsByCategory", "Home", new { categoryId = cat.Id })">
                                     @cat.Name
-                                    <span>(@Model.BlogList.Count(b => b.BlogCategoryIds.Split(',', StringSplitOptions.RemoveEmptyEntries).Contains(cat.Id.ToString())))</span>
+                                    <span>(@count)</span>
                                 </a>
                             </li>
                         }
                     </ul>
+
                 </div>
 
                 <!-- Popular Reads -->

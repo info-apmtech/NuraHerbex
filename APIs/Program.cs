@@ -136,6 +136,11 @@ builder.Services.AddSwaggerGen(c =>
 });
 builder.Services.AddAuthorization();
 var app = builder.Build();
+// Helpful during debugging – will show you the error that causes 500 on /swagger/v1/swagger.json
+if (app.Environment.IsDevelopment())
+{
+	app.UseDeveloperExceptionPage();
+}
 app.UseSwagger();
 app.UseSwaggerUI(c =>
 {

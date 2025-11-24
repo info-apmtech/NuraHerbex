@@ -3,7 +3,18 @@
 @{
 	ViewData["Title"] = "Home";
 }
+<style>
+	.price-row {
+		display: flex;
+		align-items: baseline; /* or center */
+		gap: 10px; /* space between price and compare price */
+	}
 
+	.card-price {
+		margin: 0; /* remove default p margin so it aligns nicely */
+	}
+
+</style>
 
 <!-- Hero Section -->
 <section class="hero-section">
@@ -306,7 +317,14 @@
 					<div class="card-info">
 						<h3 class="card-level-title">Level @level: @product.ProductName</h3>
 						<p class="card-level-description">@product.Description</p>
-						<p class="card-price">₹@finalPrice.ToString("N0")</p>
+						<div class="price-row">
+							<p class="card-price">₹@finalPrice.ToString("N0")</p>
+							<span class="shop-price-compare">
+								<s>₹ @product.Amount.ToString("N0")</s>
+								<span class="shop-discount">(@product.DiscountPercentage%)</span>
+							</span>
+						</div>
+
 						<div class="card-buttons">
 							<button class="btn-buy-now" onclick="location.href='@Url.Action("Shop", "Home", new { id = product.Id })'">Buy Now</button>
 							<button type="button" class="btn-add-cart" data-product-id="@product.Id">Add to Cart</button>

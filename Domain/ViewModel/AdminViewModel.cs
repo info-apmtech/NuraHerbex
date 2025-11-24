@@ -154,7 +154,8 @@ namespace Domain.ViewModel
         public List<int> SelectedCategoryIds { get; set; } = new List<int>();
         public int CategoryId { get; set; }
         public List<DoctorViewModel> Doctors { get; set; }
-    }
+		public Dictionary<int, int> CategoryCounts { get; set; } = new(); // 👈 NEW
+	}
     public class IngredientViewModel
     {
         public List<IngredientCategory> IngredientCategories { get; set; } = new List<IngredientCategory>();

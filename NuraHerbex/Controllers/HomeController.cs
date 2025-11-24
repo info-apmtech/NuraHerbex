@@ -188,7 +188,9 @@ namespace NuraHerbex.Controllers
 			{
 				BlogList = blogs,
 				Categories = categories,
-				Doctors = doctorViewModels
+				Doctors = doctorViewModels,
+				//CategoryId = null,                      
+				CategoryCounts = BuildCategoryCounts(blogs, categories) 
 			};
 
 			return View(vm);
@@ -228,6 +230,26 @@ namespace NuraHerbex.Controllers
 
 			return View(vm);
 		}
+		private static Dictionary<int, int> BuildCategoryCounts(List<Blog> blogs, List<BlogCategory> categories)
+		{
+			var dict = new Dictionary<int, int>();
+
+			foreach (var category in categories)
+			{
+				var count = blogs.Count(b =>
+					!string.IsNullOrEmpty(b.BlogCategoryIds) &&
+					b.BlogCategoryIds
+						.Split(',', StringSplitOptions.RemoveEmptyEntries)
+						.Contains(category.Id.ToString())
+				);
+
+				dict[category.Id] = count;
+			}
+
+			return dict;
+		}
+
+
 		public async Task<IActionResult> BlogsByCategory(int categoryId)
 		{
 			var blogsResponse = await _httpClient.GetAsync("AdminAPI/blogs");
@@ -249,7 +271,12 @@ namespace NuraHerbex.Controllers
 			}
 
 			// Filter blogs by category
-			var filteredBlogs = blogs.Where(b => !b.IsFeatured &&
+			//var filteredBlogs = blogs.Where(b => !b.IsFeatured &&
+			//	b.BlogCategoryIds.Split(',', StringSplitOptions.RemoveEmptyEntries)
+			//					 .Contains(categoryId.ToString()))
+			//	.OrderByDescending(b => b.CreatedAt)
+			//	.ToList();
+			var filteredBlogs = blogs.Where(b =>
 				b.BlogCategoryIds.Split(',', StringSplitOptions.RemoveEmptyEntries)
 								 .Contains(categoryId.ToString()))
 				.OrderByDescending(b => b.CreatedAt)
@@ -259,12 +286,13 @@ namespace NuraHerbex.Controllers
 			{
 				BlogList = filteredBlogs,
 				Categories = categories,
-				CategoryId = categoryId
+				CategoryId = categoryId,
+				CategoryCounts = BuildCategoryCounts(blogs, categories) // ✅ counts from ALL blogs
 			};
 
 			return View("BlogsByCategory", vm);
 		}
-        [HttpGet]
+		[HttpGet]
         public async Task<IActionResult> Plan(int? score)
         {
             var plans = await GetPlansFromApi();

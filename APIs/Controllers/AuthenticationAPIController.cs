@@ -51,7 +51,7 @@ namespace APIs.Controllers
 				return BadRequest("Default admin user already exists.");
 			var defaultUser = new RegisterUser
 			{
-				UserName = "Admin",
+				UserName = "admin@NuraHerbex.com",
 				Email = "admin@NuraHerbex.com",
 				FirstName = "Nura Herbex",
 				Role = UserRole.Admin,
