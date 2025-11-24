@@ -1579,7 +1579,7 @@ namespace NuraHerbex.Controllers
 			}
 			return RedirectToAction("ReturnResponse");
 		}
-	}
+	
 
         [HttpGet]
         public async Task<IActionResult> AdminMyProfile()

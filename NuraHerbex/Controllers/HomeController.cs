@@ -586,6 +586,7 @@ namespace NuraHerbex.Controllers
                 quizFinished = false,
                 currentQuestionIndex = questionIndex,
                 totalPoints,
+                totalQuestions = questions.Count,
                 currentQuestion = currentQuestion,
                 options
             });
