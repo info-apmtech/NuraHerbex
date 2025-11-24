@@ -1,4 +1,12 @@
-﻿<!DOCTYPE html>
+﻿@using System.Security.Claims
+
+@{
+    string? profileImagePath = User?.FindFirst("ProfileImagePath")?.Value;
+    bool hasProfileImage = !string.IsNullOrWhiteSpace(profileImagePath);
+
+    var displayName = User?.Identity?.Name ?? "User";
+}
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -35,12 +43,19 @@
             <div class="navbar-content scroll-div ">
                 <div class="">
                     <div class="main-menu-header">
-                        <img class="img-radius" src="~/assets/images/user/avatar-2.jpg" alt="User-Profile-Image">
+                        @if (hasProfileImage)
+                        {
+                            <img class="img-radius" src="@profileImagePath" alt="User-Profile-Image" />
+                        }
+                        else
+                        {
+                            <img class="img-radius" src="~/assets/images/user/avatar-2.jpg" alt="User-Profile-Image" />
+                        }
                         <div class="user-details">
-                            <span>@User.Identity?.Name</span>
-                            @* <div id="more-details"><i class="fa fa-chevron-down m-l-5"></i></div> *@
+                            <span>@displayName</span>
                         </div>
                     </div>
+
                   @*   <div class="collapse" id="nav-user-link">
                         <ul class="list-unstyled">
                             <li class="list-group-item"><a href="user-profile.html"><i class="feather icon-user m-r-5"></i>View Profile</a></li>
@@ -251,11 +266,17 @@
                         </a>
                         <div class="dropdown-menu dropdown-menu-right profile-notification">
                             <div class="pro-head">
-                                <img src="~/assets/images/user/avatar-1.jpg" class="img-radius" alt="User-Profile-Image">
-                                <span>@User.Identity?.Name</span>
-                                @* <a asp-action="LogOut" asp-controller="Authentication" class="dud-logout" title="Logout">
-                                    <i class="feather icon-log-out"></i>
-                                </a> *@
+                                @if (hasProfileImage)
+                                {
+                                    <img src="@profileImagePath" class="img-radius" alt="User-Profile-Image" />
+                                }
+                                else
+                                {
+                                    <img src="~/assets/images/user/avatar-1.jpg" class="img-radius" alt="User-Profile-Image" />
+                                }
+
+                                <span>@displayName</span>
+
                                 <form asp-controller="Authentication" asp-action="LogOut" method="post" style="display:inline;">
                                     @Html.AntiForgeryToken()
                                     <button type="submit"

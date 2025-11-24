@@ -81,8 +81,8 @@ namespace NuraHerbex.Controllers
             var claims = new List<Claim>
         {
             new Claim(ClaimTypes.NameIdentifier, result.User?.Id ?? string.Empty),
-            new Claim(ClaimTypes.Name, result.User?.UserName ?? string.Empty)
-        };
+            new Claim(ClaimTypes.Name, result.User?.UserName ?? string.Empty),
+			new Claim("ProfileImagePath", result.User?.ProfileImagePath ?? string.Empty)        };
 
             foreach (var role in roles)
                 claims.Add(new Claim(ClaimTypes.Role, role));

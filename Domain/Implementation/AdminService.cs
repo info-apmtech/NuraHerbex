@@ -91,9 +91,10 @@ namespace Domain.Implementation
 				existingUser.LastName = user.LastName;
 				existingUser.Address = user.Address;
 				existingUser.UpdatedAt = DateTime.Now;
+                existingUser.ProfileImagePath = user.ProfileImagePath;
 
-				// Update password only if explicitly provided
-				if (!string.IsNullOrWhiteSpace(user.Password))
+                // Update password only if explicitly provided
+                if (!string.IsNullOrWhiteSpace(user.Password))
 				{
 					var token = await _usermanager.GeneratePasswordResetTokenAsync(existingUser);
 					var passResult = await _usermanager.ResetPasswordAsync(existingUser, token, user.Password);
@@ -1460,8 +1461,10 @@ namespace Domain.Implementation
 			user.UserName    = dto.Email;
 			user.PhoneNumber = dto.PhoneNumber;
 			user.UpdatedAt   = DateTime.Now;
+            user.ProfileImagePath = dto.ProfileImagePath ?? user.ProfileImagePath;
 
-			return await _usermanager.UpdateAsync(user);
+
+            return await _usermanager.UpdateAsync(user);
 		}
 		public async Task<IdentityResult> ToggleUserActiveAsync(string id)
 		{

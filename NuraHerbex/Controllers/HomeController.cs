@@ -40,17 +40,19 @@ namespace NuraHerbex.Controllers
 		private readonly EmailSettings _emailSettings;
         private readonly IEmailService _emailService;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IWebHostEnvironment _environment;
         private readonly INotyfService _notyf;
         private readonly HttpClient _httpClient;
         private JsonSerializerOptions? _jsonOptions;
 
-        public HomeController(ILogger<HomeController> logger, IHttpClientFactory httpClientFactory, IOptions<EmailSettings> emailSettings, IEmailService emailService, IHttpContextAccessor httpContextAccessor, INotyfService notyf)
+        public HomeController(ILogger<HomeController> logger, IHttpClientFactory httpClientFactory, IOptions<EmailSettings> emailSettings, IEmailService emailService, IHttpContextAccessor httpContextAccessor, IWebHostEnvironment environment, INotyfService notyf)
 		{
 			_logger = logger;
 			_emailSettings = emailSettings.Value;
             _emailService = emailService;
             _httpClientFactory = httpClientFactory;
 			_httpContextAccessor = httpContextAccessor;
+			_environment = environment;
             _notyf = notyf;
             _httpClient = httpClientFactory.CreateClient("NuraHerbexApi");
 
@@ -296,10 +298,56 @@ namespace NuraHerbex.Controllers
 
 			return View("BlogsByCategory", vm);
 		}
-		[HttpGet]
+        //[HttpGet]
+        //      public async Task<IActionResult> Plan(int? score)
+        //      {
+        //          var plans = await GetPlansFromApi();
+
+        //          // If score is null → user came directly → show all plans
+        //          if (score == null)
+        //          {
+        //              ViewBag.IsFromQuiz = false;
+        //              return View(plans);
+        //          }
+
+        //          // User came via quiz
+        //          ViewBag.IsFromQuiz = true;
+        //          ViewBag.Score = score.Value;
+
+        //          List<PricingPlan> filteredPlans;
+
+        //          if (score <= 10)
+        //          {
+        //              filteredPlans = plans.Where(p => p.PlanName == "Elite Pack").ToList();
+        //          }
+        //          else if (score > 10 && score <= 15)
+        //          {
+        //              filteredPlans = plans.Where(p => p.PlanName == "Performance Pack").ToList();
+        //          }
+        //          else 
+        //          {
+        //              filteredPlans = plans.Where(p => p.PlanName == "Essential Pack").ToList();
+        //          }
+
+        //          return View(filteredPlans);
+        //      }
+
+
+        [HttpGet]
         public async Task<IActionResult> Plan(int? score)
         {
             var plans = await GetPlansFromApi();
+
+            // 🔹 Load feedbacks for Real Results section
+            var feedbacks = new List<FeedbackViewModel>();
+            var feedbackResponse = await _httpClient.GetAsync("AdminAPI/feedbacks");
+            if (feedbackResponse.IsSuccessStatusCode)
+            {
+                var json = await feedbackResponse.Content.ReadAsStringAsync();
+                feedbacks = JsonConvert.DeserializeObject<List<FeedbackViewModel>>(json) ?? new List<FeedbackViewModel>();
+            }
+
+            ViewBag.FeedbackList = feedbacks;
 
             // If score is null → user came directly → show all plans
             if (score == null)
@@ -322,15 +370,13 @@ namespace NuraHerbex.Controllers
             {
                 filteredPlans = plans.Where(p => p.PlanName == "Performance Pack").ToList();
             }
-            else 
+            else
             {
                 filteredPlans = plans.Where(p => p.PlanName == "Essential Pack").ToList();
             }
 
             return View(filteredPlans);
         }
-
-
 
         private async Task<List<PricingPlan>> GetPlansFromApi()
         {
@@ -1723,7 +1769,8 @@ namespace NuraHerbex.Controllers
 				vm.LastName = user.LastName;
 				vm.Email = user.Email;
 				vm.PhoneNumber = user.PhoneNumber;
-			}
+                vm.ProfileImagePath = user.ProfileImagePath;
+            }
 
 			// 2️⃣ Addresses
 			var addressesResponse = await _httpClient.GetAsync($"AdminAPI/addresses/{userId}");
@@ -1802,56 +1849,77 @@ namespace NuraHerbex.Controllers
             return await MyProfile(model.AddressDetail.Id);
 		}
 
-		[HttpPost]
-		[ValidateAntiForgeryToken]
-		public async Task<IActionResult> UpdateProfile(UserProfileViewModel model)
-		{
-			var userId = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "";
-			if (string.IsNullOrEmpty(userId))
-				return RedirectToAction("SignIn", "Authentication");
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdateProfile(UserProfileViewModel model)
+        {
+            var userId = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "";
+            if (string.IsNullOrEmpty(userId))
+                return RedirectToAction("SignIn", "Authentication");
 
-			var dto = new ProfileUpdateDto
-			{
-				Id = userId,
-				FirstName = model.FirstName,
-				LastName = model.LastName,
-				Email = model.Email,
-				PhoneNumber = model.PhoneNumber
-			};
+            // 🔹 Handle optional profile image upload
+            string? newProfileImagePath = null;
+            if (model.ProfileImageFile != null && model.ProfileImageFile.Length > 0)
+            {
+                var uploadsFolder = Path.Combine(_environment.WebRootPath, "uploads/users");
+                if (!Directory.Exists(uploadsFolder))
+                    Directory.CreateDirectory(uploadsFolder);
 
-			var response = await AuthorizedClient.PostAsJsonAsync("AdminAPI/profile", dto);
+                var uniqueFileName = Guid.NewGuid().ToString() + Path.GetExtension(model.ProfileImageFile.FileName);
+                var filePath = Path.Combine(uploadsFolder, uniqueFileName);
 
-			if (response.IsSuccessStatusCode)
-			{
-				_notyf.Success("Profile updated successfully", 5);
-				return RedirectToAction(nameof(MyProfile));
-			}
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await model.ProfileImageFile.CopyToAsync(stream);
+                }
 
-			var errorBody = await response.Content.ReadAsStringAsync();
+                newProfileImagePath = "/uploads/users/" + uniqueFileName;
+            }
+
+            var dto = new ProfileUpdateDto
+            {
+                Id = userId,
+                FirstName = model.FirstName,
+                LastName = model.LastName,
+                Email = model.Email,
+                PhoneNumber = model.PhoneNumber,
+                ProfileImagePath = newProfileImagePath ?? model.ProfileImagePath
+            };
+
+            var response = await AuthorizedClient.PostAsJsonAsync("AdminAPI/profile", dto);
+
+            if (response.IsSuccessStatusCode)
+            {
+                _notyf.Success("Profile updated successfully", 5);
+                return RedirectToAction(nameof(MyProfile));
+            }
+
+            var errorBody = await response.Content.ReadAsStringAsync();
             _notyf.Error(errorBody, 5);
 
-            // re-load addresses / dropdown data (same as GET MyProfile)
+            // reload dropdowns/addresses like before on error
             var addressesResponse = await _httpClient.GetAsync($"AdminAPI/addresses/{userId}");
-			model.Addresses = addressesResponse.IsSuccessStatusCode
-				? await addressesResponse.Content.ReadFromJsonAsync<List<AddressDetail>>()
-				: new List<AddressDetail>();
+            model.Addresses = addressesResponse.IsSuccessStatusCode
+                ? await addressesResponse.Content.ReadFromJsonAsync<List<AddressDetail>>()
+                : new List<AddressDetail>();
 
-			var countriesResponse = await _httpClient.GetAsync("AdminAPI/countries");
-			model.Countries = countriesResponse.IsSuccessStatusCode
-				? await countriesResponse.Content.ReadFromJsonAsync<List<Country>>()
-        : new List<Country>();
+            var countriesResponse = await _httpClient.GetAsync("AdminAPI/countries");
+            model.Countries = countriesResponse.IsSuccessStatusCode
+                ? await countriesResponse.Content.ReadFromJsonAsync<List<Country>>()
+                : new List<Country>();
 
-			var statesResponse = await _httpClient.GetAsync("AdminAPI/states");
-			model.States = statesResponse.IsSuccessStatusCode
-				? await statesResponse.Content.ReadFromJsonAsync<List<State>>()
-				: new List<State>();
+            var statesResponse = await _httpClient.GetAsync("AdminAPI/states");
+            model.States = statesResponse.IsSuccessStatusCode
+                ? await statesResponse.Content.ReadFromJsonAsync<List<State>>()
+                : new List<State>();
 
-			return View("MyProfile", model);
-		}
+            return View("MyProfile", model);
+        }
 
 
 
-		[HttpPost]
+
+        [HttpPost]
 		[ValidateAntiForgeryToken]
 		public async Task<IActionResult> DeleteAddress(int id)
 		{

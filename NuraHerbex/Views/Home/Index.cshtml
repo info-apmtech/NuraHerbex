@@ -266,7 +266,7 @@
 					url: '@Url.Action("ToggleWishlist", "Home")',
 					data: { productId: productId },
 					statusCode: {
-						// 👇 Exactly like cart: if 401, open login popup
+						//  if 401, open login popup
 						401: function () {
 							if (window.openLoginModal) {
 								window.openLoginModal();

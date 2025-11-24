@@ -54,11 +54,31 @@
                         <h5 class="mb-0">Personal Information</h5>
                     </div>
                     <div class="card-body">
-                        <form asp-action="AdminMyProfile" asp-controller="Admin" method="post">
+                        <form asp-action="AdminMyProfile" asp-controller="Admin" method="post" enctype="multipart/form-data">
                             @Html.AntiForgeryToken()
 
                             <input asp-for="Id" type="hidden" />
 
+                            <!-- Profile Image preview -->
+                            <div class="text-center mb-4">
+                                <img src="@(string.IsNullOrWhiteSpace(Model.ProfileImagePath)
+                        ? Url.Content("~/assets/images/user/avatar-1.jpg")
+                        : Model.ProfileImagePath)"
+                                     class="img-radius"
+                                     style="width:100px; height:100px; object-fit:cover;"
+                                     alt="Profile Image" />
+                            </div>
+
+                            <!-- Upload field -->
+                            <div class="mb-3">
+                                <label class="form-label">Profile Image</label>
+                                <input asp-for="ProfileImageFile"
+                                       type="file"
+                                       class="form-control"
+                                       accept="image/*" />
+                                <span class="form-text text-muted">
+                                </span>
+                            </div>
                             <div class="row">
                                 <div class="col-md-6 mb-3">
                                     <label asp-for="FirstName" class="form-label">First Name</label>

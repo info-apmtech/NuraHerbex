@@ -1,5 +1,10 @@
 ﻿@using Domain.Models
 @using Domain.ViewModel
+@using System.Security.Claims
+@{
+    string? profileImagePath = User?.FindFirst("ProfileImagePath")?.Value;
+    bool hasProfileImage = !string.IsNullOrWhiteSpace(profileImagePath);
+}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -131,11 +136,21 @@
                 {
                     <div class="user-profile dropdown">
                         <button class="user-profile-btn dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-                            <svg class="user-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                                <circle cx="12" cy="7" r="4"></circle>
-                            </svg>
+                            @if (hasProfileImage)
+                            {
+                                <img src="@profileImagePath"
+                                     alt="User"
+                                     class="user-icon"
+                                     style="width:32px;height:32px;border-radius:50%;object-fit:cover;" />
+                            }
+                            else
+                            {
+                                <svg class="user-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                    <circle cx="12" cy="7" r="4"></circle>
+                                </svg>
+                            }
 
                             <div class="user-text">
                                 <span class="welcome-text">Welcome,</span>
@@ -311,7 +326,7 @@
                         <li><a href="#">Shipping Info</a></li>
                         <li><a href="#">Returns</a></li>
                         <li><a href="#">FAQ</a></li>
-                        <li><a href="#">Contact Us</a></li>
+                        <li><a href ="@Url.Action("Contact", "Home")">Contact Us</a></li>
                     </ul>
                 </div>
 
