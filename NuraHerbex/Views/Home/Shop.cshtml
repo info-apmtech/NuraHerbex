@@ -5,125 +5,175 @@
 
 @model Domain.ViewModel.ProductViewModel
 @{
-    ViewData["Title"] = "Shop";
+	ViewData["Title"] = "Shop";
 
-    string FirstImg(string? imgs, string fallback)
-    {
-        return (imgs ?? "")
-            .Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-            .FirstOrDefault() ?? Url.Content(fallback);
-        (string Head, string Desc) Unpack(string? s)
-        {
-            if (string.IsNullOrWhiteSpace(s)) return ("", "");
-            var i = s.IndexOf('|');
-            return i >= 0 ? (s[..i].Trim(), s[(i + 1)..].Trim()) : (s.Trim(), "");
-        }
-    }
+	string FirstImg(string? imgs, string fallback)
+	{
+		return (imgs ?? "")
+			.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+			.FirstOrDefault() ?? Url.Content(fallback);
+		(string Head, string Desc) Unpack(string? s)
+		{
+			if (string.IsNullOrWhiteSpace(s)) return ("", "");
+			var i = s.IndexOf('|');
+			return i >= 0 ? (s[..i].Trim(), s[(i + 1)..].Trim()) : (s.Trim(), "");
+		}
+	}
+@functions {
+	public string GetBenefitImageFile(string heading)
+	{
+		if (string.IsNullOrWhiteSpace(heading))
+			return "keybenefit1.jpg"; // fallback image
+
+		heading = heading.Trim().ToLowerInvariant();
+
+		if (heading.StartsWith("enhanced energy"))
+			return "keybenefit1.jpg";
+
+		if (heading.StartsWith("improved focus"))
+			return "keybenefit2.jpg";
+
+		if (heading.StartsWith("antioxidant support"))
+			return "keybenefit3.jpg";
+
+		if (heading.StartsWith("all-day stamina"))
+			return "keybenefit4.jpg";
+
+		return "keybenefit1.jpg";
+	}
+	public string GetWhoThisisImageFile(string heading)
+	{
+		if (string.IsNullOrWhiteSpace(heading))
+			return "busyprofessional.jpg"; // fallback image
+
+		heading = heading.Trim().ToLowerInvariant();
+
+		if (heading.StartsWith("Busy Professionals"))
+			return "busyprofessional.jpg";
+
+		if (heading.StartsWith("Health-Conscious Beginners"))
+			return "keybenefit2.jpg";
+		if (heading.StartsWith("Daily Energy Seekers"))
+			return "dailyenergyseeker.jpg";
+
+		return "busyprofessional.jpg";
+	}
+}
 
 
 }
+
 <style>
-    .benefit-icon, .who-icon {
-        color: #ff8800;
-    }
-        .benefit-icon svg *, .who-icon svg * {
-            fill: none;
-            stroke: currentColor;
-        }
+	.benefit-icon, .who-icon {
+		color: #ff8800;
+	}
 
-        .benefit-icon svg .fill, .who-icon svg .fill {
-            fill: currentColor;
-            stroke: none;
-        }
+		.benefit-icon svg *, .who-icon svg * {
+			fill: none;
+			stroke: currentColor;
+		}
 
-        .benefit-icon svg, .who-icon svg {
-            width: 32px;
-            height: 32px;
-            display: inline-block;
-        }
-    /*Shop cart button*/
-    .btn-add-cart {
-        padding: 0.83rem 1.5rem;
-        font-size: 1rem;
-        font-weight: 700;
-        background: #ff8800;
-        color: #fff;
-        border: none;
-        border-radius: 7px;
-        cursor: pointer;
-        margin: 0;
-        transition: background 0.2s;
-        white-space: nowrap;
-    }
+		.benefit-icon svg .fill, .who-icon svg .fill {
+			fill: currentColor;
+			stroke: none;
+		}
 
-        .btn-add-cart:hover {
-            background: #ed7300;
-        }
+		.benefit-icon svg, .who-icon svg {
+			width: 32px;
+			height: 32px;
+			display: inline-block;
+		}
+	/*Shop cart button*/
+	.btn-add-cart {
+		padding: 0.83rem 1.5rem;
+		font-size: 1rem;
+		font-weight: 700;
+		background: #ff8800;
+		color: #fff;
+		border: none;
+		border-radius: 7px;
+		cursor: pointer;
+		margin: 0;
+		transition: background 0.2s;
+		white-space: nowrap;
+	}
+
+		.btn-add-cart:hover {
+			background: #ed7300;
+		}
+
+	.benefit-icon-img {
+		width: 40px;
+		height: 40px;
+		object-fit: contain;
+		display: block;
+	}
+
 
 </style>
 
 <section class="shop-hero-section">
-    <div class="shop-hero-container">
-        <div class="shop-hero-header">
-            <h2 class="shop-hero-title">STAMIX Shop</h2>
-            <p class="shop-hero-subtitle">Choose Your Level of Transformation</p>
-        </div>
+	<div class="shop-hero-container">
+		<div class="shop-hero-header">
+			<h2 class="shop-hero-title">STAMIX Shop</h2>
+			<p class="shop-hero-subtitle">Choose Your Level of Transformation</p>
+		</div>
 
-        @{
-            
-            var product = (Model?.NewProduct != null && Model.NewProduct.Id > 0)
-            ? Model.NewProduct
-            : Model?.ProductList?.FirstOrDefault();
+		@{
 
-            var images = (product.ProductImages ?? string.Empty)
-            .Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-            .ToList();
+			var product = (Model?.NewProduct != null && Model.NewProduct.Id > 0)
+			? Model.NewProduct
+			: Model?.ProductList?.FirstOrDefault();
 
-            var primaryImg = images.FirstOrDefault() ?? Url.Content("~/image/shop/Stamix1.png");
-            var inr = new CultureInfo("en-IN");
-            var amount = product.Amount;
-            var discountPct = decimal.Clamp(product.DiscountPercentage, 0m, 100m);
-            var finalAmt = amount - (amount * (discountPct / 100m));
+			var images = (product.ProductImages ?? string.Empty)
+			.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+			.ToList();
 
-            var rawBenefits = new[] { product.KeyBenefits1, product.KeyBenefits2, product.KeyBenefits3, product.KeyBenefits4 }
-            .Where(s => !string.IsNullOrWhiteSpace(s)).ToList();
+			var primaryImg = images.FirstOrDefault() ?? Url.Content("~/image/shop/Stamix1.png");
+			var inr = new CultureInfo("en-IN");
+			var amount = product.Amount;
+			var discountPct = decimal.Clamp(product.DiscountPercentage, 0m, 100m);
+			var finalAmt = amount - (amount * (discountPct / 100m));
 
-            var forThisList = new[] { product.ForThis1, product.ForThis2, product.ForThis3, product.ForThis4 }
-            .Where(s => !string.IsNullOrWhiteSpace(s)).ToList();
-            var initial = new
-            {
-                id = product.Id,
-                productName = product.ProductName,
-                description = string.IsNullOrWhiteSpace(product.Description) ? product.SubTitle : product.Description,
-                amount = product.Amount,
-                discountPct = product.DiscountPercentage,
-                productImages = product.ProductImages,
-                keyBenefits1 = product.KeyBenefits1,
-                keyBenefits2 = product.KeyBenefits2,
-                keyBenefits3 = product.KeyBenefits3,
-                keyBenefits4 = product.KeyBenefits4,
-                forThis1 = product.ForThis1,
-                forThis2 = product.ForThis2,
-                forThis3 = product.ForThis3,
-                forThis4 = product.ForThis4
-            };
+			var rawBenefits = new[] { product.KeyBenefits1, product.KeyBenefits2, product.KeyBenefits3, product.KeyBenefits4 }
+			.Where(s => !string.IsNullOrWhiteSpace(s)).ToList();
 
-            var initialJson = STJ.JsonSerializer.Serialize(
-            initial,
-            new STJ.JsonSerializerOptions { PropertyNamingPolicy = STJ.JsonNamingPolicy.CamelCase }
-            );
-        }
+			var forThisList = new[] { product.ForThis1, product.ForThis2, product.ForThis3, product.ForThis4 }
+			.Where(s => !string.IsNullOrWhiteSpace(s)).ToList();
+			var initial = new
+			{
+				id = product.Id,
+				productName = product.ProductName,
+				description = string.IsNullOrWhiteSpace(product.Description) ? product.SubTitle : product.Description,
+				amount = product.Amount,
+				discountPct = product.DiscountPercentage,
+				productImages = product.ProductImages,
+				keyBenefits1 = product.KeyBenefits1,
+				keyBenefits2 = product.KeyBenefits2,
+				keyBenefits3 = product.KeyBenefits3,
+				keyBenefits4 = product.KeyBenefits4,
+				forThis1 = product.ForThis1,
+				forThis2 = product.ForThis2,
+				forThis3 = product.ForThis3,
+				forThis4 = product.ForThis4
+			};
 
-        <div class="shop-main-content">
-            @if (Model?.ProductList?.Any() == true && product is not null)
-            {
-                <div class="shop-product-image">
-                    <!-- BIG IMAGE -->
-                    <img id="mainImg" src="@primaryImg" alt="@product.ProductName" />
+			var initialJson = STJ.JsonSerializer.Serialize(
+			initial,
+			new STJ.JsonSerializerOptions { PropertyNamingPolicy = STJ.JsonNamingPolicy.CamelCase }
+			);
+		}
 
-                    <!-- UNDER-MAIN GALLERY (swaps only the big image) -->
-                    <div id="productGallery" class="shop-product-thumbs">
-                        @* @if (images.Any())
+		<div class="shop-main-content">
+			@if (Model?.ProductList?.Any() == true && product is not null)
+			{
+				<div class="shop-product-image">
+					<!-- BIG IMAGE -->
+					<img id="mainImg" src="@primaryImg" alt="@product.ProductName" />
+
+					<!-- UNDER-MAIN GALLERY (swaps only the big image) -->
+					<div id="productGallery" class="shop-product-thumbs">
+						@* @if (images.Any())
                         {
                             foreach (var img in images)
                             {
@@ -136,277 +186,287 @@
                             <img src="~/image/shop/Stamix2.png" alt="fallback 2" />
                             <img src="~/image/shop/Stamix3.png" alt="fallback 3" />
                         } *@
-                    </div>
-                </div>
+					</div>
+				</div>
 
-                <div class="shop-product-content">
-                    <div class="shop-product-details-row">
-                        <div class="shop-product-details">
-                            <span class="shop-badge">FEATURED</span>
+				<div class="shop-product-content">
+					<div class="shop-product-details-row">
+						<div class="shop-product-details">
+							<span class="shop-badge">FEATURED</span>
 
-                            <h1 id="prodName" class="shop-level-title">@product.ProductName</h1>
-                            <div class="shop-mobile-title-row">
-                                <span class="shop-mobile-title">@product.ProductName</span>
-                                <span class="shop-mobile-badge">FEATURED</span>
-                            </div>
+							<h1 id="prodName" class="shop-level-title">@product.ProductName</h1>
+							<div class="shop-mobile-title-row">
+								<span class="shop-mobile-title">@product.ProductName</span>
+								<span class="shop-mobile-badge">FEATURED</span>
+							</div>
 
-                            <p id="prodDesc" class="shop-level-description">
-                                @(!string.IsNullOrWhiteSpace(product.Description) ? product.Description : product.SubTitle)
-                            </p>
+							<p id="prodDesc" class="shop-level-description">
+								@(!string.IsNullOrWhiteSpace(product.Description) ? product.Description : product.SubTitle)
+							</p>
 
-                            <div id="priceRow" class="shop-price-row">
-                                @if (discountPct > 0)
-                                {
-                                    <span class="shop-price">
-                                        ₹ @finalAmt.ToString("N0", inr) <span class="unit-tag">/per box</span>
-                                    </span>
-                                    <span class="shop-price-compare">
-                                        <s>₹ @amount.ToString("N0", inr)</s> <span class="shop-discount">(@discountPct%)</span>
-                                    </span>
-                                }
-                                else
-                                {
-                                    <span class="shop-price">
-                                        ₹ @amount.ToString("N0", inr) <span class="unit-tag">/per box</span>
-                                    </span>
-                                }
-                            </div>
+							<div id="priceRow" class="shop-price-row">
+								@if (discountPct > 0)
+								{
+									<span class="shop-price">
+										₹ @finalAmt.ToString("N0", inr) <span class="unit-tag">/per box</span>
+									</span>
+									<span class="shop-price-compare">
+										<s>₹ @amount.ToString("N0", inr)</s> <span class="shop-discount">(@discountPct%)</span>
+									</span>
+								}
+								else
+								{
+									<span class="shop-price">
+										₹ @amount.ToString("N0", inr) <span class="unit-tag">/per box</span>
+									</span>
+								}
+							</div>
 
-                            <div class="shop-action-row">
-                                <div class="shop-action-buttons">
-                                    <button id="buyBtn" class="shop-buy-btn"
-                                            onclick="location.href='@Url.Action("Checkout", "Shop", new { id = product.Id })'">
-                                        Buy Now
-                                    </button>
-                                    <button onclick="location.href='@Url.Action("Quiz", "Home")'" class="shop-quiz-btn">Take Quiz</button>
-                                    <button type="button" class="btn-add-cart" data-product-id="@product.Id">Add to Cart</button>
-                                </div>
-                                <span class="shop-choose-help">Confused to Choose Your Level?</span>
-                            </div>
-                        </div>
+							<div class="shop-action-row">
+								<div class="shop-action-buttons">
+									<button id="buyBtn" class="shop-buy-btn"
+											onclick="location.href='@Url.Action("OrderSummary", "Home", new { id = product.Id })'">
+										Buy Now
+									</button>
+									<button onclick="location.href='@Url.Action("Quiz", "Home")'" class="shop-quiz-btn">Take Quiz</button>
+									<button type="button" class="btn-add-cart" data-product-id="@product.Id">Add to Cart</button>
+								</div>
+								<span class="shop-choose-help">Confused to Choose Your Level?</span>
+							</div>
+						</div>
 
-                        <!-- RIGHT-SIDE PRODUCT SWITCHER (clicking here swaps the WHOLE product) -->
-                        <div id="productSwitcher" class="shop-product-thumbs vertical">
-                            @foreach (var p in Model.ProductList)
-                            {
-                                var thumb = FirstImg(p.ProductImages, "~/image/shop/Stamix1.png");
-                                <img src="@thumb"
-                                     alt="@p.ProductName"
-                                     class="@(p.Id == product.Id ? "active" : "")"
-                                     data-product-id="@p.Id" />
-                            }
-                        </div>
-                    </div>
-                </div>
-            }
-            else
-            {
-                <div class="alert alert-info">No products available.</div>
-            }
-        </div>
-    </div>
+						<!-- RIGHT-SIDE PRODUCT SWITCHER (clicking here swaps the WHOLE product) -->
+						<div id="productSwitcher" class="shop-product-thumbs vertical">
+							@foreach (var p in Model.ProductList)
+							{
+								var thumb = FirstImg(p.ProductImages, "~/image/shop/Stamix1.png");
+								<img src="@thumb"
+									 alt="@p.ProductName"
+									 class="@(p.Id == product.Id ? "active" : "")"
+									 data-product-id="@p.Id" />
+							}
+						</div>
+					</div>
+				</div>
+			}
+			else
+			{
+				<div class="alert alert-info">No products available.</div>
+			}
+		</div>
+	</div>
 </section>
 <section class="potential-section">
-    <div class="potential-container">
-        <div class="potential-left">
-            <div class="potential-heading-sub">Your Next Level Awaits</div>
-            <h2 class="potential-heading">
-                Transform Your <span class="potential-highlight">Potential</span>
-            </h2>
-            <p class="potential-desc">
-                Join thousands of men who've unlocked their peak performance with STAMIX Level 1. Your transformation starts with this choice.
-            </p>
-            <ul class="potential-steps">
-                <li><span class="step-num">1</span><div class="step-info"><span class="step-title">Order Today</span><span class="step-desc">Secure your premium supply</span></div></li>
-                <li><span class="step-num">2</span><div class="step-info"><span class="step-title">Start Your Journey</span><span class="step-desc">Feel the Difference in Days</span></div></li>
-                <li><span class="step-num">3</span><div class="step-info"><span class="step-title">Achieve Your Peak</span><span class="step-desc">Unlock Your Full Potential</span></div></li>
-            </ul>
-        </div>
+	<div class="potential-container">
+		<div class="potential-left">
+			<div class="potential-heading-sub">Your Next Level Awaits</div>
+			<h2 class="potential-heading">
+				Transform Your <span class="potential-highlight">Potential</span>
+			</h2>
+			<p class="potential-desc">
+				Join thousands of men who've unlocked their peak performance with STAMIX Level 1. Your transformation starts with this choice.
+			</p>
+			<ul class="potential-steps">
+				<li><span class="step-num">1</span><div class="step-info"><span class="step-title">Order Today</span><span class="step-desc">Secure your premium supply</span></div></li>
+				<li><span class="step-num">2</span><div class="step-info"><span class="step-title">Start Your Journey</span><span class="step-desc">Feel the Difference in Days</span></div></li>
+				<li><span class="step-num">3</span><div class="step-info"><span class="step-title">Achieve Your Peak</span><span class="step-desc">Unlock Your Full Potential</span></div></li>
+			</ul>
+		</div>
 
-        <div class="potential-right">
-            <div class="price-card" id="potentialPriceCard" data-max="10">
-                <div class="price-top">
-                    <div class="price-row">
-                        <span class="price-currency">₹</span>
-                        <span id="pot_priceCurrent" class="price-current">@finalAmt.ToString("N0", inr)</span>
-                        <div class="price-side">
-                            <span id="pot_priceOld" class="price-old" style="@(discountPct > 0 ? "" : "display:none")">₹ @amount.ToString("N0", inr)</span>
-                            <span id="pot_priceOff" class="price-off" style="@(discountPct > 0 ? "" : "display:none")">@discountPct % OFF</span>
-                        </div>
-                    </div>
-                </div>
+		<div class="potential-right">
+			<div class="price-card" id="potentialPriceCard" data-max="10">
+				<div class="price-top">
+					<div class="price-row">
+						<span class="price-currency">₹</span>
+						<span id="pot_priceCurrent" class="price-current">@finalAmt.ToString("N0", inr)</span>
+						<div class="price-side">
+							<span id="pot_priceOld" class="price-old" style="@(discountPct > 0 ? "" : "display:none")">₹ @amount.ToString("N0", inr)</span>
+							<span id="pot_priceOff" class="price-off" style="@(discountPct > 0 ? "" : "display:none")">@discountPct % OFF</span>
+						</div>
+					</div>
+				</div>
 
-                <div class="price-supply">per box (15-days supply)</div>
-                <div class="price-limited">⚡ Limited time offer - ends soon!</div>
+				<div class="price-supply">per box (15-days supply)</div>
+				<div class="price-limited">⚡ Limited time offer - ends soon!</div>
 
-                <div class="price-qty">
-                    <button id="pot_qtyMinus" type="button" disabled>-</button>
-                    <span id="pot_qtyValue">1</span>
-                    <button id="pot_qtyPlus" type="button">+</button>
-                </div>
+				<div class="price-qty">
+					<button id="pot_qtyMinus" type="button" disabled>-</button>
+					<span id="pot_qtyValue">1</span>
+					<button id="pot_qtyPlus" type="button">+</button>
+				</div>
 
-                <div class="price-total">
-                    Total : <span id="pot_priceTotal" class="price-current">@finalAmt.ToString("N0", inr)</span>
-                </div>
+				<div class="price-total">
+					Total : <span id="pot_priceTotal" class="price-current">@finalAmt.ToString("N0", inr)</span>
+				</div>
 
-                <button class="price-btn-main"><span class="price-btn-icon">🛒</span> Start My Transformation</button>
-                <button class="price-btn-subscribe"><span class="price-btn-subscribe-icon">🔔</span> Subscribe & Save 20 %</button>
+				<button class="price-btn-main"><span class="price-btn-icon">🛒</span> Start My Transformation</button>
+				<button class="price-btn-subscribe"><span class="price-btn-subscribe-icon">🔔</span> Subscribe & Save 20 %</button>
 
-                <div class="price-features">
-                    <div class="price-feature"><span class="price-feature-icon">🛡️</span><span class="price-feature-label">30-Day Guarantee</span></div>
-                    <div class="price-feature"><span class="price-feature-icon">⚡</span><span class="price-feature-label">Fast Shipping</span></div>
-                    <div class="price-feature"><span class="price-feature-icon">⭐</span><span class="price-feature-label">Premium Quality</span></div>
-                </div>
-            </div>
-        </div>
-    </div>
+				<div class="price-features">
+					<div class="price-feature"><span class="price-feature-icon">🛡️</span><span class="price-feature-label">30-Day Guarantee</span></div>
+					<div class="price-feature"><span class="price-feature-icon">⚡</span><span class="price-feature-label">Fast Shipping</span></div>
+					<div class="price-feature"><span class="price-feature-icon">⭐</span><span class="price-feature-label">Premium Quality</span></div>
+				</div>
+			</div>
+		</div>
+	</div>
 </section>
 
 
 @* benefits *@
 <!-- BENEFITS -->
 <section class="benefits-section">
-    <h2 class="benefits-title">Key <span class="highlight">Benefits</span></h2>
-    <div id="benefitsGrid">
-        @if (rawBenefits.Any())
-        {
-            <div class="benefits-grid">
-                @foreach (var raw in rawBenefits)
-                {
-                    var text = raw ?? "";
-                    var bar = text.IndexOf('|');
-                    var heading = bar >= 0 ? text[..bar].Trim() : text.Trim();
-                    var desc = bar >= 0 ? text[(bar + 1)..].Trim() : "";
-                    <div class="benefit-card">
-                        <div class="benefit-icon"><!-- icon is injected on server; JS will recreate on swap --></div>
-                        <div class="benefit-title">@heading</div>
-                        <div class="benefit-desc">@desc</div>
-                    </div>
-                }
-            </div>
-        }
-        else
-        {
-            <p class="text-muted">No benefits found for this product.</p>
-        }
-    </div>
+	<h2 class="benefits-title">Key <span class="highlight">Benefits</span></h2>
+	<div id="benefitsGrid">
+		@if (rawBenefits.Any())
+		{
+			<div class="benefits-grid">
+				@foreach (var raw in rawBenefits)
+				{
+					var text = raw ?? "";
+					var bar = text.IndexOf('|');
+					var heading = bar >= 0 ? text[..bar].Trim() : text.Trim();
+					var desc = bar >= 0 ? text[(bar + 1)..].Trim() : "";
+					var imgFile = GetBenefitImageFile(heading);
+					var imgSrc = Url.Content("~/image/shop/" + imgFile);
+					<div class="benefit-card">
+						<div class="benefit-icon">
+							<img src="@imgSrc" alt="@heading" class="benefit-icon-img" />
+						</div>
+						<div class="benefit-title">@heading</div>
+						<div class="benefit-desc">@desc</div>
+					</div>
+				}
+			</div>
+		}
+		else
+		{
+			<p class="text-muted">No benefits found for this product.</p>
+		}
+	</div>
 </section>
 
 <section class="ingredients-section">
-    <h2 class="ingredients-title">
-        Premium <span class="highlight">Ingredients</span>
-    </h2>
-    <div class="ingredients-flexgrid">
-        <div class="ingredient-card" style="cursor:pointer;" onclick="location.href='@Url.Action("Ingredients", "Home")'">
-            <div class="ingredient-img">
-                <img src="~/image/shop/glass-cup-dishware-healthy-food 1.png" alt="Green Tea Extract" />
-            </div>
-            <div class="ingredient-title">Green Tea Extract</div>
-            <div class="ingredient-desc">Natural Energy & Antioxidants</div>
-        </div>
+	<h2 class="ingredients-title">
+		Premium <span class="highlight">Ingredients</span>
+	</h2>
+	<div class="ingredients-flexgrid">
+		<div class="ingredient-card" style="cursor:pointer;" onclick="location.href='@Url.Action("Ingredients", "Home")'">
+			<div class="ingredient-img">
+				<img src="~/image/shop/glass-cup-dishware-healthy-food 1.png" alt="Green Tea Extract" />
+			</div>
+			<div class="ingredient-title">Green Tea Extract</div>
+			<div class="ingredient-desc">Natural Energy & Antioxidants</div>
+		</div>
 
-        <div class="ingredient-card" style="cursor:pointer;" onclick="location.href='@Url.Action("Ingredients", "Home")'">
-            <div class="ingredient-img">
-                <img src="~/image/shop/3598266 1.png" alt="B-Complex Vitamins" />
-            </div>
-            <div class="ingredient-title">B-Complex Vitamins</div>
-            <div class="ingredient-desc">Energy metabolism support</div>
-        </div>
+		<div class="ingredient-card" style="cursor:pointer;" onclick="location.href='@Url.Action("Ingredients", "Home")'">
+			<div class="ingredient-img">
+				<img src="~/image/shop/3598266 1.png" alt="B-Complex Vitamins" />
+			</div>
+			<div class="ingredient-title">B-Complex Vitamins</div>
+			<div class="ingredient-desc">Energy metabolism support</div>
+		</div>
 
-        <div class="ingredient-card" style="cursor:pointer;" onclick="location.href='@Url.Action("Ingredients", "Home")'">
-            <div class="ingredient-img">
-                <img src="~/image/shop/closeup-spear-thistle-flower 1.png" alt="Rhodiola Rosea" />
-            </div>
-            <div class="ingredient-title">Rhodiola Rosea</div>
-            <div class="ingredient-desc">Stress adaptation & focus</div>
-        </div>
+		<div class="ingredient-card" style="cursor:pointer;" onclick="location.href='@Url.Action("Ingredients", "Home")'">
+			<div class="ingredient-img">
+				<img src="~/image/shop/closeup-spear-thistle-flower 1.png" alt="Rhodiola Rosea" />
+			</div>
+			<div class="ingredient-title">Rhodiola Rosea</div>
+			<div class="ingredient-desc">Stress adaptation & focus</div>
+		</div>
 
-        <div class="ingredient-card" style="cursor:pointer;" onclick="location.href='@Url.Action("Ingredients", "Home")'">
-            <div class="ingredient-img">
-                <img src="~/image/shop/traditional-chinese-medicine-astragalus-membranaceus 1.png" alt="Ginseng" />
-            </div>
-            <div class="ingredient-title">Ginseng</div>
-            <div class="ingredient-desc">Enhanced performance</div>
-        </div>
+		<div class="ingredient-card" style="cursor:pointer;" onclick="location.href='@Url.Action("Ingredients", "Home")'">
+			<div class="ingredient-img">
+				<img src="~/image/shop/traditional-chinese-medicine-astragalus-membranaceus 1.png" alt="Ginseng" />
+			</div>
+			<div class="ingredient-title">Ginseng</div>
+			<div class="ingredient-desc">Enhanced performance</div>
+		</div>
 
-    </div>
+	</div>
 </section>
 
 @* who this is for *@
 <section class="who-section">
-    <h2 class="who-title">Who This is For</h2>
-    <div id="whoGrid">
-        @if (forThisList.Any())
-        {
-            <div class="who-grid">
-                @foreach (var item in forThisList)
-                {
-                    var text = item ?? "";
-                    var bar = text.IndexOf('|');
-                    var heading = bar >= 0 ? text[..bar].Trim() : text.Trim();
-                    var desc = bar >= 0 ? text[(bar + 1)..].Trim() : "";
-                    <div class="who-card">
-                        <div class="who-icon"><!-- icon injected by server; JS will recreate on swap --></div>
-                        <div class="who-head">@heading</div>
-                        <div class="who-desc">@Html.Raw(desc.Replace("\n", "<br>"))</div>
-                    </div>
-                }
-            </div>
-        }
-        else
-        {
-            <p class="text-muted">No audience information available for this product.</p>
-        }
-    </div>
+	<h2 class="who-title">Who This is For</h2>
+	<div id="whoGrid">
+		@if (forThisList.Any())
+		{
+			<div class="who-grid">
+				@foreach (var item in forThisList)
+				{
+					var text = item ?? "";
+					var bar = text.IndexOf('|');
+					var heading = bar >= 0 ? text[..bar].Trim() : text.Trim();
+					var desc = bar >= 0 ? text[(bar + 1)..].Trim() : "";
+					var imgFile = GetWhoThisisImageFile(heading);
+					var imgSrc = Url.Content("~/image/shop/" + imgFile);
+					// Map heading -> icon file name
+					
+					<div class="who-card">
+						<div class="who-icon">
+							<img src="~/image/shop/@imgSrc" alt="icon" loading="lazy" />
+						</div>
+						<div class="who-head">@heading</div>
+						<div class="who-desc">@Html.Raw(desc.Replace("\n", "<br>"))</div>
+					</div>
+				}
+			</div>
+		}
+		else
+		{
+			<p class="text-muted">No audience information available for this product.</p>
+		}
+	</div>
 </section>
 <section class="shop-testimonials-section">
-    <h2 class="shop-testimonials-title">What our customers Say</h2>
+	<h2 class="shop-testimonials-title">What our customers Say</h2>
 
-    <div class="shop-testimonials-rating-row">
-        <span class="shop-stars">★★★★★</span>
-        <span class="shop-score">
-            @(Model.FeedbackList.Any()
-                ? Math.Round(Model.FeedbackList.Average(f => f.RatingCount), 1) + " Out of 5"
-                : "0 Out of 5")
-        </span>
+	<div class="shop-testimonials-rating-row">
+		<span class="shop-stars">★★★★★</span>
+		<span class="shop-score">
+			@(Model.FeedbackList.Any()
+						? Math.Round(Model.FeedbackList.Average(f => f.RatingCount), 1) + " Out of 5"
+						: "0 Out of 5")
+		</span>
 
-    </div>
+	</div>
 
-    <div class="shop-testimonials-meta">
-        Based on @Model.FeedbackList.Count + " Verified Reviews"
-    </div>
+	<div class="shop-testimonials-meta">
+		Based on @Model.FeedbackList.Count + " Verified Reviews"
+	</div>
 
-    <div class="shop-testimonials-wrapper">
+	<div class="shop-testimonials-wrapper">
 
 
-        <div class="shop-testimonials-carousel">
-            @foreach (var fb in Model.FeedbackList)
-            {
-                <div class="shop-testimonials-card">
-                    <div class="shop-testimonial-meta">
-                        <div class="shop-avatar">
-                            @(fb.CustomerName.Length >= 2 ? fb.CustomerName.Substring(0, 2).ToUpper() : fb.CustomerName.ToUpper())
-                        </div>
-                        <div>
-                            <div class="shop-name">@fb.CustomerName</div>
-                            <div class="shop-verified">
-                                Verified Purchase <span class="shop-date">@fb.SubmittedAt.ToString("MMM dd, yyyy")</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="shop-stars">
-                        @for (int i = 0; i < fb.RatingCount; i++)
-                        {
-                            <span>★</span>
-                        }
-                    </div>
-                    <div class="shop-text">
-                        @fb.Message
-                    </div>
-                </div>
-            }
-        </div>
-    </div>
+		<div class="shop-testimonials-carousel">
+			@foreach (var fb in Model.FeedbackList)
+			{
+				<div class="shop-testimonials-card">
+					<div class="shop-testimonial-meta">
+						<div class="shop-avatar">
+							@(fb.CustomerName.Length >= 2 ? fb.CustomerName.Substring(0, 2).ToUpper() : fb.CustomerName.ToUpper())
+						</div>
+						<div>
+							<div class="shop-name">@fb.CustomerName</div>
+							<div class="shop-verified">
+								Verified Purchase <span class="shop-date">@fb.SubmittedAt.ToString("MMM dd, yyyy")</span>
+							</div>
+						</div>
+					</div>
+					<div class="shop-stars">
+						@for (int i = 0; i < fb.RatingCount; i++)
+						{
+							<span>★</span>
+						}
+					</div>
+					<div class="shop-text">
+						@fb.Message
+					</div>
+				</div>
+			}
+		</div>
+	</div>
 </section>
 
 
