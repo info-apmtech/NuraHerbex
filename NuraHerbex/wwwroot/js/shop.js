@@ -293,3 +293,47 @@
     qtyPlus.addEventListener('click', () => { qty = clamp(qty + 1, MIN_QTY, maxQty); refreshQtyUI(); });
 
 })();
+
+// BUY NOW – add to cart then show only that product in OrderSummary
+$(document)
+    .off("click.cart.buynow")
+    .on("click.cart.buynow", ".shop-buy-btn", function (e) {
+        e.preventDefault();
+
+        var productId = $(this).data("productId");
+        if (!productId) {
+            alert("Invalid product.");
+            return;
+        }
+
+        $.ajax({
+            type: "POST",
+            url: "/Home/Cartlist",          // your existing Add-to-cart
+            data: { productId: productId },
+            statusCode: {
+                401: function () {
+                    if (typeof openLoginModal === "function") {
+                        openLoginModal();
+                    } else {
+                        $("#loginModal").fadeIn(200);
+                    }
+                }
+            }
+        })
+            .done(function () {
+                // ✅ OrderSummary will filter Items to only this product
+                window.location.href = "/Home/OrderSummary?productId=" + productId;
+            })
+            .fail(function (xhr) {
+                if (xhr.status === 401) {
+                    if (typeof openLoginModal === "function") {
+                        openLoginModal();
+                    } else {
+                        $("#loginModal").fadeIn(200);
+                    }
+                } else {
+                    alert("Failed to process Buy Now.");
+                }
+            });
+    });
+

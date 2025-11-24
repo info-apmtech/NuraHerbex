@@ -48,12 +48,12 @@
 
 		heading = heading.Trim().ToLowerInvariant();
 
-		if (heading.StartsWith("Busy Professionals"))
+		if (heading.StartsWith("busy professionals"))
 			return "busyprofessional.jpg";
 
-		if (heading.StartsWith("Health-Conscious Beginners"))
+		if (heading.StartsWith("health-conscious"))
 			return "keybenefit2.jpg";
-		if (heading.StartsWith("Daily Energy Seekers"))
+		if (heading.StartsWith("daily energy seekers"))
 			return "dailyenergyseeker.jpg";
 
 		return "busyprofessional.jpg";
@@ -108,7 +108,6 @@
 		object-fit: contain;
 		display: block;
 	}
-
 
 </style>
 
@@ -224,10 +223,7 @@
 
 							<div class="shop-action-row">
 								<div class="shop-action-buttons">
-									<button id="buyBtn" class="shop-buy-btn"
-											onclick="location.href='@Url.Action("OrderSummary", "Home", new { id = product.Id })'">
-										Buy Now
-									</button>
+									<button class="shop-buy-btn"data-product-id="@product.Id">Buy Now</button>
 									<button onclick="location.href='@Url.Action("Quiz", "Home")'" class="shop-quiz-btn">Take Quiz</button>
 									<button type="button" class="btn-add-cart" data-product-id="@product.Id">Add to Cart</button>
 								</div>
@@ -331,7 +327,7 @@
 					var imgSrc = Url.Content("~/image/shop/" + imgFile);
 					<div class="benefit-card">
 						<div class="benefit-icon">
-							<img src="@imgSrc" alt="@heading" class="benefit-icon-img" />
+							<img src="@imgSrc" alt="icon" class="benefit-icon-img" />
 						</div>
 						<div class="benefit-title">@heading</div>
 						<div class="benefit-desc">@desc</div>
@@ -402,10 +398,9 @@
 					var imgFile = GetWhoThisisImageFile(heading);
 					var imgSrc = Url.Content("~/image/shop/" + imgFile);
 					// Map heading -> icon file name
-					
 					<div class="who-card">
 						<div class="who-icon">
-							<img src="~/image/shop/@imgSrc" alt="icon" loading="lazy" />
+							<img src="@imgSrc" alt="icon" loading="lazy" class="benefit-icon-img" />
 						</div>
 						<div class="who-head">@heading</div>
 						<div class="who-desc">@Html.Raw(desc.Replace("\n", "<br>"))</div>
