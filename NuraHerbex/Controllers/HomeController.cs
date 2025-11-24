@@ -1,6 +1,7 @@
 ﻿using AspNetCoreHero.ToastNotification.Abstractions;
 using Domain.Extensions;
 using Domain.Implementation;
+using Domain.Interface;
 using Domain.Models;
 using Domain.ViewModel;
 using MailKit;
@@ -21,6 +22,7 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Mail;
 using System.Security.Claims;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
@@ -36,16 +38,18 @@ namespace NuraHerbex.Controllers
 		private readonly IHttpClientFactory _httpClientFactory;
 		private readonly ILogger<HomeController> _logger;
 		private readonly EmailSettings _emailSettings;
-		private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IEmailService _emailService;
+        private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly INotyfService _notyf;
         private readonly HttpClient _httpClient;
         private JsonSerializerOptions? _jsonOptions;
 
-        public HomeController(ILogger<HomeController> logger, IHttpClientFactory httpClientFactory, IOptions<EmailSettings> emailSettings, IHttpContextAccessor httpContextAccessor, INotyfService notyf)
+        public HomeController(ILogger<HomeController> logger, IHttpClientFactory httpClientFactory, IOptions<EmailSettings> emailSettings, IEmailService emailService, IHttpContextAccessor httpContextAccessor, INotyfService notyf)
 		{
 			_logger = logger;
 			_emailSettings = emailSettings.Value;
-			_httpClientFactory = httpClientFactory;
+            _emailService = emailService;
+            _httpClientFactory = httpClientFactory;
 			_httpContextAccessor = httpContextAccessor;
             _notyf = notyf;
             _httpClient = httpClientFactory.CreateClient("NuraHerbexApi");
@@ -2127,7 +2131,6 @@ namespace NuraHerbex.Controllers
 		}
 
         
-        // helper method in HomeController
         private OrderStatus ParseOrderStatuss(string status)
         {
             if (string.IsNullOrWhiteSpace(status))
@@ -2193,8 +2196,50 @@ namespace NuraHerbex.Controllers
 			// Redirect back to whatever page shows returns
 			return RedirectToAction("MyOrders", "Home"); 
 		}
+        [HttpGet]
+        public IActionResult Contact()
+        {
+            return View(new ContactFormViewModel());
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Contact(ContactFormViewModel model)
+        {
+            if (!ModelState.IsValid)
+                return View(model);
+
+            // Build email body
+            var sb = new StringBuilder();
+            sb.AppendLine("<h2>New Contact Form Submission</h2>");
+            sb.AppendLine("<p><strong>Name:</strong> " + WebUtility.HtmlEncode(model.Name) + "</p>");
+            sb.AppendLine("<p><strong>Email:</strong> " + WebUtility.HtmlEncode(model.Email) + "</p>");
+            if (!string.IsNullOrWhiteSpace(model.Phone))
+                sb.AppendLine("<p><strong>Phone:</strong> " + WebUtility.HtmlEncode(model.Phone) + "</p>");
+            sb.AppendLine("<p><strong>Message:</strong></p>");
+            sb.AppendLine("<p>" + WebUtility.HtmlEncode(model.Message).Replace("\n", "<br />") + "</p>");
+
+            var subject = $"New contact message from {model.Name}";
+
+            try
+            {
+                // Send to your support inbox (FromAddress is your own email)
+                await _emailService.SendAsync(_emailSettings.FromAddress, /*"abusuhoothahamed678@gmail.com",*/ subject, sb.ToString());
+
+                _notyf.Success("Your message was sent. We’ll get back to you soon.");
+                return RedirectToAction("Contact");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to send contact email.");
+                _notyf.Error("Sorry, something went wrong while sending your message.");
+
+                // Show same page with error message
+                ModelState.AddModelError(string.Empty, "We couldn't send your message right now. Please try again later.");
+                return View(model);
+            }
+        }
 
 
 
-	}
+    }
 }

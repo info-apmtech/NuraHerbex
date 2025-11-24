@@ -691,6 +691,13 @@ namespace Domain.ViewModel
         public string PaymentMethod { get; set; }
         public string Email { get; set; }
     }
+    public class ContactFormViewModel
+    {
+        public string Name { get; set; }
+        public string Email { get; set; }
+        public string Phone { get; set; }
+        public string Message { get; set; }
+    }
 
 }
 

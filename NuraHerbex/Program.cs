@@ -87,7 +87,7 @@ builder.Services.AddOptions<EmailSettings>()
     .BindConfiguration("EmailSettings")
     .Validate(s => !string.IsNullOrWhiteSpace(s.Host), "EmailSettings:Host is required")
     .ValidateOnStart();
-
+builder.Services.AddTransient<IEmailService, EmailService>();
 builder.Services.AddSingleton(sp =>
     sp.GetRequiredService<IOptions<EmailSettings>>().Value);
 builder.Services.AddNotyf(config => { config.DurationInSeconds = 5; config.IsDismissable = true; config.Position = NotyfPosition.TopRight; });
