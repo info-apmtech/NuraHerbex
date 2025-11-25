@@ -1,8 +1,9 @@
 ﻿@using Domain.Models
 @model List<PricingPlan>
 @{
-    var userEmail = User?.Identity?.Name ?? ""; // or from your user profile
-    var userPhone = ""; // fill from profile if available
+    bool isLoggedIn = User?.Identity?.IsAuthenticated ?? false;
+    var userEmail = User?.Identity?.Name ?? "";
+    var userPhone = ""; 
 }
 @{
     bool isSinglePlan = Model.Count == 1;
@@ -52,7 +53,8 @@
                     </ul>
 
                     <form asp-action="PlanSubscribe" asp-controller="Home" method="post"
-                          onsubmit="event.preventDefault(); razorpaySubscriptionPayment(this);">
+                          onsubmit="event.preventDefault(); @(isLoggedIn ? "razorpaySubscriptionPayment(this);" : "openLoginModal();")">
+
                         @Html.AntiForgeryToken()
 
                         <input type="hidden" name="PlanId" value="@plan.Id" />

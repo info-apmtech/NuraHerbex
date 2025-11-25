@@ -1708,7 +1708,55 @@ namespace NuraHerbex.Controllers
             return View(model);
         }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ChangePassword(
+        string currentPassword,
+        string newPassword,
+        string confirmPassword)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+            {
+                _notyf.Warning("Please log in again.", 5);
+                return RedirectToAction("SignIn", "Authentication");
+            }
 
+            if (string.IsNullOrWhiteSpace(newPassword) ||
+                newPassword != confirmPassword)
+            {
+                _notyf.Error("New password and confirmation do not match.", 5);
+                return RedirectToAction("AdminMyProfile");
+            }
+
+            // DTO must match AuthenticationAPI ChangePassword endpoint
+            var dto = new
+            {
+                UserId = userId,
+                CurrentPassword = currentPassword,
+                NewPassword = newPassword
+            };
+
+            var client = AuthorizedClient;
+
+            var response = await client.PostAsJsonAsync("AuthenticationAPI/ChangePassword", dto);
+
+            if (response.IsSuccessStatusCode)
+            {
+                _notyf.Success("Password updated successfully.", 5);
+            }
+            else
+            {
+                
+                var body = await response.Content.ReadAsStringAsync();
+                var msg = string.IsNullOrWhiteSpace(body)
+                    ? "Failed to update password."
+                    : body;
+                _notyf.Error(msg, 5);
+            }
+
+            return RedirectToAction("AdminMyProfile");
+        }
 
 
     }

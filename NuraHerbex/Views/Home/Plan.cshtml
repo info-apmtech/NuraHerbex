@@ -22,6 +22,7 @@
         </p>
     </div>
 </section>
+
 @if (isFromQuiz)
 {
     <h2 style="
@@ -40,7 +41,6 @@
 
 <!-- Pricing Plans Section -->
 @Html.Partial("_PlanPartial",Model)
-<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
 <script>
     // Expose globally so inline onsubmit can find it
@@ -179,6 +179,7 @@
             });
     };
 </script>
+
 <!-- Why Subscribe Section -->
 <section class="why-subscribe-section">
     <div class="why-subscribe-container">

@@ -386,10 +386,16 @@
             </div>
         </div>
     </footer>
+    <script>
+        window.isUserAuthenticated = @(User.Identity.IsAuthenticated ? "true" : "false");
+    </script>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     <script src="~/js/cart.js"></script>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <script src="~/js/payment.js" asp-append-version="true"></script>
+    @await Html.PartialAsync("_SignInPartial", new Domain.ViewModel.RegisterUserViewModel())
     @await RenderSectionAsync("Scripts", required: false)
 
     <script>

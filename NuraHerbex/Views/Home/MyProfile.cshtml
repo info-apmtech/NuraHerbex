@@ -193,17 +193,71 @@
             </div>
         </div>
 
-        <!-- Account Security Card -->
+         <!-- Account Security Card -->
+  
         <div class="profile-card account-card">
             <div class="profile-card-title">Account Security</div>
             <div class="security-valuebox-row">
                 <div class="security-row-texts">
                     <span class="security-label">Password</span>
-                    <span class="security-hint">Last changed 3 months ago</span>
+                    <span class="security-hint">
+                        @(string.IsNullOrWhiteSpace(Model.PasswordLastChangedText)
+                            ? "Never changed"
+                            : Model.PasswordLastChangedText)
+                    </span>
                 </div>
-                <button class="orange-btn security-btn">Change Password</button>
+                <button type="button"
+                        class="orange-btn security-btn"
+                        onclick="toggleChangePassword()">
+                    Change Password
+                </button>
+            </div>
+
+            <div id="changePasswordSection" style="display:none; margin-top:18px;">
+                <form asp-action="ChangePassword" asp-controller="Home" method="post" class="profile-form">
+                    @Html.AntiForgeryToken()
+
+                    <div class="form-row">
+                        <label>
+                            Current Password
+                            <input type="password" name="currentPassword" required />
+                        </label>
+                    </div>
+
+                    <div class="form-row row-inline">
+                        <label>
+                            New Password
+                            <input type="password" name="newPassword" required minlength="6" />
+                        </label>
+                        <label>
+                            Confirm New Password
+                            <input type="password" name="confirmPassword" required minlength="6" />
+                        </label>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="orange-btn">Update Password</button>
+                        <button type="button"
+                                class="orange-btn"
+                                style="background:#d1d5db; color:#111827;"
+                                onclick="toggleChangePassword()">
+                            Cancel
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
+
+        @section Scripts {
+            <script>
+                function toggleChangePassword() {
+                    var sec = document.getElementById("changePasswordSection");
+                    if (!sec) return;
+                    sec.style.display = (sec.style.display === "none" || sec.style.display === "") ? "block" : "none";
+                }
+            </script>
+        }
+
 
     </div>
 </div>
@@ -339,7 +393,11 @@
         margin-bottom: 5px;
     }
 
-    .profile-form input[type="text"] {
+    .profile-form input[type="text"],
+    .profile-form input[type="password"],
+    .profile-form input[type="email"],
+    .profile-form textarea,
+    .profile-form select {
         width: 100%;
         border: 1.2px solid #f3eadf;
         border-radius: 7px;
@@ -350,11 +408,17 @@
         color: #565454;
         outline: none;
         transition: border 0.15s;
+        box-sizing: border-box;
     }
 
-        .profile-form input[type="text"]:focus {
+        .profile-form input[type="text"]:focus,
+        .profile-form input[type="password"]:focus,
+        .profile-form input[type="email"]:focus,
+        .profile-form textarea:focus,
+        .profile-form select:focus {
             border: 1.5px solid #fb6608;
         }
+
 
     .profile-form .row-inline {
         display: flex;
@@ -612,10 +676,15 @@
         font-size: 1.01rem;
     }
 
-    .profile-form input[type="text"] {
-        padding: 11px 7px;
-        font-size: 0.99rem;
-    }
+        .profile-form input[type="text"],
+        .profile-form input[type="password"],
+        .profile-form input[type="email"],
+        .profile-form textarea,
+        .profile-form select {
+            padding: 11px 7px;
+            font-size: 0.99rem;
+        }
+
 
     .form-actions {
         display: flex;

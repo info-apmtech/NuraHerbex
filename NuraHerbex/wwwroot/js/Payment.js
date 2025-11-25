@@ -1,4 +1,15 @@
 ﻿function razorpaySubscriptionPayment(form) {
+    // 🔒 0. Block if user is not logged in
+    if (typeof window.isUserAuthenticated !== "undefined" && !window.isUserAuthenticated) {
+        // Open your login modal if available
+        if (typeof window.openLoginModal === "function") {
+            window.openLoginModal();
+        } else {
+            // Fallback: redirect to full SignIn page
+            window.location.href = "/Authentication/SignIn";
+        }
+        return; // ❌ Do NOT open Razorpay
+    }
     // ===== 1. Get amount and customer info from hidden inputs =====
     var amountInput = form.querySelector('input[name="Amount"]');
     var emailInput = form.querySelector('input[name="EmailAddress"]');

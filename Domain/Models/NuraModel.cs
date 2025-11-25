@@ -22,6 +22,7 @@ namespace Domain.Models
         [Compare("Password", ErrorMessage = "Password and Confirm Password must match.")]
         [Display(Name = "Confirm Password")]
         public string? NMConfirmPassword { get; set; }
+        public DateTime? PasswordChangedAt { get; set; }
         [JsonConverter(typeof(JsonStringEnumConverter))]
         public UserRole Role { get; set; }
         //public Specialities? Specialties { get; set; } // time slot need to discuss

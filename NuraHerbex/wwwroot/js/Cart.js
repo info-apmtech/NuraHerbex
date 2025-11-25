@@ -170,10 +170,17 @@
             })
                 .done(function () {
                     $("#loginError").hide();
+
+                    // Mark as authenticated on client
+                    window.isUserAuthenticated = true;
+
+                    // Close the modal
                     closeLoginModal();
-                    // refresh UI so ClaimTypes.NameIdentifier becomes available
-                    //location.reload();
+
+                    // 🔄 IMPORTANT: reload page so Razor can see the new auth cookie
+                    location.reload();
                 })
+
                 .fail(function (xhr) {
                     var msg =
                         (xhr.responseJSON && (xhr.responseJSON.message || xhr.responseJSON.error)) ||
