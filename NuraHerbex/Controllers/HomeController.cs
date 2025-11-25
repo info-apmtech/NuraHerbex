@@ -55,10 +55,6 @@ namespace NuraHerbex.Controllers
 			_environment = environment;
             _notyf = notyf;
             _httpClient = httpClientFactory.CreateClient("NuraHerbexApi");
-			_notyf = notyf;
-			_httpClient = httpClientFactory.CreateClient("NuraHerbexApi");
-			_httpClient = httpClientFactory.CreateClient("NuraHerbexApi");
->>>>>>>>> Temporary merge branch 2
 
 		}
 		private System.Net.Http.HttpClient AuthorizedClient => _httpClientFactory.CreateAuthorizedClient(_httpContextAccessor);
@@ -302,125 +298,54 @@ namespace NuraHerbex.Controllers
 
 			return View("BlogsByCategory", vm);
 		}
-        //[HttpGet]
-        //      public async Task<IActionResult> Plan(int? score)
-        //      {
-        //          var plans = await GetPlansFromApi();
-
-        //          // If score is null → user came directly → show all plans
-        //          if (score == null)
-        //          {
-        //              ViewBag.IsFromQuiz = false;
-        //              return View(plans);
-        //          }
-
-        //          // User came via quiz
-        //          ViewBag.IsFromQuiz = true;
-        //          ViewBag.Score = score.Value;
-
-        //          List<PricingPlan> filteredPlans;
-
-        //          if (score <= 10)
-        //          {
-        //              filteredPlans = plans.Where(p => p.PlanName == "Elite Pack").ToList();
-        //          }
-        //          else if (score > 10 && score <= 15)
-        //          {
-        //              filteredPlans = plans.Where(p => p.PlanName == "Performance Pack").ToList();
-        //          }
-        //          else 
-        //          {
-        //              filteredPlans = plans.Where(p => p.PlanName == "Essential Pack").ToList();
-        //          }
-
-        //          return View(filteredPlans);
-        //      }
-
-		[HttpGet]
-		public async Task<IActionResult> Plan(int? score)
-		{
-			var plans = await GetPlansFromApi();
-
-            // 🔹 Load feedbacks for Real Results section
-            var feedbacks = new List<FeedbackViewModel>();
-            var feedbackResponse = await _httpClient.GetAsync("AdminAPI/feedbacks");
-            if (feedbackResponse.IsSuccessStatusCode)
+        private async Task<List<PricingPlan>> GetPlansFromApi()
+        {
+            var plans = new List<PricingPlan>();
+            var response = await _httpClient.GetAsync("AdminAPI/pricingplans");
+            if (response.IsSuccessStatusCode)
             {
-                var json = await feedbackResponse.Content.ReadAsStringAsync();
-                feedbacks = JsonConvert.DeserializeObject<List<FeedbackViewModel>>(json) ?? new List<FeedbackViewModel>();
+                var json = await response.Content.ReadAsStringAsync();
+                plans = JsonConvert.DeserializeObject<List<PricingPlan>>(json) ?? new List<PricingPlan>();
             }
+            return plans;
+        }
 
-            ViewBag.FeedbackList = feedbacks;
+        [HttpGet]
+        public async Task<IActionResult> Plan(int? score)
+        {
+            var plans = await GetPlansFromApi();
 
             // If score is null → user came directly → show all plans
             if (score == null)
             {
                 ViewBag.IsFromQuiz = false;
-			// If score is null → user came directly → show all plans
-			if (score == null)
-			{
-				ViewBag.IsFromQuiz = false;
-				return View(plans);
-			}
+                return View(plans);
+            }
 
-			if (score == null)
-			{
-				ViewBag.IsFromQuiz = false;
-				return View(plans);
-			}
->>>>>>>>> Temporary merge branch 2
+            // User came via quiz
+            ViewBag.IsFromQuiz = true;
+            ViewBag.Score = score.Value;
 
->>>>>>>>> Temporary merge branch 2
-
-			// User came via quiz
-			ViewBag.IsFromQuiz = true;
-			ViewBag.Score = score.Value;
-
-			List<PricingPlan> filteredPlans;
+            List<PricingPlan> filteredPlans;
 
             if (score <= 10)
             {
                 filteredPlans = plans.Where(p => p.PlanName == "Elite Pack").ToList();
-			if (score <= 10)
-			{
-				filteredPlans = plans.Where(p => p.PlanName == "Elite Pack").ToList();
-			}
-			else if (score > 10 && score <= 15)
-			{
-				filteredPlans = plans.Where(p => p.PlanName == "Performance Pack").ToList();
-			}
-			else
-			{
-				filteredPlans = plans.Where(p => p.PlanName == "Essential Pack").ToList();
-			}
-			else if (score > 10 && score <= 15)
-			{
-				filteredPlans = plans.Where(p => p.PlanName == "Performance Pack").ToList();
+            }
+            else if (score > 10 && score <= 15)
+            {
+                filteredPlans = plans.Where(p => p.PlanName == "Performance Pack").ToList();
+            }
+            else
+            {
+                filteredPlans = plans.Where(p => p.PlanName == "Essential Pack").ToList();
+            }
 
-            if (response.IsSuccessStatusCode)
-		private async Task<List<PricingPlan>> GetPlansFromApi()
-		{
-			var plans = new List<PricingPlan>();
-			var response = await _httpClient.GetAsync("AdminAPI/pricingplans");
-			if (response.IsSuccessStatusCode)
-			{
-				var json = await response.Content.ReadAsStringAsync();
-				plans = JsonConvert.DeserializeObject<List<PricingPlan>>(json) ?? new List<PricingPlan>();
-			}
-			return plans;
-		}
-			var response = await _httpClient.GetAsync("AdminAPI/pricingplans");
-			if (response.IsSuccessStatusCode)
-			{
-				var json = await response.Content.ReadAsStringAsync();
-				plans = JsonConvert.DeserializeObject<List<PricingPlan>>(json) ?? new List<PricingPlan>();
-			}
-			return plans;
-		}
->>>>>>>>> Temporary merge branch 2
+            return View(filteredPlans);
+        }
 
 
-		[HttpPost]
+        [HttpPost]
 		[ValidateAntiForgeryToken]
 		public async Task<IActionResult> PlanSubscribe(SubscriptionPaymentViewModel model)
 		{
@@ -1923,15 +1848,12 @@ namespace NuraHerbex.Controllers
 			model.Countries = countriesResponse.IsSuccessStatusCode
 				? await countriesResponse.Content.ReadFromJsonAsync<List<Country>>()
 		: new List<Country>();
+
 			model.Addresses = addressesResponse.IsSuccessStatusCode
 				? await addressesResponse.Content.ReadFromJsonAsync<List<AddressDetail>>()
 				: new List<AddressDetail>();
 
-			var countriesResponse = await _httpClient.GetAsync("AdminAPI/countries");
-			model.Countries = countriesResponse.IsSuccessStatusCode
-				? await countriesResponse.Content.ReadFromJsonAsync<List<Country>>()
-		: new List<Country>();
->>>>>>>>> Temporary merge branch 2
+			
 
             var statesResponse = await _httpClient.GetAsync("AdminAPI/states");
             model.States = statesResponse.IsSuccessStatusCode
