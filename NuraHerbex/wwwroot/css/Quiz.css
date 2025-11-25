@@ -235,15 +235,16 @@
         color: #ff6600;
     }
 .subscribe-action-btn {
-    background: #ff9900;
-    color: #fff;
+    background-color: #ff9500;
+    color: #000;
     border: none;
-    padding: 0.8rem 1.5rem;
-    border-radius: 8px;
-    margin-top: 1rem;
-    cursor: pointer;
+    padding: 8px 40px;
+    font-size: 1rem;
     font-weight: 600;
-    transition: background 0.3s;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(255, 149, 0, 0.3);
 }
 
     .subscribe-action-btn:hover {
