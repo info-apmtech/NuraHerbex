@@ -28,17 +28,6 @@
                     Profile Details
                 </a>
             </li>
-           @*  <li class="nav-item">
-                <a class="nav-link text-uppercase"
-                   id="profile-security-tab"
-                   data-toggle="tab"
-                   href="#profile-security"
-                   role="tab"
-                   aria-controls="profile-security"
-                   aria-selected="false">
-                    Security
-                </a>
-            </li> *@
         </ul>
 
         <div class="tab-content" id="adminProfileTabContent">
@@ -49,7 +38,8 @@
                  role="tabpanel"
                  aria-labelledby="profile-details-tab">
 
-                <div class="card shadow-sm">
+                <!-- Personal Info Card -->
+                <div class="card shadow-sm mb-4">
                     <div class="card-header bg-white border-bottom-0">
                         <h5 class="mb-0">Personal Information</h5>
                     </div>
@@ -79,6 +69,7 @@
                                 <span class="form-text text-muted">
                                 </span>
                             </div>
+
                             <div class="row">
                                 <div class="col-md-6 mb-3">
                                     <label asp-for="FirstName" class="form-label">First Name</label>
@@ -113,37 +104,83 @@
                         </form>
                     </div>
                 </div>
-            </div>
 
-         @*    <!-- Security / Password Tab -->
-            <div class="tab-pane fade"
-                 id="profile-security"
-                 role="tabpanel"
-                 aria-labelledby="profile-security-tab">
-
+                <!-- ✅ Account Security / Change Password Card -->
                 <div class="card shadow-sm">
-                    <div class="card-header bg-white border-bottom-0">
+                    <div class="card-header bg-white border-bottom-0 d-flex justify-content-between align-items-center">
                         <h5 class="mb-0">Account Security</h5>
                     </div>
                     <div class="card-body">
-                        <p class="mb-3">
-                            Manage your admin account security settings, including changing your password.
-                        </p>
+                        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap">
+                            <div>
+                                <div class="font-weight-bold">Password</div>
+                                <small class="text-muted">You can change your admin account password here.</small>
+                            </div>
+                            <button type="button"
+                                    class="btn btn-warning mt-2 mt-md-0"
+                                    onclick="toggleAdminChangePassword()">
+                                Change Password
+                            </button>
+                        </div>
 
-                        <!-- You can wire this to your actual change-password page/action -->
-                        <a asp-action="ChangePassword"
-                           asp-controller="Admin"
-                           class="btn btn-warning">
-                            Change Password
-                        </a>
+                        <div id="adminChangePasswordSection" style="display:none;">
+                            <form asp-action="ChangePassword" asp-controller="Admin" method="post">
+                                @Html.AntiForgeryToken()
+
+                                <div class="form-group">
+                                    <label for="currentPassword">Current Password</label>
+                                    <input type="password"
+                                           class="form-control"
+                                           id="currentPassword"
+                                           name="currentPassword"
+                                           required />
+                                </div>
+
+                                <div class="form-row">
+                                    <div class="form-group col-md-6">
+                                        <label for="newPassword">New Password</label>
+                                        <input type="password"
+                                               class="form-control"
+                                               id="newPassword"
+                                               name="newPassword"
+                                               required minlength="6" />
+                                    </div>
+                                    <div class="form-group col-md-6">
+                                        <label for="confirmPassword">Confirm New Password</label>
+                                        <input type="password"
+                                               class="form-control"
+                                               id="confirmPassword"
+                                               name="confirmPassword"
+                                               required minlength="6" />
+                                    </div>
+                                </div>
+
+                                <button type="submit" class="btn btn-primary">
+                                    Update Password
+                                </button>
+                                <button type="button"
+                                        class="btn btn-secondary ml-2"
+                                        onclick="toggleAdminChangePassword()">
+                                    Cancel
+                                </button>
+                            </form>
+                        </div>
                     </div>
                 </div>
 
-            </div> *@
+            </div>
 
         </div>
 
     </div>
 </div>
 
+    <script>
+        function toggleAdminChangePassword() {
+            var sec = document.getElementById("adminChangePasswordSection");
+            if (!sec) return;
+            sec.style.display =
+                (sec.style.display === "none" || sec.style.display === "") ? "block" : "none";
+        }
+    </script>
 

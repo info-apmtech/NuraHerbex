@@ -284,7 +284,8 @@ namespace Domain.ViewModel
         public string? ProfileImagePath { get; set; }    
 
         [ValidateNever]
-        public IFormFile? ProfileImageFile { get; set; } 
+        public IFormFile? ProfileImageFile { get; set; }
+        public string? PasswordLastChangedText { get; set; }
     }
 	public class ProfileUpdateDto
 	{
@@ -708,6 +709,11 @@ namespace Domain.ViewModel
         public string Phone { get; set; }
         public string Message { get; set; }
     }
-
+    public class ChangePasswordViewModel
+    {
+        public string UserId { get; set; } = string.Empty;
+        public string CurrentPassword { get; set; } = string.Empty;
+        public string NewPassword { get; set; } = string.Empty;
+    }
 }
 

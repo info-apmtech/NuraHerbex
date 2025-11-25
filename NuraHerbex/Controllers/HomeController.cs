@@ -313,16 +313,29 @@ namespace NuraHerbex.Controllers
         [HttpGet]
         public async Task<IActionResult> Plan(int? score)
         {
+            // 1️⃣ Load plans
             var plans = await GetPlansFromApi();
 
-            // If score is null → user came directly → show all plans
+            // 2️⃣ Load feedbacks
+            var feedbacks = new List<FeedbackViewModel>();
+            var feedbackResponse = await _httpClient.GetAsync("AdminAPI/feedbacks");
+            if (feedbackResponse.IsSuccessStatusCode)
+            {
+                var json = await feedbackResponse.Content.ReadAsStringAsync();
+                feedbacks = JsonConvert.DeserializeObject<List<FeedbackViewModel>>(json)
+                            ?? new List<FeedbackViewModel>();
+            }
+
+            // 3️⃣ Expose to the View
+            ViewBag.FeedbackList = feedbacks;
+
+            // 4️⃣ Existing quiz logic
             if (score == null)
             {
                 ViewBag.IsFromQuiz = false;
                 return View(plans);
             }
 
-            // User came via quiz
             ViewBag.IsFromQuiz = true;
             ViewBag.Score = score.Value;
 
@@ -330,19 +343,26 @@ namespace NuraHerbex.Controllers
 
             if (score <= 10)
             {
-                filteredPlans = plans.Where(p => p.PlanName == "Elite Pack").ToList();
+                filteredPlans = plans
+                    .Where(p => p.PlanName == "Elite Pack")
+                    .ToList();
             }
             else if (score > 10 && score <= 15)
             {
-                filteredPlans = plans.Where(p => p.PlanName == "Performance Pack").ToList();
+                filteredPlans = plans
+                    .Where(p => p.PlanName == "Performance Pack")
+                    .ToList();
             }
             else
             {
-                filteredPlans = plans.Where(p => p.PlanName == "Essential Pack").ToList();
+                filteredPlans = plans
+                    .Where(p => p.PlanName == "Essential Pack")
+                    .ToList();
             }
 
             return View(filteredPlans);
         }
+
 
 
         [HttpPost]
@@ -1720,6 +1740,8 @@ namespace NuraHerbex.Controllers
 				vm.Email = user.Email;
 				vm.PhoneNumber = user.PhoneNumber;
                 vm.ProfileImagePath = user.ProfileImagePath;
+                vm.PasswordLastChangedText =
+            BuildPasswordLastChangedText(user.PasswordChangedAt, user.CreatedAt);
             }
 
 			// 2️⃣ Addresses
@@ -2285,7 +2307,92 @@ namespace NuraHerbex.Controllers
                 return View(model);
             }
         }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ChangePassword(string currentPassword, string newPassword, string confirmPassword)
+        {
+            var userId = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "";
+            if (string.IsNullOrEmpty(userId))
+            {
+                _notyf.Error("Please sign in again.", 5);
+                return RedirectToAction("SignIn", "Authentication");
+            }
 
+            if (string.IsNullOrWhiteSpace(currentPassword) ||
+                string.IsNullOrWhiteSpace(newPassword) ||
+                string.IsNullOrWhiteSpace(confirmPassword))
+            {
+                _notyf.Error("All password fields are required.", 5);
+                return RedirectToAction(nameof(MyProfile));
+            }
+
+            if (newPassword != confirmPassword)
+            {
+                _notyf.Error("New password and confirm password do not match.", 5);
+                return RedirectToAction(nameof(MyProfile));
+            }
+
+            var dto = new ChangePasswordViewModel
+            {
+                UserId = userId,
+                CurrentPassword = currentPassword,
+                NewPassword = newPassword
+            };
+
+            try
+            {
+                var response = await AuthorizedClient.PostAsJsonAsync("AuthenticationAPI/ChangePassword", dto);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    _notyf.Success("Password updated successfully.", 5);
+                }
+                else
+                {
+                    var msg = await response.Content.ReadAsStringAsync();
+                    _notyf.Error(string.IsNullOrWhiteSpace(msg) ? "Failed to update password." : msg, 5);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error while changing password for user {UserId}", userId);
+                _notyf.Error("An unexpected error occurred while changing your password.", 5);
+            }
+
+            return RedirectToAction(nameof(MyProfile));
+        }
+
+        private static string BuildPasswordLastChangedText(DateTime? passwordChangedAt, DateTime createdAt)
+        {
+            // If never changed, use created date as baseline
+            var from = passwordChangedAt ?? createdAt;
+            if (from == default)
+                return "Never changed";
+
+            var now = DateTime.Now;
+            var diff = now - from;
+
+            if (diff.TotalDays < 1)
+                return "Changed today";
+
+            if (diff.TotalDays < 7)
+            {
+                var days = (int)Math.Floor(diff.TotalDays);
+                return $"Last changed {days} day{(days > 1 ? "s" : "")} ago";
+            }
+
+            if (diff.TotalDays < 60)
+            {
+                var weeks = (int)Math.Floor(diff.TotalDays / 7);
+                return $"Last changed {weeks} week{(weeks > 1 ? "s" : "")} ago";
+            }
+
+            var months = (int)Math.Floor(diff.TotalDays / 30);
+            if (months < 1) months = 1;
+            return months == 1
+                ? "Last changed 1 month ago"
+                : $"Last changed {months} months ago";
+        }
 
 
     }

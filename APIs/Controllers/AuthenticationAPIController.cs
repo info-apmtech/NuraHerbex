@@ -114,7 +114,42 @@ namespace APIs.Controllers
 
 			return Ok(result);
 		}
+        [HttpPost("ChangePassword")]
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordViewModel model)
+        {
+            if (model == null ||
+                string.IsNullOrWhiteSpace(model.UserId) ||
+                string.IsNullOrWhiteSpace(model.CurrentPassword) ||
+                string.IsNullOrWhiteSpace(model.NewPassword))
+            {
+                return BadRequest("Invalid request payload.");
+            }
+
+            var user = await _userManager.FindByIdAsync(model.UserId);
+            if (user == null)
+                return NotFound("User not found.");
+
+            // ✅ Check current password
+            var valid = await _userManager.CheckPasswordAsync(user, model.CurrentPassword);
+            if (!valid)
+                return BadRequest("Current password is incorrect.");
+
+            // ✅ Change password via Identity
+            var result = await _userManager.ChangePasswordAsync(user, model.CurrentPassword, model.NewPassword);
+            if (!result.Succeeded)
+            {
+                var errorMsg = string.Join("; ", result.Errors.Select(e => e.Description));
+                return BadRequest(errorMsg);
+            }
+
+            // ⚠️ OPTIONAL: if you’re using the custom Password property elsewhere and want it in sync
+            user.Password = model.NewPassword;
+            user.PasswordChangedAt = DateTime.Now;
+            await _userManager.UpdateAsync(user);
+
+            return Ok(new { Message = "Password updated successfully." });
+        }
 
 
-	}
+    }
 }
