@@ -144,7 +144,7 @@ if (app.Environment.IsDevelopment())
 app.UseSwagger();
 app.UseSwaggerUI(c =>
 {
-	c.SwaggerEndpoint("/swagger/v1/swagger.json", "Nura Herbex API v1");
+	c.SwaggerEndpoint("./swagger/v1/swagger.json", "Nura Herbex API v1");
 	c.RoutePrefix = string.Empty; // Makes Swagger UI available at root
 	c.ConfigObject.AdditionalItems["persistAuthorization"] = "true"; // Persists JWT token
 });
