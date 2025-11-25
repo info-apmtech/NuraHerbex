@@ -1,59 +1,101 @@
-﻿<div class="user-sidebar">
+﻿@using System.Security.Claims
+
+@{
+    // Read profile image path from auth cookie claim
+    string? profileImagePath = User?.FindFirst("ProfileImagePath")?.Value;
+    bool hasProfileImage = !string.IsNullOrWhiteSpace(profileImagePath);
+
+    // Optional: friendly display name (fallback to Identity.Name)
+    var displayName = User?.Identity?.Name ?? "User";
+}
+
+<div class="user-sidebar">
     <div class="user-sidebar-profile">
-        <img class="user-avatar" src="~/image/userSidebar/Ellipse 8.png" alt="Profile" />
-        <div class="user-name">@User.Identity?.Name</div>
+        @if (hasProfileImage)
+        {
+            <!-- ✅ Show uploaded profile image -->
+            <img class="user-avatar" src="@profileImagePath" alt="Profile" />
+        }
+        else
+        {
+            <!-- ✅ Fallback: icon / default avatar -->
+            @* You can keep your old image *@
+            @* <img class="user-avatar" src="~/image/userSidebar/Ellipse 8.png" alt="Profile" /> *@
+
+            @* Or use an inline SVG instead:*@
+            <div class="user-avatar user-avatar-placeholder">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+            </div>
+            
+        }
+
+        <div class="user-name">@displayName</div>
     </div>
+
     <nav class="user-sidebar-menu">
         <ul>
-            <li class="@(ViewContext.RouteData.Values["action"]?.ToString() == "MyProfile" ? "active" : "") sidebar-link" onclick="location.href='@Url.Action("MyProfile", "Home")'">
+            <li class="@(ViewContext.RouteData.Values["action"]?.ToString() == "MyProfile" ? "active" : "") sidebar-link"
+                onclick="location.href='@Url.Action("MyProfile", "Home")'">
                 <img src="~/image/userSidebar/user.png" alt="profile" />
                 <span>My Profile</span>
             </li>
-            <li class="@(ViewContext.RouteData.Values["action"]?.ToString() == "MyOrders" ? "active" : "") sidebar-link" onclick="location.href='@Url.Action("MyOrders", "Home")'">
+            <li class="@(ViewContext.RouteData.Values["action"]?.ToString() == "MyOrders" ? "active" : "") sidebar-link"
+                onclick="location.href='@Url.Action("MyOrders", "Home")'">
                 <img src="~/image/userSidebar/mdi_shopping-outline.png" alt="orders" />
                 <span>My Orders</span>
             </li>
-            <li class="@(ViewContext.RouteData.Values["action"]?.ToString() == "MyReturns" ? "active" : "") sidebar-link" onclick="location.href='@Url.Action("MyReturns", "Home")'">
+            <li class="@(ViewContext.RouteData.Values["action"]?.ToString() == "MyReturns" ? "active" : "") sidebar-link"
+                onclick="location.href='@Url.Action("MyReturns", "Home")'">
                 <img src="~/image/userSidebar/majesticons_box-line.png" alt="returns" />
                 <span>My Returns</span>
             </li>
-            <li class="@(ViewContext.RouteData.Values["action"]?.ToString() == "Wishlist" ? "active" : "") sidebar-link" onclick="location.href='@Url.Action("Wishlist", "Home")'">
+            <li class="@(ViewContext.RouteData.Values["action"]?.ToString() == "Wishlist" ? "active" : "") sidebar-link"
+                onclick="location.href='@Url.Action("Wishlist", "Home")'">
                 <img src="~/image/userSidebar/card.png" alt="wishlist" />
                 <span>My Wishlist</span>
             </li>
-            <li class="@(ViewContext.RouteData.Values["action"]?.ToString() == "Consultations" ? "active" : "") sidebar-link" onclick="location.href='@Url.Action("MyConsultation", "Home")'">
+            <li class="@(ViewContext.RouteData.Values["action"]?.ToString() == "MyConsultation" ? "active" : "") sidebar-link"
+                onclick="location.href='@Url.Action("MyConsultation", "Home")'">
                 <img src="~/image/userSidebar/gift.png" alt="consultations" />
                 <span>My Consultations</span>
             </li>
         </ul>
+
         <hr class="sidebar-separator" />
+
         <ul>
-            <li class="sidebar-link help @(ViewContext.RouteData.Values["action"]?.ToString() == "HelpCenter" ? "active" : "")" onclick="location.href='@Url.Action("HelpCenter", "Home")'">
+            <li class="sidebar-link help @(ViewContext.RouteData.Values["action"]?.ToString() == "HelpCenter" ? "active" : "")"
+                onclick="location.href='@Url.Action("HelpCenter", "Home")'">
                 <img src="~/image/userSidebar/info-circle.png" alt="help" />
                 <span>Help Center</span>
             </li>
         </ul>
     </nav>
-   @*  <button class="logout-btn">
-        <img src="~/image/userSidebar/logout.png" alt="Logout" />
-        <span>Logout</span>
-    </button> *@
+
     <button id="logoutButton" class="logout-btn">
         <img src="~/image/userSidebar/logout.png" alt="Logout" />
         <span>Logout</span>
     </button>
-    <form id="logoutForm" asp-controller="Authentication" asp-action="LogOut"
-          method="post" style="display:none;">
+
+    <form id="logoutForm"
+          asp-controller="Authentication"
+          asp-action="LogOut"
+          method="post"
+          style="display:none;">
         @Html.AntiForgeryToken()
     </form>
+
     <script>
         document.getElementById("logoutButton").addEventListener("click", function () {
             document.getElementById("logoutForm").submit();
         });
     </script>
-
-
 </div>
+
 <style>
     .user-sidebar {
         width: 240px;

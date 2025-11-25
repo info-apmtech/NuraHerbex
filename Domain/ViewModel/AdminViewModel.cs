@@ -47,8 +47,11 @@ namespace Domain.ViewModel
 		public List<RegisterUser>? UserList { get; set; }
 		[ValidateNever]
 		public DateTime? FromDate { get; set; }
-		[ValidateNever]
+        [ValidateNever]
         public DateTime? ToDate { get; set; }
+        public string? ProfileImagePath { get; set; }
+        [ValidateNever]
+        public IFormFile? ProfileImageFile { get; set; }
     }
     public enum ForgotFlowStep { Request = 0, Verify = 1 }
 
@@ -261,6 +264,8 @@ namespace Domain.ViewModel
 
         [Phone]
         public string? PhoneNumber { get; set; }
+        public string? ProfileImagePath { get; set; }
+        public IFormFile? ProfileImageFile { get; set; }
     }
 
     public class UserProfileViewModel
@@ -276,7 +281,11 @@ namespace Domain.ViewModel
 		public string FullName => $"{FirstName} {LastName}".Trim();
 		public string Email { get; set; }
 		public string PhoneNumber { get; set; }
-	}
+        public string? ProfileImagePath { get; set; }    
+
+        [ValidateNever]
+        public IFormFile? ProfileImageFile { get; set; } 
+    }
 	public class ProfileUpdateDto
 	{
 		[Required]
@@ -293,7 +302,8 @@ namespace Domain.ViewModel
 
 		[Phone]
 		public string? PhoneNumber { get; set; }
-	}
+        public string? ProfileImagePath { get; set; }
+    }
 
 	public class ConsultationBookingViewModel
     {

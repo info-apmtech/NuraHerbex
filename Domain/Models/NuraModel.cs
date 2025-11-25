@@ -54,6 +54,7 @@ namespace Domain.Models
         public string? LastName { get; set; }
         [NotMapped]
         public string FullName => string.IsNullOrEmpty(LastName) ? FirstName : $"{FirstName} {LastName}";
+        public string? ProfileImagePath { get; set; }
 
         //public string? MobileNo { get; set; }
     }

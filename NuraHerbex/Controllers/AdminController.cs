@@ -68,10 +68,6 @@ namespace NuraHerbex.Controllers
             return View(vm);
         }
 
-        //public IActionResult UserCreation()
-        //{
-        //	return View();
-        //}
         //Blog
         [HttpGet]
         public async Task<IActionResult> AdminBlog(int id = 0)
@@ -640,27 +636,74 @@ namespace NuraHerbex.Controllers
         [HttpPost]
         public async Task<IActionResult> UserCreation(RegisterUserViewModel model)
         {
-			if (model.RegisteredUser == null)
-				model.RegisteredUser = new RegisterUser();
+            if (model.RegisteredUser == null)
+                model.RegisteredUser = new RegisterUser();
 
-			//  NEW user (Add): Id is empty → generate a string Id
-			var isNew = string.IsNullOrWhiteSpace(model.RegisteredUser.Id);
-			if (isNew)
-				model.RegisteredUser.Id = Guid.NewGuid().ToString();  
-			var response = await AuthorizedClient.PostAsJsonAsync("AdminAPI/register", model.RegisteredUser);
+            // NEW user (Add): Id is empty → generate a string Id
+            var isNew = string.IsNullOrWhiteSpace(model.RegisteredUser.Id);
+            if (isNew)
+                model.RegisteredUser.Id = Guid.NewGuid().ToString();
+
+            // 🔹 Handle OPTIONAL profile image upload
+            if (model.ProfileImageFile != null && model.ProfileImageFile.Length > 0)
+            {
+                var uploadsFolder = Path.Combine(_environment.WebRootPath, "uploads/users");
+                if (!Directory.Exists(uploadsFolder))
+                    Directory.CreateDirectory(uploadsFolder);
+
+                var uniqueFileName = Guid.NewGuid().ToString() + Path.GetExtension(model.ProfileImageFile.FileName);
+                var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await model.ProfileImageFile.CopyToAsync(stream);
+                }
+
+                // Save relative path for serving later
+                model.RegisteredUser.ProfileImagePath = "/uploads/users/" + uniqueFileName;
+            }
+            // else: leave whatever ProfileImagePath is already there (for edit without new upload)
+
+            var response = await AuthorizedClient.PostAsJsonAsync("AdminAPI/register", model.RegisteredUser);
             if (response.IsSuccessStatusCode)
             {
                 _notyf.Success("User Registered Successfully!", 5);
-				if (User.Identity.IsAuthenticated) 
-					//return RedirectToAction("UserCreation", new { role = model.RegisteredUser.Role });
-				return RedirectToAction(nameof(UserCreation), new { id = (string)null });
-				else
-					return RedirectToAction("SignIn", "Authentication");
-			}
+
+                if (User.Identity.IsAuthenticated)
+                    return RedirectToAction(nameof(UserCreation), new { id = (string)null });
+                else
+                    return RedirectToAction("SignIn", "Authentication");
+            }
+
             var errorMsg = await response.Content.ReadAsStringAsync();
             ModelState.AddModelError(string.Empty, errorMsg);
             return View(model);
         }
+
+        //     [HttpPost]
+        //     public async Task<IActionResult> UserCreation(RegisterUserViewModel model)
+        //     {
+        //if (model.RegisteredUser == null)
+        //	model.RegisteredUser = new RegisterUser();
+
+        ////  NEW user (Add): Id is empty → generate a string Id
+        //var isNew = string.IsNullOrWhiteSpace(model.RegisteredUser.Id);
+        //if (isNew)
+        //	model.RegisteredUser.Id = Guid.NewGuid().ToString();  
+        //var response = await AuthorizedClient.PostAsJsonAsync("AdminAPI/register", model.RegisteredUser);
+        //         if (response.IsSuccessStatusCode)
+        //         {
+        //             _notyf.Success("User Registered Successfully!", 5);
+        //	if (User.Identity.IsAuthenticated) 
+        //		//return RedirectToAction("UserCreation", new { role = model.RegisteredUser.Role });
+        //	return RedirectToAction(nameof(UserCreation), new { id = (string)null });
+        //	else
+        //		return RedirectToAction("SignIn", "Authentication");
+        //}
+        //         var errorMsg = await response.Content.ReadAsStringAsync();
+        //         ModelState.AddModelError(string.Empty, errorMsg);
+        //         return View(model);
+        //     }
         [HttpPost]
         public async Task<IActionResult> DeleteUser(string id)
         {
@@ -1603,6 +1646,7 @@ namespace NuraHerbex.Controllers
                 vm.LastName = user.LastName;
                 vm.Email = user.Email;
                 vm.PhoneNumber = user.PhoneNumber;
+                vm.ProfileImagePath = user.ProfileImagePath;
             }
 
             return View(vm);
@@ -1619,13 +1663,33 @@ namespace NuraHerbex.Controllers
             if (!ModelState.IsValid)
                 return View(model);
 
+            // 👇 Handle optional image upload
+            if (model.ProfileImageFile != null && model.ProfileImageFile.Length > 0)
+            {
+                var uploadsFolder = Path.Combine(_environment.WebRootPath, "uploads/profile");
+                if (!Directory.Exists(uploadsFolder))
+                    Directory.CreateDirectory(uploadsFolder);
+
+                var fileName = $"{Guid.NewGuid()}{Path.GetExtension(model.ProfileImageFile.FileName)}";
+                var filePath = Path.Combine(uploadsFolder, fileName);
+
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await model.ProfileImageFile.CopyToAsync(stream);
+                }
+
+                // Save relative path for DB + claims
+                model.ProfileImagePath = $"/uploads/profile/{fileName}";
+            }
+
             var dto = new ProfileUpdateDto
             {
                 Id = userId,
                 FirstName = model.FirstName,
                 LastName = model.LastName,
                 Email = model.Email,
-                PhoneNumber = model.PhoneNumber
+                PhoneNumber = model.PhoneNumber,
+                ProfileImagePath = model.ProfileImagePath  
             };
 
             var response = await AuthorizedClient.PostAsJsonAsync("AdminAPI/profile", dto);
@@ -1633,6 +1697,8 @@ namespace NuraHerbex.Controllers
             if (response.IsSuccessStatusCode)
             {
                 _notyf.Success("Profile updated successfully", 5);
+
+
                 return RedirectToAction(nameof(AdminMyProfile));
             }
 
@@ -1641,6 +1707,7 @@ namespace NuraHerbex.Controllers
 
             return View(model);
         }
+
 
 
 

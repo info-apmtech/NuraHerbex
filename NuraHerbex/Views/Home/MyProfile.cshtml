@@ -18,11 +18,30 @@
         <div class="profile-card">
             <div class="profile-card-title">Personal Information</div>
 
-            <form asp-action="UpdateProfile" method="post" class="profile-form">
+            <form asp-action="UpdateProfile" method="post" class="profile-form" enctype="multipart/form-data">
                 @Html.AntiForgeryToken()
 
                 <input asp-for="Id" type="hidden" />
+                <input asp-for="ProfileImagePath" type="hidden" />
 
+                <div class="form-row">
+                    <div style="display:flex; align-items:center; gap:16px;">
+                        <div>
+                            <img src="@(string.IsNullOrEmpty(Model.ProfileImagePath)
+                       ? Url.Content("~/image/userSidebar/default-avatar.png")
+                       : Model.ProfileImagePath)"
+                                 alt="Profile Image"
+                                 style="width:64px; height:64px; border-radius:50%; object-fit:cover;" />
+                        </div>
+
+                        <div>
+                            <label class="profile-upload-label">
+                                Profile Image
+                                <input asp-for="ProfileImageFile" type="file" accept="image/*" />
+                            </label>
+                        </div>
+                    </div>
+                </div>
                 <div class="form-row">
                     <label>
                         First Name

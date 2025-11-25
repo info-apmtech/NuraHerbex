@@ -133,11 +133,12 @@
                     </div>
 
                     <div class="card-body">
-                        <form asp-action="UserCreation" asp-controller="Admin" method="post" novalidate autocomplete="off">
+                        <form asp-action="UserCreation" asp-controller="Admin" method="post" enctype="multipart/form-data" novalidate autocomplete="off">
                             @Html.AntiForgeryToken()
                             <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
                             <!-- 🔹 Always send Id; empty for Add, filled for Edit -->
                             <input asp-for="RegisteredUser.Id" type="hidden" />
+                            <input asp-for="RegisteredUser.ProfileImagePath" type="hidden" />
 
                             <div class="row">
                                 <div class="col-md-4 mb-3">
@@ -190,6 +191,22 @@
                                     <label asp-for="RegisteredUser.NMConfirmPassword" class="form-label"></label>
                                     <input asp-for="RegisteredUser.NMConfirmPassword" type="password" class="form-control" />
                                     <span asp-validation-for="RegisteredUser.NMConfirmPassword" class="text-danger"></span>
+                                </div>
+
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label">Profile Image (optional)</label>
+
+                                    @* Preview existing image when editing *@
+                                    @if (Model.RegisteredUser != null && !string.IsNullOrEmpty(Model.RegisteredUser.ProfileImagePath))
+                                    {
+                                        <div class="mb-2">
+                                            <img src="@Model.RegisteredUser.ProfileImagePath"
+                                                 alt="Profile Image"
+                                                 style="max-width: 80px; max-height: 80px; border-radius: 50%;" />
+                                        </div>
+                                    }
+
+                                    <input asp-for="ProfileImageFile" type="file" class="form-control" accept="image/*" />
                                 </div>
 
                                 <div class="col-md-4 mb-3">

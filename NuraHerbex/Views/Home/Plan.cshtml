@@ -1,5 +1,7 @@
 ﻿@using Domain.Models
+@using Domain.ViewModel
 @model List<PricingPlan>
+
 
 @{
     ViewData["Title"] = "Plans";
@@ -254,88 +256,95 @@
             <span class="highlight-orange">Real Results</span> from Real Men
         </h2>
         <p class="real-results-subtitle">
-            Join Thousands of men who've transformed  their lives ith STAMIX.
+            Join thousands of men who've transformed their lives with STAMIX.
         </p>
 
-        <div class="testimonials-grid-plan">
-            <!-- Testimonial 1 -->
-            <div class="testimonial-card-plan">
-                <div class="testimonial-header-plan">
-                    <img src="~/image/plan/portrait-handsome-smiling.png" alt="Marcus Rodriguez" class="testimonial-avatar-plan" />
-                    <div class="testimonial-info-plan">
-                        <h4 class="testimonial-name-plan">Marcus Rodriguez</h4>
-                        <div class="testimonial-stars-plan">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="#ff8800">
-                                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-                            </svg>
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="#ff8800">
-                                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-                            </svg>
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="#ff8800">
-                                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-                            </svg>
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="#ff8800">
-                                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-                            </svg>
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="#ff8800">
-                                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-                            </svg>
-                        </div>
-                        <p class="testimonial-role-plan">Executive</p>
-                    </div>
-                </div>
-                <blockquote class="testimonial-quote-plan">
-                    "The Performance Pack transformed my energy levels. I'm crushing 12-hour days and still have energy for my family"
-                </blockquote>
-                <div class="testimonial-stat-plan">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
-                        <polyline points="17 6 23 6 23 12"></polyline>
-                    </svg>
-                    <span>40% Energy Increases</span>
-                </div>
-            </div>
+        @* --------- PREP DATA FROM FEEDBACK --------- *@
+        @{
+            var feedbacks = ViewBag.FeedbackList as List<FeedbackViewModel>
+            ?? new List<FeedbackViewModel>();
 
-            <!-- Testimonial 2 -->
-            <div class="testimonial-card-plan">
-                <div class="testimonial-header-plan">
-                    <img src="~/image/plan/portrait-handsome-smiling.png" alt="Marcus Rodriguez" class="testimonial-avatar-plan" />
-                    <div class="testimonial-info-plan">
-                        <h4 class="testimonial-name-plan">Marcus Rodriguez</h4>
-                        <div class="testimonial-stars-plan">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="#ff8800">
-                                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-                            </svg>
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="#ff8800">
-                                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-                            </svg>
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="#ff8800">
-                                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-                            </svg>
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="#ff8800">
-                                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-                            </svg>
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="#ff8800">
-                                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-                            </svg>
+            // Top 2: highest rating, then latest
+            var topResults = feedbacks
+            .OrderByDescending(f => f.RatingCount)
+            .ThenByDescending(f => f.SubmittedAt)
+            .Take(2)
+            .ToList();
+
+            var totalCount = feedbacks.Count;
+            var avgRating = totalCount > 0
+            ? Math.Round(feedbacks.Average(f => f.RatingCount), 1)
+            : 0;
+
+            var satisfiedCount = feedbacks.Count(f => f.RatingCount >= 4);
+            var satisfiedPercent = totalCount > 0
+            ? Math.Round(100m * satisfiedCount / totalCount)
+            : 0;
+
+            string FallbackImage(string? img) =>
+            !string.IsNullOrWhiteSpace(img)
+            ? img
+            : Url.Content("~/image/plan/portrait-handsome-smiling.png");
+        }
+
+
+        <div class="testimonials-grid-plan">
+            @if (!topResults.Any())
+            {
+                <p class="no-feedback-text">
+                    No results to show yet. Be the first to experience STAMIX.
+                </p>
+            }
+            else
+            {
+                @foreach (var fb in topResults)
+                {
+                    <div class="testimonial-card-plan">
+                        <div class="testimonial-header-plan">
+                            <img src="@FallbackImage(fb.CustomerImage)"
+                                 alt="@fb.CustomerName"
+                                 class="testimonial-avatar-plan" />
+                            <div class="testimonial-info-plan">
+                                <h4 class="testimonial-name-plan">
+                                    @(!string.IsNullOrWhiteSpace(fb.CustomerName)
+                                        ? fb.CustomerName
+                                        : "Verified Customer")
+                                </h4>
+
+                                <div class="testimonial-stars-plan">
+                                    @for (var i = 1; i <= 5; i++)
+                                    {
+                                        // filled if i <= rating, else light/empty
+                                        var fill = i <= fb.RatingCount ? "#ff8800" : "#ffe0c2";
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="@fill">
+                                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                                        </svg>
+                                    }
+                                </div>
+
+                                <p class="testimonial-role-plan">
+                                    @fb.SubmittedAt.ToString("MMMM dd, yyyy")
+                                </p>
+                            </div>
                         </div>
-                        <p class="testimonial-role-plan">Executive</p>
+
+                        <blockquote class="testimonial-quote-plan">
+                            "@fb.Message"
+                        </blockquote>
+
+                        <div class="testimonial-stat-plan">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+                                <polyline points="17 6 23 6 23 12"></polyline>
+                            </svg>
+                            <span>@fb.RatingCount/5 Verified Rating</span>
+                        </div>
                     </div>
-                </div>
-                <blockquote class="testimonial-quote-plan">
-                    "The Performance Pack transformed my energy levels. I'm crushing 12-hour days and still have energy for my family"
-                </blockquote>
-                <div class="testimonial-stat-plan">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
-                        <polyline points="17 6 23 6 23 12"></polyline>
-                    </svg>
-                    <span>40% Energy Increases</span>
-                </div>
-            </div>
+                }
+            }
         </div>
 
-        <!-- Stats Row -->
+        <!-- Stats Row (partially dynamic) -->
         <div class="results-stats-row">
             <div class="result-stat-item">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -346,22 +355,27 @@
                 </svg>
                 <span>10,000+ Active Members</span>
             </div>
+
             <div class="result-stat-item">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
                 </svg>
-                <span>4.8/5 Average Ratings</span>
+                <span>@avgRating/5 Average Rating</span>
             </div>
+
             <div class="result-stat-item">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
                     <polyline points="22 4 12 14.01 9 11.01"></polyline>
                 </svg>
-                <span>95% Satisfaction Rate</span>
+                <span>
+                    @(totalCount > 0 ? $"{satisfiedPercent}% Satisfaction Rate" : "No ratings yet")
+                </span>
             </div>
         </div>
     </div>
 </section>
+
 
 <!-- Final CTA Section -->
 <section class="final-cta-section">
