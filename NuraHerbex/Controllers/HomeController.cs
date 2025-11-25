@@ -57,6 +57,8 @@ namespace NuraHerbex.Controllers
             _httpClient = httpClientFactory.CreateClient("NuraHerbexApi");
 			_notyf = notyf;
 			_httpClient = httpClientFactory.CreateClient("NuraHerbexApi");
+			_httpClient = httpClientFactory.CreateClient("NuraHerbexApi");
+>>>>>>>>> Temporary merge branch 2
 
 		}
 		private System.Net.Http.HttpClient AuthorizedClient => _httpClientFactory.CreateAuthorizedClient(_httpContextAccessor);
@@ -354,14 +356,21 @@ namespace NuraHerbex.Controllers
             if (score == null)
             {
                 ViewBag.IsFromQuiz = false;
-                return View(plans);
-            }
 			// If score is null → user came directly → show all plans
 			if (score == null)
 			{
 				ViewBag.IsFromQuiz = false;
 				return View(plans);
 			}
+
+			if (score == null)
+			{
+				ViewBag.IsFromQuiz = false;
+				return View(plans);
+			}
+>>>>>>>>> Temporary merge branch 2
+
+>>>>>>>>> Temporary merge branch 2
 
 			// User came via quiz
 			ViewBag.IsFromQuiz = true;
@@ -372,15 +381,6 @@ namespace NuraHerbex.Controllers
             if (score <= 10)
             {
                 filteredPlans = plans.Where(p => p.PlanName == "Elite Pack").ToList();
-            }
-            else if (score > 10 && score <= 15)
-            {
-                filteredPlans = plans.Where(p => p.PlanName == "Performance Pack").ToList();
-            }
-            else
-            {
-                filteredPlans = plans.Where(p => p.PlanName == "Essential Pack").ToList();
-            }
 			if (score <= 10)
 			{
 				filteredPlans = plans.Where(p => p.PlanName == "Elite Pack").ToList();
@@ -393,11 +393,11 @@ namespace NuraHerbex.Controllers
 			{
 				filteredPlans = plans.Where(p => p.PlanName == "Essential Pack").ToList();
 			}
+			else if (score > 10 && score <= 15)
+			{
+				filteredPlans = plans.Where(p => p.PlanName == "Performance Pack").ToList();
 
-			return View(filteredPlans);
-		}
-
-
+            if (response.IsSuccessStatusCode)
 		private async Task<List<PricingPlan>> GetPlansFromApi()
 		{
 			var plans = new List<PricingPlan>();
@@ -409,6 +409,15 @@ namespace NuraHerbex.Controllers
 			}
 			return plans;
 		}
+			var response = await _httpClient.GetAsync("AdminAPI/pricingplans");
+			if (response.IsSuccessStatusCode)
+			{
+				var json = await response.Content.ReadAsStringAsync();
+				plans = JsonConvert.DeserializeObject<List<PricingPlan>>(json) ?? new List<PricingPlan>();
+			}
+			return plans;
+		}
+>>>>>>>>> Temporary merge branch 2
 
 
 		[HttpPost]
@@ -1904,15 +1913,6 @@ namespace NuraHerbex.Controllers
 
             var response = await AuthorizedClient.PostAsJsonAsync("AdminAPI/profile", dto);
 
-            if (response.IsSuccessStatusCode)
-            {
-                _notyf.Success("Profile updated successfully", 5);
-                return RedirectToAction(nameof(MyProfile));
-            }
-
-			var errorBody = await response.Content.ReadAsStringAsync();
-			_notyf.Error(errorBody, 5);
-
 			// re-load addresses / dropdown data (same as GET MyProfile)
 			var addressesResponse = await _httpClient.GetAsync($"AdminAPI/addresses/{userId}");
 			model.Addresses = addressesResponse.IsSuccessStatusCode
@@ -1923,6 +1923,15 @@ namespace NuraHerbex.Controllers
 			model.Countries = countriesResponse.IsSuccessStatusCode
 				? await countriesResponse.Content.ReadFromJsonAsync<List<Country>>()
 		: new List<Country>();
+			model.Addresses = addressesResponse.IsSuccessStatusCode
+				? await addressesResponse.Content.ReadFromJsonAsync<List<AddressDetail>>()
+				: new List<AddressDetail>();
+
+			var countriesResponse = await _httpClient.GetAsync("AdminAPI/countries");
+			model.Countries = countriesResponse.IsSuccessStatusCode
+				? await countriesResponse.Content.ReadFromJsonAsync<List<Country>>()
+		: new List<Country>();
+>>>>>>>>> Temporary merge branch 2
 
             var statesResponse = await _httpClient.GetAsync("AdminAPI/states");
             model.States = statesResponse.IsSuccessStatusCode
