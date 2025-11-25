@@ -543,6 +543,13 @@ namespace Domain.Implementation
 				existing.UpdatedBy = actingUser ?? product.UpdatedBy;
 
 				_db.ProductDetails.Update(existing);
+				
+				var cartItems = await _db.CartItems.Where(ci => ci.ProductId == existing.Id).ToListAsync();
+
+				foreach (var ci in cartItems)
+				{
+					ci.Price = existing.Amount; 
+				}
 			}
 			else
 			{
