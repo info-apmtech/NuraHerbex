@@ -40,6 +40,7 @@
         </div>
     </div>
 </section>
+
 <section class="container">
     <header class="header">
         <h1 class="title">
@@ -141,12 +142,23 @@
                     <span class="badge">@doctorDetail.YearsOfExperience Years</span>
 
                     <div class="doctor-image">
-                        <img src="@(string.IsNullOrEmpty(doctorDetail.PhotoPath)
-                                ? Url.Content("~/image/consultation/doctor.png")
-                                : Url.Content(doctorDetail.PhotoPath))"
-                             alt="@doctor.FullName" class="doctor-photo" />
-
+                        @if (string.IsNullOrEmpty(doctorDetail.PhotoPath))
+                        {
+                            <!-- fallback icon -->
+                            <img src="~/uploads/doctors/Profile-PNG-File.png"
+                                 alt="@doctor.FullName"
+                                 class="doctor-photo doctor-photo--fallback" />
+                        }
+                        else
+                        {
+                            <!-- real uploaded photo -->
+                            <img src="@Url.Content(doctorDetail.PhotoPath)"
+                                 alt="@doctor.FullName"
+                                 class="doctor-photo doctor-photo--real" />
+                        }
                     </div>
+
+
 
                     <div class="doctor-info">
                         <h3 class="doctor-name">@doctor.FullName</h3>

@@ -418,7 +418,7 @@
 .doctor-image {
     width: 100%;
     height: 180px;
-    background: linear-gradient(135deg, #e3f2fd 0%, #f5f5f5 100%);
+/*    background: linear-gradient(135deg, #e3f2fd 0%, #f5f5f5 100%);*/
     border-radius: 12px;
     margin-bottom: 12px;
     display: flex;
@@ -432,7 +432,28 @@
         height: 100%;
         object-fit: cover;
     }
+    .doctor-image .doctor-photo {
+        max-width: 100%;
+        max-height: 100%;
+        width: auto;
+        height: auto;
+        object-fit: contain; /* ✅ show full image, no cropping */
+        display: block;
+    }
 
+/* Fallback avatar for doctors without photo */
+    .doctor-image .doctor-photo--fallback {
+        max-width: 70%;
+        max-height: 70%;
+    }
+
+.doctor-avatar-icon {
+    width: 64px;
+    height: 64px;
+    stroke: #6b7280;
+    fill: none;
+    stroke-width: 1.8;
+}
 .doctor-info {
     margin-bottom: 16px;
 }

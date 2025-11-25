@@ -233,15 +233,24 @@
                 foreach (var doctor in Model.Doctors)
                 {
                     <div class="expert-card">
+                        @{
+                            var photoPath = !string.IsNullOrEmpty(doctor.PhotoPath)
+                            ? Url.Content(doctor.PhotoPath)
+                            : Url.Content("~/uploads/doctors/Profile-PNG-File.png");
+                        }
+
                         <div class="expert-image">
-                            <img src="@(!string.IsNullOrEmpty(doctor.PhotoPath) ? doctor.PhotoPath : "~/image/blog/doctor-with-his-arms-crossed-white-background.png")"
-                                 alt="@doctor.FullName" />
+                            <img src="@photoPath"
+                                 alt="@doctor.FullName"
+                                 class="expert-photo" />
                         </div>
+
                         <div class="expert-info">
                             <h3 class="expert-name">@doctor.FullName</h3>
                             <p class="expert-title">@doctor.PrimarySpeciality</p>
                         </div>
                     </div>
+
                 }
             }
             else

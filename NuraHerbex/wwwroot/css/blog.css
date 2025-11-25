@@ -1215,8 +1215,19 @@
     margin-bottom: 1.25rem;
     border: 3px solid #ffffff;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f3f4f6;
 }
-
+    .expert-image .expert-photo {
+        max-width: 100%;
+        max-height: 100%;
+        width: auto;
+        height: auto;
+        object-fit: contain;
+        display: block;
+    }
     .expert-image img {
         width: 100%;
         height: 100%;
