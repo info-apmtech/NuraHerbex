@@ -334,11 +334,6 @@ namespace NuraHerbex.Controllers
         //          return View(filteredPlans);
         //      }
 
-
-        [HttpGet]
-        public async Task<IActionResult> Plan(int? score)
-        {
-            var plans = await GetPlansFromApi();
 		[HttpGet]
 		public async Task<IActionResult> Plan(int? score)
 		{
@@ -401,18 +396,6 @@ namespace NuraHerbex.Controllers
 
 			return View(filteredPlans);
 		}
-
-        private async Task<List<PricingPlan>> GetPlansFromApi()
-        {
-            var plans = new List<PricingPlan>();
-            var response = await _httpClient.GetAsync("AdminAPI/pricingplans");
-            if (response.IsSuccessStatusCode)
-            {
-                var json = await response.Content.ReadAsStringAsync();
-                plans = JsonConvert.DeserializeObject<List<PricingPlan>>(json) ?? new List<PricingPlan>();
-            }
-            return plans;
-        }
 
 
 		private async Task<List<PricingPlan>> GetPlansFromApi()
