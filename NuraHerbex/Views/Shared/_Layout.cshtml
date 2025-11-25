@@ -283,7 +283,7 @@
                         </li>
                         <li>
                             <a asp-controller="Home" asp-action="Plans"
-                               class="@(ViewContext.RouteData.Values["action"]?.ToString() == "Plans" && ViewContext.RouteData.Values["controller"]?.ToString() == "Home" ? "active" : "")">
+                               class="@(ViewContext.RouteData.Values["action"]?.ToString() == "Plan" && ViewContext.RouteData.Values["controller"]?.ToString() == "Home" ? "active" : "")">
                                 Plans
                             </a>
                         </li>
@@ -309,9 +309,9 @@
                     <ul class="footer-links">
                         <li><a href="#">Help Center</a></li>
                         <li><a href="#">Shipping Info</a></li>
-                        <li><a href="#">Returns</a></li>
+                        <li><a asp-controller="Home" asp-action="MyReturns" class="@(ViewContext.RouteData.Values["action"]?.ToString() == "MyReturns" && ViewContext.RouteData.Values["controller"]?.ToString() == "Home" ? "active" : "")">Returns</a></li>
                         <li><a href="#">FAQ</a></li>
-                        <li><a href="#">Contact Us</a></li>
+                        <li><a asp-controller="Home" asp-action="Contact" class="@(ViewContext.RouteData.Values["action"]?.ToString() == "Contact" && ViewContext.RouteData.Values["controller"]?.ToString() == "Home" ? "active" : "")">Contact Us</a></li>
                     </ul>
                 </div>
 
